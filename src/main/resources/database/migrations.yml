@@ -1,0 +1,8 @@
+# Don't touch these unless you know what you're doing!
+users: "CREATE TABLE IF NOT EXISTS `users` ( `uuid` VARCHAR(255) NOT NULL , `json` LONGTEXT NOT NULL , UNIQUE (`uuid`)) ENGINE = InnoDB;"
+portals: "CREATE TABLE IF NOT EXISTS `portals` ( `name` VARCHAR(255) NOT NULL , `json` LONGTEXT NOT NULL , PRIMARY KEY (`name`)) ENGINE = InnoDB;"
+bags: "CREATE TABLE IF NOT EXISTS `bags` ( `id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"
+banking_business: "CREATE TABLE IF NOT EXISTS `banking_business` ( `id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"
+banking_savings: "CREATE TABLE IF NOT EXISTS `banking_savings` ( `id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"
+banking_government: "CREATE TABLE IF NOT EXISTS `banking_government` ( `id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"
+guns: "CREATE TABLE IF NOT EXISTS `weapons` (`id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"

@@ -1,0 +1,49 @@
+license: "c5OpAYIWizoGzNBbBmQp1w4dAJ4q4eAY"
+
+storage:
+  # Options: MySQL or MongoDB
+  # Set the login of these either under here
+  type: MySQL
+
+  auth:
+    host: localhost
+    port: 3306
+    database: minetopia
+    username: root
+    password: ''
+
+  redis:
+    address: "157.90.5.161"
+    port: 6379
+    password: "ryd6qbUaGDAWAuLPpY0AJ6fD93SI5XwjNwT7Z3WLP4M0"
+
+discord:
+  token: "ODUxMTMzNDAxOTE3NTU0NzQ4.YLz1wA.8e1XD4t6MD2JTv76swsWDnUg3wc"
+
+settings:
+  city:
+    title: "minetopia"
+    color: "a"
+    layout:
+      - '%u%윟 %c%%area%'
+      - '%none%'
+      - '%c%Banksaldo:'
+      - '%u%%balance%'
+      - '%none%'
+      - '%c%Level:'
+      - '%u%%level% -> %possiblelevel% (%difference%)'
+      - '%none%'
+      - '%c%GrayShards:'
+      - '%u%%shards%'
+      - '%none%'
+      - 'play.maiky.dev'
+
+
+  player:
+    default:
+      shards: 0
+      level: 1
+      fitness: 30
+      cityColor: '7'
+      upgrades:
+        points: 1
