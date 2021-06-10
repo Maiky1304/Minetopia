@@ -11,9 +11,14 @@ import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
+import dev.maiky.minetopia.modules.guns.ui.GunUI;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Objects;
 
 /**
  * Door: Maiky
@@ -56,7 +61,7 @@ public class GunsCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.guns.get")
 	@Description("Spawn a gun by model name")
 	@CommandCompletion("@models")
-	private void onGet(Player player, @Conditions("verifyModel") String modelName) {
+	public void onGet(Player player, @Conditions("verifyModel") String modelName) {
 		Model model = module.getModel(modelName);
 		Weapon weapon = this.weaponManager.createWeapon(model);
 
@@ -65,6 +70,46 @@ public class GunsCommand extends BaseCommand {
 		player.getInventory().addItem(itemStack);
 
 		player.sendMessage("§6You have succesfully created a weapon with the modelname §c" + modelName + "§6.");
+	}
+
+	@Subcommand("getammo")
+	@Syntax("<model>")
+	@CommandPermission("minetopia.moderation.guns.get")
+	@Description("Spawn ammo by model name")
+	@CommandCompletion("@models")
+	public void onGetAmmo(Player player, @Conditions("verifyModel") String modelName) {
+		Model model = module.getModel(modelName);
+
+		ItemStack itemStack = Builder.with(model).buildAmmo();
+		player.getInventory().addItem(itemStack);
+
+		player.sendMessage("§6You have succesfully created ammo for the model with the name §c" + modelName + "§6.");
+	}
+
+	@Subcommand("setdurability")
+	@Syntax("<number>")
+	@CommandPermission("minetopia.moderation.guns.setdurability")
+	@Description("Change the durability of a gun")
+	public void onSet(@Conditions("hasGun") Player player, int durability) {
+		final ItemStack mainHand = player.getInventory().getItemInMainHand();
+		NBTTagCompound nbtTagCompound = Objects.requireNonNull(CraftItemStack.asNMSCopy(mainHand).getTag());
+
+		String license = nbtTagCompound.getString("license");
+		Weapon weapon = weaponManager.getWeaponByLicense(license);
+
+		weapon.setDurability(durability);
+		weaponManager.updateWeapon(weapon);
+
+		player.sendMessage("§6You have succesfully set the durability of the gun with the license §c" + license +
+				"§6 to §c" + durability + "§6.");
+	}
+
+	@Subcommand("menu")
+	@CommandPermission("minetopia.moderation.guns.menu")
+	@Description("Open the gun model menu")
+	public void onMenu(Player player) {
+		GunUI gunUI = new GunUI(player, this.module);
+		gunUI.open();
 	}
 
 }

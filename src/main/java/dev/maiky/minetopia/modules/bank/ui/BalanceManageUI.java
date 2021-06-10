@@ -26,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Door: Maiky
@@ -301,6 +302,7 @@ public class BalanceManageUI extends Gui {
 			Events.subscribe(AsyncPlayerChatEvent.class)
 					.filter(e -> e.getPlayer().equals(getPlayer()))
 					.expireAfter(1)
+					.expireAfter(30, TimeUnit.SECONDS)
 					.handler(e -> {
 						// Cancel Event
 						e.setCancelled(true);
@@ -392,7 +394,7 @@ public class BalanceManageUI extends Gui {
 			event.getWhoClicked().sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
 					Bank.PERSONAL.label.toLowerCase())));
 		} else {
-			manager.getAccount(this.account.getBank(), this.account.getId()).deposit(MAPPING.get(material) * items);
+			manager.getAccount(this.account.getBank(), this.account.getId()).deposit(MAPPING.get(material) * itemsToGive);
 
 			if (itemsToGive == 1) {
 				if (event.getCurrentItem().getAmount() == 1) {

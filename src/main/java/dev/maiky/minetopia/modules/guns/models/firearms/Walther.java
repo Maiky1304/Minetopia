@@ -31,6 +31,11 @@ public class Walther implements Model {
 	}
 
 	@Override
+	public String customName() {
+		return "Walther P99";
+	}
+
+	@Override
 	public int defaultAmmo() {
 		return 10;
 	}

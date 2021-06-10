@@ -18,6 +18,7 @@ public interface Model {
 	long delayBetweenShots();
 
 	String modelName();
+	String customName();
 	int defaultAmmo();
 
 }

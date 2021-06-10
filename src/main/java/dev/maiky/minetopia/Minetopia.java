@@ -15,6 +15,7 @@ import dev.maiky.minetopia.modules.districts.DistrictsModule;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.items.ItemsModule;
 import dev.maiky.minetopia.modules.levels.LevelsModule;
+import dev.maiky.minetopia.modules.notifications.NotificationsModule;
 import dev.maiky.minetopia.modules.players.PlayersModule;
 import dev.maiky.minetopia.modules.plots.PlotsModule;
 import dev.maiky.minetopia.modules.prefixes.PrefixesModule;
@@ -43,7 +44,8 @@ import java.util.HashMap;
 				@PluginDependency(value = "helper-sql", soft = true),
 				@PluginDependency(value = "helper-mongo", soft = true),
 				@PluginDependency(value = "Citizens", soft = true),
-				@PluginDependency(value = "Vault", soft = true) }
+				@PluginDependency(value = "Vault", soft = true),
+				@PluginDependency(value = "Essentials", soft = true)}
 )
 public final class Minetopia extends ExtendedJavaPlugin {
 
@@ -72,6 +74,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	public BagsModule bagsModule;
 	public BankModule bankModule;
 	public GunsModule gunsModule;
+	public NotificationsModule notificationsModule;
 	public DiscordModule discordModule;
 
 	// Command Manager
@@ -110,6 +113,12 @@ public final class Minetopia extends ExtendedJavaPlugin {
 
 		if (!getServer().getPluginManager().isPluginEnabled("Citizens")) {
 			getLogger().warning("The plugin Citizens is not loaded install the plugin by downloading it at https://dev.bukkit.org/projects/citizens/files/2456650/download");
+			this.setEnabled(false);
+			return;
+		}
+
+		if (!getServer().getPluginManager().isPluginEnabled("Essentials")) {
+			getLogger().warning("The plugin Essentials is not loaded install the plugin by downloading it at https://www.spigotmc.org/resources/essentialsx.9089/");
 			this.setEnabled(false);
 			return;
 		}
@@ -155,6 +164,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.bagsModule = new BagsModule();
 		this.bankModule = new BankModule();
 		this.gunsModule = new GunsModule();
+		this.notificationsModule = new NotificationsModule();
 		this.discordModule = new DiscordModule();
 
 		// Load all the modules
@@ -162,7 +172,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.loadModules(this.dataModule, this.playersModule, this.chatModule, this.upgradesModule, this.itemsModule,
 				this.plotsModule, this.levelsModule, this.districtsModule, this.securityModule, this.colorsModule,
 				this.prefixesModule, this.transportationModule, this.ddgItemsModule, this.bagsModule, this.bankModule,
-				this.discordModule, this.gunsModule);
+				this.discordModule, this.gunsModule, this.notificationsModule);
 
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));

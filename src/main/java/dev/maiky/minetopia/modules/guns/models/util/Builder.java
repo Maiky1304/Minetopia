@@ -1,10 +1,9 @@
 package dev.maiky.minetopia.modules.guns.models.util;
 
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
+import dev.maiky.minetopia.util.Items;
 import me.lucko.helper.item.ItemStackBuilder;
-import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -34,9 +33,18 @@ public class Builder {
 	public Builder setLicense(String license) {
 		itemStack = buildItem();
 		itemStack = ItemStackBuilder.of(itemStack)
-				.lore("", "&6License: &c" + license).build();
+				.lore("", "Officiëel BlackMT Item, Season 1 Gun", "Officiëel BlackMT Gear", "Serie Nr. " + license)
+				.breakable(false).build();
 		itemStack = editNBT(itemStack, "license", license);
 		return this;
+	}
+
+	public ItemStack buildAmmo() {
+		return editNBT(ItemStackBuilder.of(Material.IRON_INGOT)
+				.name(String.format("§8" + model.customName() + " %s", "Ammo"))
+						.lore("", "Officiëel Black Item, Season 1 Ammo").breakable(false)
+						.build(),
+				"mtcustom", this.model.modelName().split("_")[0] + "_bullets");
 	}
 
 	public ItemStack buildItem() {
@@ -45,16 +53,12 @@ public class Builder {
 
 		ItemStack itemStack = new ItemStack(Material.WOOD_HOE);
 		itemStack = editNBT(itemStack, "mtcustom", this.model.modelName());
+		itemStack = ItemStackBuilder.of(itemStack).name("&8" + this.model.customName()).build();
 		return itemStack;
 	}
 
 	public ItemStack editNBT(ItemStack itemStack, String key, String value) {
-		net.minecraft.server.v1_12_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(itemStack);
-		NBTTagCompound compound = nmsStack.getTag() == null ? new NBTTagCompound() : nmsStack.getTag();
-		compound.setString(key, value);
-		nmsStack.setTag(compound);
-		itemStack = CraftItemStack.asCraftMirror(nmsStack);
-		return itemStack;
+		return Items.editNBT(itemStack, key, value);
 	}
 
 }

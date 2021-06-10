@@ -26,7 +26,7 @@ public class Weapon {
 	private int rowId;
 
 	public Weapon(Model model) {
-		this.license = Text.randomString(12);
+		this.license = Text.randomString(12).toUpperCase();
 		this.ammo = model.defaultAmmo();
 		this.durability = model.defaultAmmo() * 3;
 		this.modelName = model.modelName();

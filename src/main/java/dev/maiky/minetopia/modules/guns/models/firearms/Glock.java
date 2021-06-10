@@ -31,6 +31,11 @@ public class Glock implements Model {
 	}
 
 	@Override
+	public String customName() {
+		return "Glock 19";
+	}
+
+	@Override
 	public int defaultAmmo() {
 		return 15;
 	}

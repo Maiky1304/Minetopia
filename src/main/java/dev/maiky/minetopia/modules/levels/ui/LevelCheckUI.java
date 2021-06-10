@@ -7,6 +7,7 @@ import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -46,6 +47,7 @@ public class LevelCheckUI extends Gui {
 			{
 				user.setLevel(user.getLevel() + 1);
 				this.close();
+				getPlayer().playSound(getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.1f, 1f);
 				getPlayer().sendTitle("§6Gefeliciteerd!", "§7Je bent nu §eLevel " + user.getLevel() + "§7!"
 				, 10, 50, 10);
 			}));

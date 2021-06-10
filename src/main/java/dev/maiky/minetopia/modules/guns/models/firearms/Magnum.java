@@ -31,6 +31,11 @@ public class Magnum implements Model {
 	}
 
 	@Override
+	public String customName() {
+		return "Magnum .44";
+	}
+
+	@Override
 	public int defaultAmmo() {
 		return 6;
 	}

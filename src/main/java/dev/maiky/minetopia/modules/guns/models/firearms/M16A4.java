@@ -33,6 +33,11 @@ public class M16A4 implements Model {
 	}
 
 	@Override
+	public String customName() {
+		return "M16A4";
+	}
+
+	@Override
 	public int defaultAmmo() {
 		return 30;
 	}

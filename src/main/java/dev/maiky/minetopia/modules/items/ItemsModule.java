@@ -235,13 +235,11 @@ public class ItemsModule implements MinetopiaModule {
 					MinetopiaProjectile minetopiaProjectile = this.projectiles.get(projectile.getType());
 					if (minetopiaProjectile.exclusions().length != 0 && projectile.getCustomName() != null) {
 						for (String string : minetopiaProjectile.exclusions()) {
-							if (projectile.getCustomName().contains(string)) {
+							if (projectile.getCustomName().contains(string) || projectile.getCustomName().startsWith(string)) {
 								return;
 							}
 						}
 					}
-
-					if ( Objects.requireNonNull(projectile.getCustomName()).startsWith("minetopia_bullet")) return;
 
 					shooter.sendMessage(String.format(Text.colors(minetopiaProjectile.damagerMessage()), damaged.getName()));
 					damaged.sendMessage(String.format(Text.colors(minetopiaProjectile.victimMessage()), shooter.getName()));

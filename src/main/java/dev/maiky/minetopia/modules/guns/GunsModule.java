@@ -11,6 +11,7 @@ import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.firearms.*;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
+import dev.maiky.minetopia.modules.guns.models.util.Builder;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.cooldown.Cooldown;
@@ -26,7 +27,7 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -81,12 +82,24 @@ public class GunsModule implements MinetopiaModule {
 		manager.getCommandConditions().addCondition(String.class, "verifyModel", (context, execContext, value) -> {
 			if ( this.models.stream().noneMatch(m -> m.modelName().equals(value)) ) throw new ConditionFailedException("There is no model with the name: " + value);
 		});
+		manager.getCommandConditions().addCondition(Player.class, "hasGun", (context, execContext, value) -> {
+			ItemStack mainHand = value.getInventory().getItemInMainHand();
+			String message = "You don't have a gun in your hand.";
+			ConditionFailedException failed = new ConditionFailedException(message);
+			if (mainHand.getType() != Material.WOOD_HOE)
+				throw failed;
+			if (CraftItemStack.asNMSCopy(mainHand).getTag() == null)
+				throw failed;
+			if (!Objects.requireNonNull(CraftItemStack.asNMSCopy(mainHand).getTag()).hasKey("mtcustom"))
+				throw failed;
+		});
 		manager.registerCommand(new GunsCommand(this));
 	}
 
 	private void registerEvents() {
 		WeaponManager weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
 
+		List<Player> reloading = new ArrayList<>();
 		HashMap<Model, CooldownMap<String>> cooldowns = new HashMap<>();
 		this.models.forEach(m -> cooldowns.put(m, CooldownMap.create(Cooldown.of(m.delayBetweenShots(), TimeUnit.MILLISECONDS))));
 
@@ -96,6 +109,7 @@ public class GunsModule implements MinetopiaModule {
 				.filter(e -> e.getItem().getType() == Material.WOOD_HOE)
 				.filter(e -> CraftItemStack.asNMSCopy(e.getItem()).getTag() != null)
 				.filter(e -> Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getItem()).getTag()).hasKey("mtcustom"))
+				.filter(e -> !reloading.contains(e.getPlayer()))
 				.handler(e -> {
 					Player player = e.getPlayer();
 
@@ -105,9 +119,47 @@ public class GunsModule implements MinetopiaModule {
 					String license = nbtTagCompound.getString("license");
 					Weapon weapon = weaponManager.getWeaponByLicense(license);
 
+					ItemStack ammoItem = Builder.with(model).buildAmmo();
+
 					if (weapon.getAmmo() == 0) {
-						// TODO: Maybe play sound?
-						player.sendMessage("§cJe hebt geen ammo meer!");
+						if (!player.getInventory().containsAtLeast(ammoItem, 1)) {
+							player.sendMessage("§cJe hebt geen ammo meer!");
+							return;
+						}
+
+						int j = -1;
+						for (int k = 0; k < player.getInventory().getSize(); k++) {
+							if (player.getInventory().getItem(k) == null) continue;
+							if (player.getInventory().getItem(k).equals(ammoItem)) {
+								j = k;
+							}
+						}
+
+						if (j == -1) {
+							player.sendMessage("§cJe hebt geen ammo meer!");
+							return;
+						}
+
+						reloading.add(player);
+
+						int finalJ = j;
+						player.getInventory().getItem(finalJ).setAmount(player.getInventory().getItem(finalJ).getAmount() - 1);
+
+						AtomicInteger atomicInteger = new AtomicInteger(0);
+						Schedulers.sync().runRepeating((task) -> {
+							if (atomicInteger.get() == 30) {
+								task.close();
+								task.stop();
+								reloading.remove(player);
+								weapon.setAmmo(model.defaultAmmo());
+								weaponManager.updateWeapon(weapon);
+								player.sendMessage("§6Je wapen is §csuccesvol §6herladen.");
+								return;
+							}
+
+							player.sendTitle("§eReloading...", "§7Clickerdy click.", 0, 1, 15);
+							atomicInteger.incrementAndGet();
+						}, 0, 1).bindWith(composite);
 						return;
 					}
 
@@ -183,14 +235,26 @@ public class GunsModule implements MinetopiaModule {
 				})
 		.bindWith(composite);
 		Events.subscribe(PlayerItemHeldEvent.class)
-				.filter(e -> e.getPlayer().getInventory().getItem(e.getNewSlot()) != null)
-				.filter(e -> e.getPlayer().getInventory().getItem(e.getNewSlot()).getType() == Material.WOOD_HOE)
-				.filter(e -> CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag() != null)
-				.filter(e -> Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag())
-						.hasKey("mtcustom"))
+				.filter(e -> {
+					System.out.println(e.getPlayer().getInventory().getItem(e.getNewSlot()) != null);
+					return e.getPlayer().getInventory().getItem(e.getNewSlot()) != null;
+				})
+				.filter(e -> {
+					System.out.println(e.getPlayer().getInventory().getItem(e.getNewSlot()).getType() == Material.WOOD_HOE);
+					return e.getPlayer().getInventory().getItem(e.getNewSlot()).getType() == Material.WOOD_HOE;
+				})
+				.filter(e -> {
+					System.out.println(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag() != null);
+					return CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag() != null;
+				})
+				.filter(e -> {
+					System.out.println(Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag())
+							.hasKey("mtcustom"));
+					return Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag())
+							.hasKey("mtcustom");
+				})
 				.handler(e -> {
-					NBTTagCompound nbtTagCompound = Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItemInMainHand())
-							.getTag());
+					NBTTagCompound nbtTagCompound = Objects.requireNonNull(CraftItemStack.asNMSCopy(e.getPlayer().getInventory().getItem(e.getNewSlot())).getTag());
 					Model model = getModel(nbtTagCompound.getString("mtcustom"));
 					String license = nbtTagCompound.getString("license");
 					Weapon weapon = weaponManager.getWeaponByLicense(license);
@@ -207,6 +271,10 @@ public class GunsModule implements MinetopiaModule {
 	}
 
 	private final List<Model> models = new ArrayList<>();
+
+	public List<Model> getModels() {
+		return models;
+	}
 
 	private void registerGuns() {
 		Model[] models = new Model[]{new DesertEagle(), new Glock(), new M16A4(),

@@ -31,6 +31,11 @@ public class DesertEagle implements Model {
 	}
 
 	@Override
+	public String customName() {
+		return "Desert Eagle";
+	}
+
+	@Override
 	public int defaultAmmo() {
 		return 9;
 	}
