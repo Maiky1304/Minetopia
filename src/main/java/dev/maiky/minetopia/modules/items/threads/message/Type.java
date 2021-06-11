@@ -8,6 +8,6 @@ package dev.maiky.minetopia.modules.items.threads.message;
 
 public enum Type {
 
-	EMERGENCY,MESSAGE;
+	EMERGENCY,MESSAGE,ALERT;
 
 }

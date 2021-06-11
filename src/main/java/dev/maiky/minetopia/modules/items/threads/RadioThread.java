@@ -58,6 +58,16 @@ public class RadioThread extends Thread {
 								Sounds.playSoundRepeating(p, Sound.UI_BUTTON_CLICK, 0.75f, 5, 10);
 							}
 						}
+					} else if (radioMessage.getType() == Type.ALERT) {
+						Emergency emergency = gson.fromJson(radioMessage.getData(), Emergency.class);
+						String location = emergency.getLocation();
+
+						for (Player p : Bukkit.getOnlinePlayers()) {
+							if ( Items.hasItemMatches(p, Material.DIAMOND_HOE, (short) 67) ) {
+								p.sendMessage(String.format("§c[§4§l112§c] §7%s §8(§7%s§8)" + " §fheeft een 112 melding gedaan: §7%s",
+										radioMessage.getFrom(), location, emergency.getMessage()));
+							}
+						}
 					}
 				}
 			}

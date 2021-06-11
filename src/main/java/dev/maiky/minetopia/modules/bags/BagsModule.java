@@ -9,6 +9,7 @@ import dev.maiky.minetopia.modules.bags.commands.BagCommand;
 import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import dev.maiky.minetopia.util.SerializationUtils;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -63,6 +64,7 @@ public class BagsModule implements MinetopiaModule {
 		for (BagType value : BagType.values()) materialList.add(value.material);
 
 		Events.subscribe(PlayerInteractEvent.class)
+				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
 				.filter(PlayerInteractEvent::hasItem)
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> materialList.contains(e.getItem().getType()))

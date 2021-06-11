@@ -8,12 +8,15 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.modules.players.commands.essential.EmergencyCommand;
+import dev.maiky.minetopia.modules.players.commands.essential.HeadCommand;
 import dev.maiky.minetopia.modules.players.commands.essential.ShardCommand;
 import dev.maiky.minetopia.modules.players.commands.essential.TimeCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
 import dev.maiky.minetopia.modules.players.placeholders.NameColorPlaceholder;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
 import dev.maiky.minetopia.modules.players.tasks.TimeTask;
+import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import lombok.Getter;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -25,13 +28,16 @@ import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.PlayerInventory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -147,6 +153,10 @@ public class PlayersModule implements MinetopiaModule {
 			}
 		});
 
+		minetopia.getCommandManager().getCommandConditions().addCondition(OfflinePlayer.class, "online", (context, execContext, value) -> {
+			if (!value.isOnline()) throw new ConditionFailedException("Deze speler is niet online!");
+		});
+
 		minetopia.getCommandManager().getCommandConditions().addCondition(String.class, "database", (c, exec, value) -> {
 			ProfileRepository repository = minetopia.getRepository();
 			if (value.length() == 32 || value.length() == 28) {
@@ -160,9 +170,47 @@ public class PlayersModule implements MinetopiaModule {
 			}
 		});
 
+		List<Material> allowedMaterials = Arrays.asList(Material.BEDROCK,
+				Material.SPONGE,
+				Material.BEDROCK,
+				Material.IRON_ORE,
+				Material.COAL_ORE,
+				Material.SPONGE,
+				Material.LAPIS_ORE,
+				Material.DIAMOND_ORE,
+				Material.REDSTONE_ORE,
+				Material.SOUL_SAND,
+				Material.NETHERRACK,
+				Material.NETHER_BRICK,
+				Material.ENDER_STONE,
+				Material.QUARTZ_ORE,
+				Material.EMERALD_ORE,
+				Material.PRISMARINE,
+				Material.RED_SANDSTONE,
+				Material.INK_SACK,
+				Material.MAGMA_CREAM,
+				Material.NETHER_BRICK,
+				Material.NETHER_STALK,
+				Material.RABBIT_HIDE,
+				Material.PRISMARINE_SHARD,
+				Material.CLAY_BALL,
+				Material.PRISMARINE_CRYSTALS,
+				Material.NETHER_BRICK,
+				Material.GOLD_ORE,
+				Material.CARROT_STICK,
+				Material.SHEARS,
+				Material.GLASS,
+				Material.STAINED_GLASS);
+		minetopia.getCommandManager().getCommandConditions().addCondition(Player.class, "itemPossibleOnHead", (context, execContext, value) -> {
+			if (value.getInventory().getItemInMainHand() == null) throw new ConditionFailedException("Je hebt geen item in je hand!");
+			if (!allowedMaterials.contains(value.getInventory().getItemInMainHand().getType())) throw new ConditionFailedException("Je kunt dit item niet op je hoofd zetten!");
+		});
+
 		minetopia.getCommandManager().registerCommand(new ModCommand());
 		minetopia.getCommandManager().registerCommand(new TimeCommand(), true);
 		minetopia.getCommandManager().registerCommand(new ShardCommand());
+		minetopia.getCommandManager().registerCommand(new HeadCommand(), true);
+		minetopia.getCommandManager().registerCommand(new EmergencyCommand());
 	}
 
 	private void registerTasks() {
@@ -225,6 +273,7 @@ public class PlayersModule implements MinetopiaModule {
 					PlayerManager.getScoreboard().remove(e.getPlayer().getUniqueId());
 				}).bindWith(composite);
 		Events.subscribe(PlayerInteractEvent.class)
+				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
 				.filter(PlayerInteractEvent::hasBlock)
 				.filter(e -> e.getClickedBlock().getType() == Material.DROPPER)
 				.filter(e -> e.getAction() == Action.RIGHT_CLICK_BLOCK)

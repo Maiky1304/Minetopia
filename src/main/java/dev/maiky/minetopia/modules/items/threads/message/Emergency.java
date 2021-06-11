@@ -13,7 +13,15 @@ public class Emergency {
 	@Getter
 	private final String location;
 
+	@Getter
+	private String message = null;
+
 	public Emergency(String location) {
 		this.location = location;
+	}
+
+	public Emergency(String location, String message) {
+		this.location = location;
+		this.message= message;
 	}
 }

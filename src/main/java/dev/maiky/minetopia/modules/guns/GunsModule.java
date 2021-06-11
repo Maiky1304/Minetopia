@@ -11,6 +11,7 @@ import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.firearms.*;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
+import dev.maiky.minetopia.modules.guns.models.interfaces.Spread;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -28,6 +29,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -204,6 +206,31 @@ public class GunsModule implements MinetopiaModule {
 
 							i.getAndIncrement();
 						}, 0, 2);
+					} else if (model.getClass().isAnnotationPresent(Spread.class)) {
+						Spread spread = model.getClass().getAnnotation(Spread.class);
+						int width = spread.width();
+
+						org.bukkit.util.Vector vector = player.getLocation().getDirection().clone().multiply(1.3d);
+						org.bukkit.util.Vector vector2 = player.getLocation().getDirection().clone().multiply(1.3d);
+
+						List<Snowball> snowballs = new ArrayList<>();
+
+						snowballs.add(player.launchProjectile(Snowball.class, vector));
+
+						for (int i = 0; i < (width / 2); i++) {
+							vector.add(new Vector(0.0325, 0, 0));
+							snowballs.add(player.launchProjectile(Snowball.class, vector));
+						}
+
+						for (int i = 0; i < (width / 2); i++) {
+							vector2.add(new Vector(0, 0, 0.0325));
+							snowballs.add(player.launchProjectile(Snowball.class, vector2));
+						}
+
+						snowballs.forEach(object -> {
+							object.setShooter(player);
+							object.setCustomName("minetopia_bullet:" + model.modelName());
+						});
 					} else {
 						Snowball snowball = player.launchProjectile(Snowball.class, player.getLocation().getDirection().multiply(3.7D));
 
@@ -278,7 +305,7 @@ public class GunsModule implements MinetopiaModule {
 
 	private void registerGuns() {
 		Model[] models = new Model[]{new DesertEagle(), new Glock(), new M16A4(),
-		new Magnum(), new Walther()};
+		new Magnum(), new Walther(), new Shotgun(), new WaltherPP(), new AK47()};
 		this.models.addAll(Arrays.asList(models));
 	}
 

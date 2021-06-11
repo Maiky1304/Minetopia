@@ -38,6 +38,9 @@ public class GunsCommand extends BaseCommand {
 		this.weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
 	}
 
+	@Default
+	@Subcommand("main")
+	@Description("View all the subcommands")
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());

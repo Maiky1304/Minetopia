@@ -20,6 +20,8 @@ storage:
 discord:
   token: "ODUxMTMzNDAxOTE3NTU0NzQ4.YLz1wA.8e1XD4t6MD2JTv76swsWDnUg3wc"
 
+leaderboard-server: false
+
 settings:
   city:
     title: "minetopia"

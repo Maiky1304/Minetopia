@@ -1,6 +1,10 @@
 package dev.maiky.minetopia.modules.security;
 
+import co.aikar.commands.BukkitCommandManager;
+import co.aikar.commands.ConditionFailedException;
+import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
+import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -47,9 +51,22 @@ public class SecurityModule implements MinetopiaModule {
 
 		// Events
 		this.registerEvents();
+
+		// Commands
+		this.registerCommands();
 	}
 
-	private final List<Material> illegalItems = Arrays.asList(
+	private void registerCommands() {
+		Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
+		BukkitCommandManager manager = minetopia.getCommandManager();
+
+		manager.getCommandConditions().addCondition(Player.class, "notBeingSearched", (context, execContext, value) -> {
+			if ( BodySearchCommand.getBeingSearched().containsKey(value.getUniqueId()) ) throw new ConditionFailedException("Deze speler wordt al gefouilleerd.");
+		});
+		manager.registerCommand(new BodySearchCommand());
+	}
+
+	private static final List<Material> illegalItems = Arrays.asList(
 			Material.SUGAR,
 			Material.IRON_HOE,
 			Material.STICK,
@@ -64,6 +81,10 @@ public class SecurityModule implements MinetopiaModule {
 			Material.POISONOUS_POTATO,
 			Material.WOOD_HOE
 	);
+
+	public static boolean isIllegal(Material material) {
+		return illegalItems.contains(material);
+	}
 
 	private void registerEvents() {
 		Events.subscribe(PlayerInteractEvent.class)
