@@ -13,6 +13,8 @@ import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Spread;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
+import dev.maiky.minetopia.modules.notifications.notifications.Notification;
+import dev.maiky.minetopia.modules.notifications.util.NotificationUtil;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.cooldown.Cooldown;
@@ -132,7 +134,9 @@ public class GunsModule implements MinetopiaModule {
 						int j = -1;
 						for (int k = 0; k < player.getInventory().getSize(); k++) {
 							if (player.getInventory().getItem(k) == null) continue;
-							if (player.getInventory().getItem(k).equals(ammoItem)) {
+							ItemStack clone = player.getInventory().getItem(k).clone();
+							clone.setAmount(1);
+							if (clone.equals(ammoItem)) {
 								j = k;
 							}
 						}
@@ -147,6 +151,8 @@ public class GunsModule implements MinetopiaModule {
 						int finalJ = j;
 						player.getInventory().getItem(finalJ).setAmount(player.getInventory().getItem(finalJ).getAmount() - 1);
 
+						NotificationUtil.sendNotification(player, "§6Je wapen wordt herladen.", 3);
+
 						AtomicInteger atomicInteger = new AtomicInteger(0);
 						Schedulers.sync().runRepeating((task) -> {
 							if (atomicInteger.get() == 30) {
@@ -156,6 +162,7 @@ public class GunsModule implements MinetopiaModule {
 								weapon.setAmmo(model.defaultAmmo());
 								weaponManager.updateWeapon(weapon);
 								player.sendMessage("§6Je wapen is §csuccesvol §6herladen.");
+								NotificationUtil.sendNotification(player, "§6Je wapen is §csuccesvol §6herladen.", 1);
 								return;
 							}
 
@@ -180,6 +187,8 @@ public class GunsModule implements MinetopiaModule {
 					weapon.setDurability(weapon.getDurability() - 1);
 					weaponManager.updateWeapon(weapon);
 
+					NotificationUtil.sendNotification(player, "§6Ammo: §c" + weapon.getAmmo() + "§6/§c" + model.defaultAmmo(), 1);
+
 					player.sendMessage("§6Durability: §c" + weapon.getDurability());
 					player.sendMessage("§6Ammo: §c" + weapon.getAmmo() + "§6/§c" + model.defaultAmmo());
 
@@ -187,6 +196,7 @@ public class GunsModule implements MinetopiaModule {
 						player.getInventory().setItemInMainHand(null);
 						player.sendMessage("§cJe wapen is kapot gegaan!");
 						player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 0.1f, 1f);
+						NotificationUtil.sendNotification(player, "§cJe wapen is kapot gegaan!", 2);
 					}
 
 					if (model.getClass().isAnnotationPresent(Burst.class)) {

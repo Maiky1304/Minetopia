@@ -69,7 +69,7 @@ public class NotificationsModule implements MinetopiaModule {
 	}
 
 	private void registerTasks() {
-		Bucket<Player> bucket = BucketFactory.newHashSetBucket(20, PartitioningStrategies.lowestSize());
+		Bucket<Player> bucket = BucketFactory.newHashSetBucket(5, PartitioningStrategies.lowestSize());
 		if ( Bukkit.getOnlinePlayers().size() != 0 )
 			bucket.addAll(Bukkit.getOnlinePlayers());
 
