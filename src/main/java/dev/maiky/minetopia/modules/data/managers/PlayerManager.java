@@ -7,7 +7,9 @@ import lombok.Getter;
 import me.lucko.helper.sql.Sql;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -81,6 +83,19 @@ public class PlayerManager {
 		return this.sql.query("SELECT `uuid` FROM `users` WHERE `uuid`=?",
 				preparedStatement -> preparedStatement.setString(1, uuid.toString()),
 				ResultSet::next).orElse(false);
+	}
+
+	public List<MinetopiaUser> allUsers() {
+		List<MinetopiaUser> users = new ArrayList<>();
+		return this.sql.query("SELECT `uuid` FROM `users` WHERE 1", preparedStatement -> {},
+				resultSet ->
+				{
+					while(resultSet.next()) {
+						users.add(retrieve(UUID.fromString(resultSet.getString("uuid"))));
+					}
+
+					return users;
+				}).orElse(users);
 	}
 
 	public String toJson(Object object) {

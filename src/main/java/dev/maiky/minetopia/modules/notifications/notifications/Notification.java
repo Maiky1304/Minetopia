@@ -23,13 +23,13 @@ public class Notification implements TerminableModule {
 	@Getter
 	private final String message;
 	@Getter
-	private final int time;
+	private final double time;
 	@Getter @Setter
 	private long sentAtTime;
 	@Getter @Setter
 	private boolean finished = false;
 
-	public Notification(Player recipent, String message, int time) {
+	public Notification(Player recipent, String message, double time) {
 		this.recipent = recipent;
 		this.message = message;
 		this.time = time;
@@ -40,7 +40,7 @@ public class Notification implements TerminableModule {
 		Schedulers.sync().runRepeating((task) ->
 				{
 					long now = System.currentTimeMillis();
-					long expiry = sentAtTime + (this.time * 1000L);
+					long expiry = sentAtTime + (long) (this.time * 1000L);
 
 					if (now > expiry) {
 						task.stop();

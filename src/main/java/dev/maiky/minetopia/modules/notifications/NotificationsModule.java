@@ -69,7 +69,7 @@ public class NotificationsModule implements MinetopiaModule {
 	}
 
 	private void registerTasks() {
-		Bucket<Player> bucket = BucketFactory.newHashSetBucket(5, PartitioningStrategies.lowestSize());
+		Bucket<Player> bucket = BucketFactory.newHashSetBucket(10, PartitioningStrategies.lowestSize());
 		if ( Bukkit.getOnlinePlayers().size() != 0 )
 			bucket.addAll(Bukkit.getOnlinePlayers());
 
@@ -78,7 +78,7 @@ public class NotificationsModule implements MinetopiaModule {
 
 		Schedulers.sync().runRepeating(task -> {
 			BucketPartition<Player> part = bucket.asCycle().next();
-			for (Player player : part) {
+			for (Player player : Bukkit.getOnlinePlayers().size() >= 50 ? part : Bukkit.getOnlinePlayers()) {
 				NotificationQueue queue = NotificationQueue.getQueueCache().get(player.getUniqueId());
 				if (queue.canNextGo()) {
 					Iterator<Notification> iterator = queue.getQueue();

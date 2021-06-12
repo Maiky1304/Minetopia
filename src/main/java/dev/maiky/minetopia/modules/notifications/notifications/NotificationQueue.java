@@ -25,7 +25,7 @@ public class NotificationQueue {
 
 		long start = current.getSentAtTime();
 		long now = System.currentTimeMillis();
-		long maxDiff = (current.getTime() * 1000L);
+		long maxDiff = (long) (current.getTime() * 1000L);
 		long diff = (now - start);
 
 		return diff >= maxDiff;

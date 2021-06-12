@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 
 public class NotificationUtil {
 
-	public static void sendNotification(Player player, String message, int timeInSeconds) {
+	public static void sendNotification(Player player, String message, double timeInSeconds) {
 		NotificationQueue queue = NotificationQueue.getQueueCache().get(player.getUniqueId());
 		Notification notification = new Notification(player, message, timeInSeconds);
 		queue.queue.add(notification);

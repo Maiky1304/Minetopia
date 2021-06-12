@@ -13,15 +13,17 @@ import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Spread;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
-import dev.maiky.minetopia.modules.notifications.notifications.Notification;
 import dev.maiky.minetopia.modules.notifications.util.NotificationUtil;
+
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.cooldown.Cooldown;
 import me.lucko.helper.cooldown.CooldownMap;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
+
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
+
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
@@ -151,7 +153,8 @@ public class GunsModule implements MinetopiaModule {
 						int finalJ = j;
 						player.getInventory().getItem(finalJ).setAmount(player.getInventory().getItem(finalJ).getAmount() - 1);
 
-						NotificationUtil.sendNotification(player, "§6Je wapen wordt herladen.", 3);
+						// TODO: Create animation for the dots
+						NotificationUtil.sendNotification(player, "§6Je wapen wordt herladen...", 3);
 
 						AtomicInteger atomicInteger = new AtomicInteger(0);
 						Schedulers.sync().runRepeating((task) -> {
@@ -314,7 +317,7 @@ public class GunsModule implements MinetopiaModule {
 	}
 
 	private void registerGuns() {
-		Model[] models = new Model[]{new DesertEagle(), new Glock(), new M16A4(),
+		Model[] models = new Model[]{new DesertEagle(), new Glock(), new M16A3(), new M16A4(),
 		new Magnum(), new Walther(), new Shotgun(), new WaltherPP(), new AK47()};
 		this.models.addAll(Arrays.asList(models));
 	}

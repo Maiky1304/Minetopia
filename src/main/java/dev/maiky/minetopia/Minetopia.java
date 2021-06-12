@@ -14,6 +14,7 @@ import dev.maiky.minetopia.modules.discord.DiscordModule;
 import dev.maiky.minetopia.modules.districts.DistrictsModule;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.items.ItemsModule;
+import dev.maiky.minetopia.modules.leaderboards.LeaderboardsModule;
 import dev.maiky.minetopia.modules.levels.LevelsModule;
 import dev.maiky.minetopia.modules.notifications.NotificationsModule;
 import dev.maiky.minetopia.modules.players.PlayersModule;
@@ -45,7 +46,8 @@ import java.util.HashMap;
 				@PluginDependency(value = "helper-mongo", soft = true),
 				@PluginDependency(value = "Citizens", soft = true),
 				@PluginDependency(value = "Vault", soft = true),
-				@PluginDependency(value = "Essentials", soft = true)}
+				@PluginDependency(value = "Essentials", soft = true),
+				@PluginDependency(value = "Citizens", soft = true)}
 )
 public final class Minetopia extends ExtendedJavaPlugin {
 
@@ -76,6 +78,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	public GunsModule gunsModule;
 	public NotificationsModule notificationsModule;
 	public DiscordModule discordModule;
+	public LeaderboardsModule leaderboardsModule;
 
 	// Command Manager
 	@Getter
@@ -166,13 +169,14 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.gunsModule = new GunsModule();
 		this.notificationsModule = new NotificationsModule();
 		this.discordModule = new DiscordModule();
+		this.leaderboardsModule = new LeaderboardsModule();
 
 		// Load all the modules
 		getLogger().info(" §b§lLOADING MODULES >>");
 		this.loadModules(this.dataModule, this.playersModule, this.chatModule, this.upgradesModule, this.itemsModule,
 				this.plotsModule, this.levelsModule, this.districtsModule, this.securityModule, this.colorsModule,
 				this.prefixesModule, this.transportationModule, this.ddgItemsModule, this.bagsModule, this.bankModule,
-				this.discordModule, this.gunsModule, this.notificationsModule);
+				this.discordModule, this.gunsModule, this.notificationsModule, this.leaderboardsModule);
 
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));

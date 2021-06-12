@@ -2,6 +2,7 @@ package dev.maiky.minetopia.modules.guns.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.CommandIssuer;
+import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
@@ -13,6 +14,7 @@ import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
 import dev.maiky.minetopia.modules.guns.ui.GunUI;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -105,6 +107,26 @@ public class GunsCommand extends BaseCommand {
 
 		player.sendMessage("§6You have succesfully set the durability of the gun with the license §c" + license +
 				"§6 to §c" + durability + "§6.");
+	}
+
+	@Subcommand("give")
+	@Syntax("<target> <model> <durability>")
+	@CommandPermission("minetopia.moderation.guns.give")
+	@Description("Give a weapon to a player")
+	@CommandCompletion("@players @models @nothing")
+	public void onGive(CommandSender sender, @Conditions("online") OfflinePlayer offlinePlayer,  @Conditions("verifyModel") String modelName, int durability) {
+		if (offlinePlayer.getPlayer().getInventory().firstEmpty() == -1) throw new ConditionFailedException("Deze speler heeft geen inventory ruimte.");
+
+		Player target = offlinePlayer.getPlayer();
+		Model model = module.getModel(modelName);
+
+		Weapon weapon = this.weaponManager.createWeapon(model);
+		weapon.setDurability(durability);
+		this.weaponManager.updateWeapon(weapon);
+
+		ItemStack itemStack = Builder.with(model).
+				setLicense(weapon.getLicense()).buildItem();
+		target.getInventory().addItem(itemStack);
 	}
 
 	@Subcommand("menu")
