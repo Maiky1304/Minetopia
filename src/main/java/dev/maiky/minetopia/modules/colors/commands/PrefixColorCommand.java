@@ -7,6 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.colors.gui.ChatColorUI;
+import dev.maiky.minetopia.modules.colors.gui.PrefixColorUI;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
@@ -43,7 +44,7 @@ public class PrefixColorCommand extends BaseCommand {
 	@Subcommand("main")
 	@Description("Open het prefixkleur menu")
 	public void onMain(Player player) {
-		ChatColorUI ui = new ChatColorUI(player, 0);
+		PrefixColorUI ui = new PrefixColorUI(player, 0);
 		ui.open();
 	}
 
