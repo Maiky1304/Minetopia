@@ -55,6 +55,9 @@ public class TimeTask implements Runnable {
 			if ( hours >= 24 ) {
 				hours = 0;
 				days++;
+
+				user.getMinetopiaUpgrades().setPoints(user.getMinetopiaUpgrades().getPoints() + 1);
+				player.sendMessage("§6Je hebt §c1 §6upgrade token ontvangen omdat je §c1 dag§6 playtime erbij hebt!");
 			}
 
 			time.setSeconds(seconds);

@@ -9,5 +9,10 @@ public interface MinetopiaWeapon {
 	String damagerMessage();
 	String victimMessage();
 	boolean damage();
+	boolean cooldown();
+	int length();
+	int unit();
+	String cooldownMessage();
+
 
 }

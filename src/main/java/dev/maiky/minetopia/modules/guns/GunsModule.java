@@ -15,6 +15,7 @@ import dev.maiky.minetopia.modules.guns.models.interfaces.Spread;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
 import dev.maiky.minetopia.modules.notifications.util.NotificationUtil;
 
+import lombok.Getter;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.cooldown.Cooldown;
@@ -64,6 +65,7 @@ public class GunsModule implements MinetopiaModule {
 
 	@Override
 	public void enable() {
+		instance = this;
 		this.enabled = true;
 
 		// Register Guns
@@ -303,6 +305,9 @@ public class GunsModule implements MinetopiaModule {
 				})
 		.bindWith(composite);
 	}
+
+	@Getter
+	private static GunsModule instance;
 
 	public Model getModel(String key) {
 		return this.models.stream()

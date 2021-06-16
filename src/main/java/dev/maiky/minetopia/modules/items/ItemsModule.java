@@ -5,9 +5,6 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.items.drugs.Cocaine;
 import dev.maiky.minetopia.modules.items.drugs.Weed;
-import dev.maiky.minetopia.modules.items.melee.Bat;
-import dev.maiky.minetopia.modules.items.melee.Baton;
-import dev.maiky.minetopia.modules.items.melee.Knife;
 import dev.maiky.minetopia.modules.items.other.Cooldown;
 import dev.maiky.minetopia.modules.items.police.Handcuffs;
 import dev.maiky.minetopia.modules.items.police.Radio;
@@ -16,6 +13,7 @@ import dev.maiky.minetopia.modules.items.projectile.Bullet;
 import dev.maiky.minetopia.modules.items.projectile.Snowball;
 import dev.maiky.minetopia.modules.items.threads.RadioThread;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -37,10 +35,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Door: Maiky
@@ -101,9 +96,117 @@ public class ItemsModule implements MinetopiaModule {
 	}
 
 	private void registerWeapons() {
-		MinetopiaWeapon[] weapons = new MinetopiaWeapon[]{new Bat(), new Baton(), new Knife()};
-		for (MinetopiaWeapon weapon : weapons)
-			this.weapons.put(weapon.material(), weapon);
+		List<MinetopiaWeapon> weaponList = new ArrayList<>();
+		Configuration configuration = new Configuration(Minetopia.getPlugin(Minetopia.class), "modules/pvpconfig.yml");
+		configuration.load();
+		for (String key : configuration.get().getKeys(false)) {
+			Material material = Material.valueOf(configuration.get().getString(key + ".material"));
+			String name = configuration.get().getString(key + ".name"),
+			damagerMessage = configuration.get().getString(key + ".damagerMessage"),
+			victimMessage = configuration.get().getString(key + ".victimMessage");
+			boolean damage = configuration.get().getBoolean(key + ".damage");
+
+			MinetopiaWeapon weapon;
+			if (configuration.get().contains(key + ".cooldown")) {
+				weapon = new MinetopiaWeapon() {
+					@Override
+					public Material material() {
+						return material;
+					}
+
+					@Override
+					public String name() {
+						return name;
+					}
+
+					@Override
+					public String damagerMessage() {
+						return damagerMessage;
+					}
+
+					@Override
+					public String victimMessage() {
+						return victimMessage;
+					}
+
+					@Override
+					public boolean damage() {
+						return damage;
+					}
+
+					@Override
+					public boolean cooldown() {
+						return true;
+					}
+
+					@Override
+					public int length() {
+						return configuration.get().getInt(key + ".cooldown.length");
+					}
+
+					@Override
+					public int unit() {
+						return configuration.get().getInt(key + ".cooldown.unit");
+					}
+
+					@Override
+					public String cooldownMessage() {
+						return configuration.get().getString(key + ".cooldown.cooldownMessage");
+					}
+				};
+				weaponList.add(weapon);
+			} else {
+				weapon = new MinetopiaWeapon() {
+					@Override
+					public Material material() {
+						return material;
+					}
+
+					@Override
+					public String name() {
+						return name;
+					}
+
+					@Override
+					public String damagerMessage() {
+						return damagerMessage;
+					}
+
+					@Override
+					public String victimMessage() {
+						return victimMessage;
+					}
+
+					@Override
+					public boolean damage() {
+						return damage;
+					}
+
+					@Override
+					public boolean cooldown() {
+						return false;
+					}
+
+					@Override
+					public int length() {
+						return 0;
+					}
+
+					@Override
+					public int unit() {
+						return 0;
+					}
+
+					@Override
+					public String cooldownMessage() {
+						return null;
+					}
+				};
+				weaponList.add(weapon);
+			}
+		}
+
+		weaponList.forEach(minetopiaWeapon -> this.weapons.put(minetopiaWeapon.material(), minetopiaWeapon));
 	}
 
 	private void registerInteractables() {
@@ -146,7 +249,7 @@ public class ItemsModule implements MinetopiaModule {
 
 					MinetopiaWeapon weapon = weapons.get(damager.getInventory().getItemInMainHand().getType());
 
-					if (weapon instanceof Cooldownable) {
+					if (weapon.cooldown()) {
 						if (cooldowns.containsKey(damager.getUniqueId())) {
 							Cooldown cooldown = cooldowns.get(damager.getUniqueId());
 							if (cooldown.getWeapon() != weapon) return;
@@ -207,7 +310,6 @@ public class ItemsModule implements MinetopiaModule {
 					if (!e.getPlayer().hasPermission(interactable.permission())) {
 						return;
 					}
-					System.out.println("Cancelled");
 					e.setCancelled(true);
 					interactable.event().execute(e);
 				}).bindWith(composite);

@@ -86,7 +86,7 @@ public class DiscordModule implements MinetopiaModule {
 		).queue();
 		jda.addEventListener(new StatsCommand());
 
-		MinecraftCommandLogger logger = new MinecraftCommandLogger(jda);
+		MinecraftCommandLogger logger = new MinecraftCommandLogger(jda, minetopia.getConfiguration().get().getLong("discord", 736639994760003594L));
 		logger.register();
 	}
 

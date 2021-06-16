@@ -27,13 +27,12 @@ public class Cooldown {
 		if (!(weapon instanceof Cooldownable)) return;
 		this.weapon = weapon;
 
-		Cooldownable cooldownable = (Cooldownable) weapon;
 		Calendar calendar = Calendar.getInstance();
-		int length = cooldownable.length();
+		int length = weapon.length();
 		if (user.getMinetopiaUpgrades().getUpgrades().get(Upgrade.COOLDOWN) != 0) {
 			length = length / 2;
 		}
-		calendar.add(cooldownable.unit(), length);
+		calendar.add(weapon.unit(), length);
 		this.expiry = calendar.getTime();
 	}
 }

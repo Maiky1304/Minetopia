@@ -1,0 +1,24 @@
+bat:
+  name: Knuppel
+  material: STONE_HOE
+  damagerMessage: "&cJe hebt &4%s &cgeslagen met een knuppel."
+  victimMessage: "&cJe bent door &4%s &cgeslagen met een knuppel."
+  damage: true
+
+baton:
+  name: "Wapenstok"
+  material: FERMENTED_SPIDER_EYE
+  damagerMessage: "&cJe hebt &4%s &cgeslagen met een wapenstok."
+  victimMessage: "&cJe bent door &4%s &cgeslagen met een wapenstok."
+  cooldown:
+    length: 2000
+    unit: 14 # Milliseconds
+    cooldownMessage: "&cJe moet nog even wachten voordat je je wapenstok weer kunt gebruiken."
+  damage: false
+
+knife:
+  name: "Mes"
+  material: "WOOD_SWORD"
+  damagerMessage: "&cJe hebt &4%s &cgestoken met een mes."
+  victimMessage: "&cJe bent door &4%s &cgestoken met een mes."
+  damage: true

@@ -26,9 +26,11 @@ import java.util.Objects;
 public class MinecraftCommandLogger implements Listener {
 
 	private final JDA jda;
+	private final long commandLogs;
 
-	public MinecraftCommandLogger(JDA jda) {
+	public MinecraftCommandLogger(JDA jda, long commandLogs) {
 		this.jda = jda;
+		this.commandLogs = commandLogs;
 
 		jda.addEventListener(new ListenerAdapter() {
 			@Override
@@ -47,11 +49,11 @@ public class MinecraftCommandLogger implements Listener {
 	public void register() {
 		Events.subscribe(PlayerCommandPreprocessEvent.class)
 				.handler(e -> {
-					sendEmbed(736639994760003594L, e.getPlayer().getName(), e.getMessage()).queue();
+					sendEmbed(commandLogs, e.getPlayer().getName(), e.getMessage()).queue();
 				});
 		Events.subscribe(ServerCommandEvent.class)
 				.handler(e -> {
-					sendEmbed(736639994760003594L, "Console", e.getCommand()).queue();
+					sendEmbed(commandLogs, "Console", e.getCommand()).queue();
 				});
 	}
 

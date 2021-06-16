@@ -1,7 +1,7 @@
 license: "c5OpAYIWizoGzNBbBmQp1w4dAJ4q4eAY"
 
 storage:
-  # Options: MySQL or MongoDB
+  # Options: MySQL or MongoDB (Is not yet supported)
   # Set the login of these either under here
   type: MySQL
 
@@ -19,6 +19,7 @@ storage:
 
 discord:
   token: "ODUxMTMzNDAxOTE3NTU0NzQ4.YLz1wA.8e1XD4t6MD2JTv76swsWDnUg3wc"
+  command-logs: 736639994760003594
 
 leaderboard-server: false
 

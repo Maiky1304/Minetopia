@@ -85,6 +85,8 @@ public class RadioUI extends Gui {
 	}
 
 	private void emergencyButton() {
+		getPlayer().sendMessage("§cDeze functie is tijdelijk uitgeschakeld, aangezien deze knop een server crash veroorzaakte. Als dit gefixed is komt er een mededeling.");
+		/*
 		if (!cooldownMap.test(getPlayer())) {
 			getPlayer().sendMessage("§cJe moet nog " + cooldownMap.get(getPlayer()).remainingTime(TimeUnit.SECONDS) +
 					" seconden wachten voordat je dit weer kunt doen.");
@@ -99,6 +101,8 @@ public class RadioUI extends Gui {
 
 		Redis redis = DataModule.getInstance().getRedis();
 		redis.getJedisPool().getResource().publish("mt-radio", json);
+
+		 */
 	}
 
 }

@@ -29,6 +29,7 @@ public class ElytraBoost implements UpgradeStructure {
 		Events.subscribe(PlayerInteractEvent.class)
 				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> PlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().containsKey(Upgrade.ELYTRA))
+				.filter(e -> PlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().get(Upgrade.ELYTRA) == 1)
 				.filter(e -> e.getAction().toString().startsWith("LEFT_CLICK"))
 				.filter(e -> e.getPlayer().isGliding())
 				.filter(e -> {

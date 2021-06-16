@@ -4,6 +4,7 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.RegisteredCommand;
 import com.google.common.collect.SetMultimap;
+import dev.maiky.minetopia.modules.addons.AddonsModule;
 import dev.maiky.minetopia.modules.bags.BagsModule;
 import dev.maiky.minetopia.modules.bank.BankModule;
 import dev.maiky.minetopia.modules.chat.ChatModule;
@@ -79,6 +80,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	public NotificationsModule notificationsModule;
 	public DiscordModule discordModule;
 	public LeaderboardsModule leaderboardsModule;
+	public AddonsModule addonsModule;
 
 	// Command Manager
 	@Getter
@@ -170,13 +172,14 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.notificationsModule = new NotificationsModule();
 		this.discordModule = new DiscordModule();
 		this.leaderboardsModule = new LeaderboardsModule();
+		this.addonsModule = new AddonsModule();
 
 		// Load all the modules
 		getLogger().info(" §b§lLOADING MODULES >>");
 		this.loadModules(this.dataModule, this.playersModule, this.chatModule, this.upgradesModule, this.itemsModule,
 				this.plotsModule, this.levelsModule, this.districtsModule, this.securityModule, this.colorsModule,
 				this.prefixesModule, this.transportationModule, this.ddgItemsModule, this.bagsModule, this.bankModule,
-				this.discordModule, this.gunsModule, this.notificationsModule, this.leaderboardsModule);
+				this.discordModule, this.gunsModule, this.notificationsModule, this.leaderboardsModule, this.addonsModule);
 
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));

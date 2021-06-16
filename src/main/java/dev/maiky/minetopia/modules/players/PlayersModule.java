@@ -27,6 +27,7 @@ import me.lucko.helper.profiles.ProfileRepository;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -277,6 +278,7 @@ public class PlayersModule implements MinetopiaModule {
 				.filter(PlayerInteractEvent::hasBlock)
 				.filter(e -> e.getClickedBlock().getType() == Material.DROPPER)
 				.filter(e -> e.getAction() == Action.RIGHT_CLICK_BLOCK)
+				.filter(e -> e.getPlayer().getGameMode() != GameMode.CREATIVE)
 				.handler(e -> {
 					e.setCancelled(true);
 					e.getPlayer().openInventory(Bukkit.createInventory(null, 27, "§4Prullenbak"));

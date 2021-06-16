@@ -19,7 +19,7 @@ public class M16A3 implements Model {
 
 	@Override
 	public double bulletDamage() {
-		return 9D;
+		return 3D;
 	}
 
 	@Override

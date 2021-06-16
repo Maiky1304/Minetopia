@@ -57,7 +57,7 @@ public class ModCommand extends BaseCommand {
 	@Subcommand("setcitycolor")
 	@Syntax("<player> <color>")
 	@Description("Verzet de citycolor van een speler")
-	@CommandCompletion("@players @chatcolors")
+	@CommandCompletion("@players @nothing")
 	public void setCityColor(CommandSender sender, @Conditions("database") String target, String color) {
 		OfflinePlayer offlinePlayer;
 		if (target.length() == 32)

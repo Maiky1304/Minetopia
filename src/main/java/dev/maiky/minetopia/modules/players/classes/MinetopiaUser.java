@@ -39,26 +39,24 @@ public class MinetopiaUser {
 	private int levelPoints;
 	@Getter @Setter
 	private boolean policeChat;
-
 	@Getter @Setter
 	private String currentPrefix;
 	@Getter
 	private final List<String> prefixes = new ArrayList<>();
-
 	@Getter @Setter
 	private ChatColor currentChatColor;
 	@Getter
 	private final HashMap<ChatColor, String> chatColors = new HashMap<>();
-
 	@Getter @Setter
 	private LevelColor currentLevelColor;
 	@Getter
 	private final HashMap<LevelColor, String> levelColors = new HashMap<>();
-
 	@Getter @Setter
 	private ChatColor currentPrefixColor;
 	@Getter
 	private final HashMap<ChatColor, String> prefixColors = new HashMap<>();
+	@Getter
+	private boolean scoreboard, actionbar;
 
 	public MinetopiaUser(UUID uuid) {
 		this.uuid = uuid;
