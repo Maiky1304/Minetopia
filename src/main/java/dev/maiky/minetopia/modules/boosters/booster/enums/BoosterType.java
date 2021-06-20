@@ -15,7 +15,7 @@ import java.util.List;
 
 public enum BoosterType {
 
-	BLACKSHARD;
+	GRAYSHARD, GOLDSHARD;
 
 	public static List<String> list() {
 		List<String> list = new ArrayList<>();

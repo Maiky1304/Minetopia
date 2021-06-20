@@ -8,6 +8,7 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
+import lombok.Setter;
 import me.lucko.helper.Events;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
@@ -16,7 +17,9 @@ import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -39,15 +42,22 @@ public class BalanceManageUI extends Gui {
 	private final Account account;
 	private final Economy economy = Minetopia.getEconomy();
 
+	@Setter
+	private boolean overrideRule = false;
+
 	private final LinkedHashMap<Material, Double> MAPPING = new LinkedHashMap<>();
 
 	private final BankManager manager;
 
-	public BalanceManageUI(Player player, Account account) {
-		super(player, 6, "&3Saldo: &b" + (account == null ? Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(player))
+	private final OfflinePlayer target;
+
+	public BalanceManageUI(Player player, Account account, OfflinePlayer target) {
+		super(player, 6, "&3Saldo: &b" + (account == null ? target == null ? Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(player))
+				: Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(target))
 				: Numbers.convert(Numbers.Type.MONEY, account.getBalance())));
 		this.account = account;
 		this.manager = BankManager.with(DataModule.getInstance().getSqlHelper());
+		this.target = target;
 
 		MAPPING.put(Material.GHAST_TEAR, 5000d);
 		MAPPING.put(Material.DIAMOND, 2500d);
@@ -159,7 +169,7 @@ public class BalanceManageUI extends Gui {
 			k++;
 		}
 
-		double balance = this.account == null ? economy.getBalance(getPlayer()) : manager.getAccount(this.account.getBank(), this.account.getId()).getBalance();
+		double balance = this.account == null ? target == null ? economy.getBalance(getPlayer()) : economy.getBalance(target) : manager.getAccount(this.account.getBank(), this.account.getId()).getBalance();
 		double addedToMenu = 0;
 
 		while(balance >= 5000) {
@@ -257,7 +267,9 @@ public class BalanceManageUI extends Gui {
 
 		if (type == ClickType.LEFT) {
 			if (this.account == null) {
-				if (!economy.has(getPlayer(), amount)) {
+				OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
+
+				if (!economy.has(local, amount)) {
 					getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
 					return;
 				}
@@ -267,7 +279,7 @@ public class BalanceManageUI extends Gui {
 					return;
 				}
 
-				EconomyResponse response = economy.withdrawPlayer(getPlayer(), amount);
+				EconomyResponse response = economy.withdrawPlayer(local, amount);
 				if (response.transactionSuccess()) {
 					getPlayer().getInventory().addItem(getCash(amount, 1));
 				}
@@ -294,7 +306,7 @@ public class BalanceManageUI extends Gui {
 				}
 			}
 
-			new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId())).open();
+			new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 		} else if (type == ClickType.RIGHT && mass) {
 			getPlayer().closeInventory();
 			getPlayer().sendMessage("§7Voer een hoeveelheid §ebriefjes §7in die je wilt opnemen:");
@@ -315,31 +327,33 @@ public class BalanceManageUI extends Gui {
 						try {
 							items = Integer.parseInt(message);
 						} catch (NumberFormatException exception) {
-							new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId())).open();
+							new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 							getPlayer().sendMessage("§cDit is geen geldig getal!");
 							return;
 						}
 
 						if (this.account == null) {
-							if (!economy.has(getPlayer(), amount * items)) {
-								new BalanceManageUI(getPlayer(), null).open();
+							OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
+
+							if (!economy.has(local, amount * items)) {
+								new BalanceManageUI(getPlayer(), null, this.target).open();
 								getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
 								return;
 							}
 
 							if (availableItemSpace(clone.getType()) < items) {
-								new BalanceManageUI(getPlayer(), null).open();
+								new BalanceManageUI(getPlayer(), null, this.target).open();
 								getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
 								return;
 							}
 
-							EconomyResponse response = economy.withdrawPlayer(getPlayer(), amount * items);
+							EconomyResponse response = economy.withdrawPlayer(local, amount * items);
 							if (response.transactionSuccess()) {
 								getPlayer().getInventory().addItem(getCash(amount, items));
 							}
 						} else {
 							if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < (amount * items)) {
-								new BalanceManageUI(getPlayer(), account).open();
+								new BalanceManageUI(getPlayer(), account, this.target).open();
 								getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
 								return;
 							}
@@ -354,7 +368,7 @@ public class BalanceManageUI extends Gui {
 							}
 						}
 
-						new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId())).open();
+						new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 					});
 		}
 	}
@@ -377,7 +391,8 @@ public class BalanceManageUI extends Gui {
 		}
 
 		if (this.account == null) {
-			EconomyResponse response = economy.depositPlayer(getPlayer(), MAPPING.get(material) * itemsToGive);
+			OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
+			EconomyResponse response = economy.depositPlayer(local, MAPPING.get(material) * itemsToGive);
 
 			if (response.transactionSuccess()) {
 				if (itemsToGive == 1) {
@@ -410,7 +425,7 @@ public class BalanceManageUI extends Gui {
 					this.account.getBank().label.toLowerCase())));
 		}
 
-		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId())).open();
+		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 	}
 
 	public void withdrawBig(InventoryClickEvent event, Material material, int items) {
@@ -423,8 +438,9 @@ public class BalanceManageUI extends Gui {
 		int itemsToGive = event.getClick() == ClickType.RIGHT ? 1 : items;
 
 		if (this.account == null) {
+			OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
 
-			if (!economy.has(getPlayer(), MAPPING.get(material) * itemsToGive)) {
+			if (!economy.has(local, MAPPING.get(material) * itemsToGive)) {
 				getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
 				return;
 			}
@@ -434,7 +450,7 @@ public class BalanceManageUI extends Gui {
 				return;
 			}
 
-			EconomyResponse response = economy.withdrawPlayer(getPlayer(), MAPPING.get(material) * itemsToGive);
+			EconomyResponse response = economy.withdrawPlayer(local, MAPPING.get(material) * itemsToGive);
 			if (response.transactionSuccess()) {
 				getPlayer().getInventory().addItem(getCash(MAPPING.get(material), itemsToGive));
 			}
@@ -457,10 +473,11 @@ public class BalanceManageUI extends Gui {
 					this.account.getBank().label.toLowerCase())));
 		}
 
-		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId())).open();
+		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 	}
 
 	private boolean hasPermission(Permission permission) {
+		if (this.overrideRule) return true;
 		if (this.account == null) return getPlayer().hasPermission("minetopia.common.privatebankaccount");
 
 		List<Permission> list = this.manager.getAccount(this.account.getBank(), this.account.getId()).getPermissions()

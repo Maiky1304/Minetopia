@@ -12,10 +12,12 @@ import dev.maiky.minetopia.modules.players.commands.essential.EmergencyCommand;
 import dev.maiky.minetopia.modules.players.commands.essential.HeadCommand;
 import dev.maiky.minetopia.modules.players.commands.essential.ShardCommand;
 import dev.maiky.minetopia.modules.players.commands.essential.TimeCommand;
+import dev.maiky.minetopia.modules.players.commands.staff.AdminToolCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
 import dev.maiky.minetopia.modules.players.placeholders.NameColorPlaceholder;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
 import dev.maiky.minetopia.modules.players.tasks.TimeTask;
+import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import lombok.Getter;
 import me.lucko.helper.Events;
@@ -23,6 +25,8 @@ import me.lucko.helper.Schedulers;
 import me.lucko.helper.bucket.Bucket;
 import me.lucko.helper.bucket.factory.BucketFactory;
 import me.lucko.helper.bucket.partitioning.PartitioningStrategies;
+import me.lucko.helper.cooldown.Cooldown;
+import me.lucko.helper.cooldown.CooldownMap;
 import me.lucko.helper.profiles.ProfileRepository;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
@@ -33,15 +37,18 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Door: Maiky
@@ -159,6 +166,7 @@ public class PlayersModule implements MinetopiaModule {
 		});
 
 		minetopia.getCommandManager().getCommandConditions().addCondition(String.class, "database", (c, exec, value) -> {
+			if (value.equals("self")) return;
 			ProfileRepository repository = minetopia.getRepository();
 			if (value.length() == 32 || value.length() == 28) {
 				if (!repository.getProfile(UUID.fromString(value)).getName().isPresent())
@@ -212,6 +220,7 @@ public class PlayersModule implements MinetopiaModule {
 		minetopia.getCommandManager().registerCommand(new ShardCommand());
 		minetopia.getCommandManager().registerCommand(new HeadCommand(), true);
 		minetopia.getCommandManager().registerCommand(new EmergencyCommand());
+		minetopia.getCommandManager().registerCommand(new AdminToolCommand());
 	}
 
 	private void registerTasks() {
@@ -283,6 +292,27 @@ public class PlayersModule implements MinetopiaModule {
 					e.setCancelled(true);
 					e.getPlayer().openInventory(Bukkit.createInventory(null, 27, "§4Prullenbak"));
 					e.getPlayer().sendMessage("§4PAS OP: §cAlles wat je hierin gooit wordt voor ALTIJD verwijderd!");
+				}).bindWith(composite);
+		CooldownMap<Player> cooldownMap = CooldownMap.create(Cooldown.of(500, TimeUnit.MILLISECONDS));
+		Events.subscribe(PlayerInteractAtEntityEvent.class)
+				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
+				.filter(e -> e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NETHER_STAR)
+				.filter(e -> cooldownMap.test(e.getPlayer()))
+				.handler(e -> {
+					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getRightClicked().getName() + "§6.");
+					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getRightClicked().getUniqueId()));
+					adminToolUI.open();
+				}).bindWith(composite);
+		Events.subscribe(PlayerInteractEvent.class)
+				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
+				.filter(PlayerInteractEvent::hasItem)
+				.filter(e -> e.getItem().getType() == Material.NETHER_STAR)
+				.filter(e -> e.getAction().toString().startsWith("RIGHT"))
+				.filter(e -> cooldownMap.test(e.getPlayer()))
+				.handler(e -> {
+					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getPlayer().getName() + "§6.");
+					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getPlayer().getUniqueId()));
+					adminToolUI.open();
 				}).bindWith(composite);
 	}
 

@@ -7,7 +7,10 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
 import dev.maiky.minetopia.modules.bank.commands.BankCommand;
+import dev.maiky.minetopia.modules.bank.commands.PinCommand;
+import dev.maiky.minetopia.modules.bank.manager.PinManager;
 import dev.maiky.minetopia.modules.bank.ui.BankChooseUI;
+import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Numbers;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -26,6 +29,9 @@ public class BankModule implements MinetopiaModule {
 	private boolean enabled;
 	private final CompositeTerminable composite = CompositeTerminable.create();
 
+	private Configuration configuration;
+	private PinManager pinManager;
+
 	@Override
 	public boolean isEnabled() {
 		return this.enabled;
@@ -40,6 +46,13 @@ public class BankModule implements MinetopiaModule {
 	@Override
 	public void enable() {
 		this.enabled = true;
+
+		// Config
+		this.configuration = new Configuration(Minetopia.getPlugin(Minetopia.class), "modules/pinconsoles.yml");
+		this.configuration.load();
+
+		// Pin Manager
+		this.pinManager = new PinManager(this.configuration);
 
 		// Events
 		this.registerEvents();
@@ -56,7 +69,8 @@ public class BankModule implements MinetopiaModule {
 		manager.getCommandConditions().addCondition(Bank.class, "noPrivate", (context, execContext, value) -> {
 			if (value == Bank.PERSONAL) throw new ConditionFailedException("You are not allowed to use Private bank type!");
 		});
-		manager.registerCommand(new BankCommand());
+		manager.registerCommand(new BankCommand(this.pinManager));
+		manager.registerCommand(new PinCommand(this.pinManager));
 	}
 
 	private void registerEvents() {
@@ -66,16 +80,17 @@ public class BankModule implements MinetopiaModule {
 				.filter(e -> e.getClickedBlock().getType() == Material.RED_SANDSTONE_STAIRS)
 				.handler(e -> {
 					e.setCancelled(true);
-					new BankChooseUI(e.getPlayer()).open();
+					new BankChooseUI(e.getPlayer(), null).open();
 				})
 		.bindWith(composite);
 		Events.subscribe(PlayerInteractEvent.class)
 				.filter(PlayerInteractEvent::hasItem)
-				.filter(this::isBankCard)
-				.handler(e -> e.getPlayer().sendMessage("§6Banksaldo: §c" + Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(e.getPlayer()))));
+				.filter(BankModule::isBankCard)
+				.handler(e -> e.getPlayer().sendMessage("§6Banksaldo: §c" + Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(e.getPlayer()))))
+		.bindWith(composite);
 	}
 
-	private boolean isBankCard(PlayerInteractEvent event) {
+	public static boolean isBankCard(PlayerInteractEvent event) {
 		if (event.getItem().getType() == Material.INK_SACK && event.getItem().getDurability() == 10)
 			return true;
 		return event.getItem().getType() == Material.DIAMOND_HOE && (event.getItem().getDurability() >= 656 &&

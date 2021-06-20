@@ -38,7 +38,7 @@ public class ShardCommand extends BaseCommand {
 	public void on(@Conditions("MTUser") Player sender) {
 		MinetopiaUser user = PlayerManager.getCache().get(sender.getUniqueId());
 		String message = "&6Jij hebt &c%s &6BlackShards.";
-		sender.sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.SHARDS, user.getShards()))));
+		sender.sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards()))));
 	}
 
 	@Subcommand("add")
@@ -55,12 +55,12 @@ public class ShardCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-		user.setShards(user.getShards() + amount);
+		user.setGrayshards(user.getGrayshards() + amount);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
 		String message = "§6Success! Shards of §c%s §6were increased by §c%s§6 their balance is now §c%s&6.";
-		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), amount, user.getShards())));
+		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), amount, user.getGrayshards())));
 	}
 
 	@CatchUnknown
@@ -83,12 +83,12 @@ public class ShardCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-		user.setShards(user.getShards() - amount);
+		user.setGrayshards(user.getGrayshards() - amount);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
 		String message = "§6Success! Shards of §c%s §6were decreased by §c%s§6 their balance is now §c%s&6.";
-		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), amount, user.getShards())));
+		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), amount, user.getGrayshards())));
 	}
 
 	@Subcommand("info")
@@ -106,7 +106,7 @@ public class ShardCommand extends BaseCommand {
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 		String message = "&6De speler &c%s &6heeft &c%s &6BlackShards.";
-		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getShards()))));
+		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards()))));
 	}
 
 	@Override

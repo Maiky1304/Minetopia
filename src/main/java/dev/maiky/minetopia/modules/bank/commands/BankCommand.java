@@ -8,15 +8,20 @@ import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.bank.bank.Account;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
+import dev.maiky.minetopia.modules.bank.bank.Console;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
+import dev.maiky.minetopia.modules.bank.manager.PinManager;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,12 +41,15 @@ import java.util.UUID;
 @CommandPermission("minetopia.moderation.banking")
 public class BankCommand extends BaseCommand {
 
+	private final PinManager pinManager;
 	private final BankManager manager;
 
-	public BankCommand() {
+	public BankCommand(PinManager pinManager) {
 		manager = BankManager.with(DataModule.getInstance().getSqlHelper());
+		this.pinManager = pinManager;
 	}
 
+	@HelpCommand
 	@Default
 	@Subcommand("main")
 	@Description("Shows the subcommands")
@@ -60,6 +68,37 @@ public class BankCommand extends BaseCommand {
 		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
 				cmd.getPrefSubCommand() + " " +
 				cmd.getSyntaxText());
+	}
+
+	@Subcommand("deletepinconsole")
+	@Description("Delete the pin console you're looking at from the database")
+	@CommandPermission("minetopia.moderation.banking.delete")
+	public void onDelete(Player player) {
+		Block targetBlock = player.getTargetBlock(null, 15);
+		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException("Je kijkt niet naar een pin console blok!");
+
+		Console console = this.pinManager.find(targetBlock.getLocation());
+		if (console == null) throw new ConditionFailedException("Geen registratie gevonden!");
+		this.pinManager.delete(console);
+		player.sendMessage("§6You have succesfully deleted the pin console you were looking at.");
+	}
+
+	@Subcommand("setupconsole")
+	@Description("Setup a pin console")
+	@CommandPermission("minetopia.moderation.banking.setuppin")
+	@Syntax("<soort> <id>")
+	@CommandCompletion("@bankTypes @nothing")
+	public void onSetup(Player player, @Conditions("noPrivate") Bank bank, int id) {
+		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException("There was no bank account found in the category "
+				+ bank.toString() + " with the ID " + id + ".");
+
+		Block targetBlock = player.getTargetBlock(null, 15);
+		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException("Je kijkt niet naar een pin console blok!");
+
+		Console console = new Console(targetBlock.getLocation(), id, bank);
+		this.pinManager.insert(console);
+
+		player.sendMessage("§6You have succesfully setup a pin console with the ID §c" + id + " §6in the category §c" + bank.toString().toLowerCase() + "§6.");
 	}
 
 	@Subcommand("create")

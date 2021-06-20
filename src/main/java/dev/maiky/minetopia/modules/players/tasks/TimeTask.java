@@ -1,6 +1,7 @@
 package dev.maiky.minetopia.modules.players.tasks;
 
 import dev.maiky.minetopia.Minetopia;
+import dev.maiky.minetopia.modules.boosters.booster.tasks.BoostTask;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
@@ -79,10 +80,20 @@ public class TimeTask implements Runnable {
 			}
 
 			if ( shards ) {
-				double payout = 0.7;
-				user.setShards(user.getShards() + payout);
-				String message = "&6Gefeliciteerd, je hebt zojuist &c%s &6BlackShard ontvangen!";
-				player.sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.SHARDS, payout))));
+				double grayOut = 1.0;
+				double goldOut = 0.4;
+
+				int boostGray = BoostTask.getTotalGrayShard();
+				int boostGold = BoostTask.getTotalGoldShard();
+				grayOut = grayOut / 100 * (100 + boostGray);
+				goldOut = goldOut / 100 * (100 + boostGold);
+
+				user.setGrayshards(user.getGrayshards() + grayOut);
+				user.setGoldshards(user.getGoldshards() + goldOut);
+
+				String message = "&6Gefeliciteerd, je hebt zojuist &c%s &6%s ontvangen!";
+				player.sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.SHARDS, grayOut), "Grayshard")));
+				player.sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.SHARDS, goldOut), "GoldShard")));
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import dev.maiky.minetopia.modules.levels.plots.IPlot;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import org.bukkit.Bukkit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,10 +41,10 @@ public class LevelCheck {
 
 		Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
 		PlotManager plotManager = PlotManager.with(minetopia.dataModule.getSqlHelper());
-		List<IPlot> plots = plotManager.getOwnedPlots(this.user.getUuid());
+		List<IPlot> plots = new ArrayList<>(); // plotManager.getOwnedPlots(this.user.getUuid())
 
 		total += perPlot * plots.size();
-		total += perShard * Math.round(user.getShards());
+		total += perShard * Math.round(user.getGrayshards());
 		total += per50k * Math.round( Minetopia.getEconomy().getBalance(Bukkit.getOfflinePlayer(this.user.getUuid())) / 50000 );
 		total += perDayTime * user.getTime().getDays();
 		//total += perVehicle * 0 TODO: to be added;

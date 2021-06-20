@@ -6,6 +6,7 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -21,22 +22,25 @@ public class AccountChooseUI extends Gui {
 
 	private final Bank bank;
 	private final List<Account> accountList = new ArrayList<>();
+	private final OfflinePlayer target;
 
-	public AccountChooseUI(Player player, Bank bank) {
+	public AccountChooseUI(Player player, Bank bank, OfflinePlayer target) {
 		super(player, 3, "§3Kies een rekening:");
 
 		this.bank = bank;
+		this.target = target;
 
 		if (bank == Bank.PERSONAL) return;
 
 		BankManager manager = BankManager.with(DataModule.getInstance().getSqlHelper());
-		accountList.addAll(manager.filterAndGet(bank, player.getUniqueId()));
+		accountList.addAll(this.target == null ? manager.filterAndGet(bank, player.getUniqueId())
+				: manager.filterAndGet(bank, this.target.getUniqueId()));
 	}
 
 	@Override
 	public void redraw() {
 		if (bank == Bank.PERSONAL) {
-			super.addItem(ItemStackBuilder.of(bank.icon).name(getPlayer().getName()).lore("§5(Privé rekening)").build(() -> account(null)));
+			super.addItem(ItemStackBuilder.of(bank.icon).name(target == null ? getPlayer().getName() : target.getName()).lore("§5(Privé rekening)").build(() -> account(null)));
 		} else {
 			for (Account account : this.accountList) {
 				super.addItem(ItemStackBuilder.of(account.getBank().icon)
@@ -46,7 +50,9 @@ public class AccountChooseUI extends Gui {
 	}
 
 	private void account(Account account) {
-		BalanceManageUI balanceManageUI = new BalanceManageUI(getPlayer(), account);
+		BalanceManageUI balanceManageUI = new BalanceManageUI(getPlayer(), account, this.target);
+		if (this.target != null)
+			balanceManageUI.setOverrideRule(true);
 		balanceManageUI.open();
 	}
 

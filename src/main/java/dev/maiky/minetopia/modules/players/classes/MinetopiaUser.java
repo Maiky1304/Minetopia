@@ -1,5 +1,6 @@
 package dev.maiky.minetopia.modules.players.classes;
 
+import dev.maiky.minetopia.modules.boosters.booster.booster.Booster;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.players.PlayersModule;
@@ -30,7 +31,7 @@ public class MinetopiaUser {
 	@Getter
 	private final MinetopiaTime time;
 	@Getter @Setter
-	private double shards;
+	private double grayshards, goldshards;
 	@Getter @Setter
 	private String cityColor;
 	@Getter @Setter
@@ -57,6 +58,10 @@ public class MinetopiaUser {
 	private final HashMap<ChatColor, String> prefixColors = new HashMap<>();
 	@Getter
 	private boolean scoreboard, actionbar;
+	@Getter @Setter
+	private int grayshardBoost;
+	@Getter @Setter
+	private int goldshardBoost;
 
 	public MinetopiaUser(UUID uuid) {
 		this.uuid = uuid;
@@ -70,7 +75,7 @@ public class MinetopiaUser {
 
 		this.level = PlayersModule.getInstance().getLevel();
 		this.time = new MinetopiaTime(0,0,0,0);
-		this.shards = PlayersModule.getInstance().getShards();
+		this.grayshards = PlayersModule.getInstance().getShards();
 		this.cityColor = PlayersModule.getInstance().getCity();
 		this.minetopiaUpgrades = new MinetopiaUpgrades();
 		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
@@ -85,7 +90,7 @@ public class MinetopiaUser {
 		this.name = name;
 		this.level = PlayersModule.getInstance().getLevel();
 		this.time = new MinetopiaTime(0,0,0,0);
-		this.shards = PlayersModule.getInstance().getShards();
+		this.grayshards = PlayersModule.getInstance().getShards();
 		this.cityColor = PlayersModule.getInstance().getCity();
 		this.minetopiaUpgrades = new MinetopiaUpgrades();
 		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;

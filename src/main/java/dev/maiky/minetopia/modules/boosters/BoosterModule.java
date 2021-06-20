@@ -5,6 +5,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.boosters.booster.commands.BoosterCommand;
 import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.booster.tasks.BoostTask;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 
 /**
@@ -33,11 +34,16 @@ public class BoosterModule implements MinetopiaModule {
 	public void enable() {
 		this.enabled = true;
 
-		// Events
-		this.registerEvents();
-
 		// Commands
 		this.registerCommands();
+
+		// Tasks
+		this.registerTasks();
+	}
+
+	private void registerTasks() {
+		BoostTask boostTask = new BoostTask();
+		boostTask.setup(this.composite);
 	}
 
 	private void registerCommands() {
@@ -46,10 +52,6 @@ public class BoosterModule implements MinetopiaModule {
 
 		manager.getCommandCompletions().registerStaticCompletion("boosterTypes", BoosterType.list());
 		manager.registerCommand(new BoosterCommand());
-	}
-
-	private void registerEvents() {
-
 	}
 
 	@Override

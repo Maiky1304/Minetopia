@@ -1,4 +1,4 @@
-license: "c5OpAYIWizoGzNBbBmQp1w4dAJ4q4eAY"
+license: "6Gi59MRUebBFf68wIB"
 
 storage:
   # Options: MySQL or MongoDB (Is not yet supported)
@@ -13,12 +13,12 @@ storage:
     password: ''
 
   redis:
-    address: "157.90.5.161"
+    address: "127.0.0.1"
     port: 6379
-    password: "ryd6qbUaGDAWAuLPpY0AJ6fD93SI5XwjNwT7Z3WLP4M0"
+    password: ""
 
 discord:
-  token: "ODUxMTMzNDAxOTE3NTU0NzQ4.YLz1wA.8e1XD4t6MD2JTv76swsWDnUg3wc"
+  token: ""
   command-logs: 736639994760003594
 
 leaderboard-server: false
@@ -41,12 +41,14 @@ settings:
       - '%none%'
       - 'play.maiky.dev'
 
+  ddgitems:
+    auto-update: true
+    custom-repository: 'none'
 
   player:
     default:
       shards: 0
       level: 1
-      fitness: 30
       cityColor: '7'
       upgrades:
         points: 1

@@ -73,7 +73,7 @@ public class ChatColorUI extends Gui {
 			.mask("100000001");
 
 	public ChatColorUI(Player player, int page) {
-		super(player, 6, "§0Kies een chatkleur");
+		super(player, 4, "§0Kies een chatkleur");
 		this.page = page;
 		this.user = PlayerManager.getCache().get(player.getUniqueId());
 

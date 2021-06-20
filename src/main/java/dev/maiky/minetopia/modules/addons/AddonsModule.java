@@ -1,8 +1,11 @@
 package dev.maiky.minetopia.modules.addons;
 
+import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.addons.addon.Addon;
+import dev.maiky.minetopia.modules.addons.commands.AddonsCommand;
+import lombok.Getter;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Bukkit;
@@ -28,7 +31,8 @@ import java.util.jar.JarFile;
 
 public class AddonsModule implements MinetopiaModule {
 
-	private List<Addon> addons = new ArrayList<>();
+	@Getter
+	private static final List<Addon> addons = new ArrayList<>();
 
 	private final CompositeTerminable composite = CompositeTerminable.create();
 	private boolean enabled;
@@ -93,12 +97,15 @@ public class AddonsModule implements MinetopiaModule {
 				Class<? extends Addon> typeClass = clazz.asSubclass(Addon.class);
 				Addon addon = typeClass.newInstance();
 				addon.enable();
-				this.addons.add(addon);
+				AddonsModule.addons.add(addon);
 				Bukkit.getLogger().info("Succesfully loaded the addon " + addonName);
 			} catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException exception) {
 				exception.printStackTrace();
 			}
 		}
+
+		BukkitCommandManager manager = minetopia.getCommandManager();
+		manager.registerCommand(new AddonsCommand());
 	}
 
 
@@ -106,7 +113,7 @@ public class AddonsModule implements MinetopiaModule {
 	public void disable() {
 		this.enabled = false;
 
-		this.addons.forEach(Addon::disable);
+		addons.forEach(Addon::disable);
 
 		try {
 			this.composite.close();

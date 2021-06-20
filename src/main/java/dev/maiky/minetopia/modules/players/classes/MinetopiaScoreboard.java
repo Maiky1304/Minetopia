@@ -78,7 +78,8 @@ public class MinetopiaScoreboard {
 		replacements.put("%level%", user.getLevel());
 		replacements.put("%possiblelevel%", check.calculatePossibleLevel());
 		replacements.put("%difference%", check.createLevelString());
-		replacements.put("%shards%", shardsFormat.format(user.getShards()));
+		replacements.put("%grayshards%", shardsFormat.format(user.getGrayshards()));
+		replacements.put("%goldshards%", shardsFormat.format(user.getGoldshards()));
 		replacements.put("%balance%", Numbers.convert(Numbers.Type.MONEY, economy.getBalance(player)));
 		replacements.put("%c%", String.format("§%s", DistrictsModule.getLocationCache().get(player.getUniqueId()) == null ?
 				PlayersModule.getInstance().getCityColor() : DistrictsModule.getBlockCache().get(DistrictsModule.getLocationCache().get(player.getUniqueId()))));

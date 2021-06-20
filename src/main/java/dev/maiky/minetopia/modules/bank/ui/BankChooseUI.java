@@ -9,6 +9,7 @@ import me.lucko.helper.menu.Slot;
 import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 /**
@@ -31,11 +32,16 @@ public class BankChooseUI extends Gui {
 
 	private final boolean hasGovernment;
 	private final BankManager manager;
+	private final OfflinePlayer target;
 
-	public BankChooseUI(Player player) {
+	public BankChooseUI(Player player, OfflinePlayer target) {
 		super(player, 3, "&3Kies een rekeningsoort:");
 		this.manager = BankManager.with(DataModule.getInstance().getSqlHelper());
+		this.target = target;
+
+		if (target == null)
 		this.hasGovernment = this.manager.filterAndGet(Bank.GOVERNMENT, player.getUniqueId()).size() != 0;
+		else this.hasGovernment = this.manager.filterAndGet(Bank.GOVERNMENT, target.getUniqueId()).size() != 0;
 	}
 
 	@Override
@@ -53,9 +59,16 @@ public class BankChooseUI extends Gui {
 									getPlayer().sendMessage("§cJij hebt geen rekening in deze categorie.");
 									return;
 								}
+							} else {
+								if (target != null) {
+									if (!target.isOnline()) {
+										getPlayer().sendMessage("§cJe kunt de persoonlijke rekening van §4" + target.getName() + " §cniet openen omdat hij/zij niet online is.");
+										return;
+									}
+								}
 							}
 
-							AccountChooseUI accountChooseUI = new AccountChooseUI(getPlayer(), bank);
+							AccountChooseUI accountChooseUI = new AccountChooseUI(getPlayer(), bank, target);
 							accountChooseUI.open();
 						}));
 				i++;
@@ -69,13 +82,27 @@ public class BankChooseUI extends Gui {
 						.name(bank.color + bank.label + " Rekening").build(() ->
 						{
 							if (bank != Bank.PERSONAL) {
-								if ( this.manager.filterAndGet(bank, getPlayer().getUniqueId()).size() == 0 ) {
-									getPlayer().sendMessage("§cJij hebt geen rekening in deze categorie.");
-									return;
+								if (target == null) {
+									if ( this.manager.filterAndGet(bank, getPlayer().getUniqueId()).size() == 0 ) {
+										getPlayer().sendMessage("§cJij hebt geen rekening in deze categorie.");
+										return;
+									}
+								} else {
+									if ( this.manager.filterAndGet(bank, target.getUniqueId()).size() == 0 ) {
+										getPlayer().sendMessage("§4" + target.getName() + " heeft geen rekening in deze categorie.");
+										return;
+									}
+								}
+							} else {
+								if (target != null) {
+									if (!target.isOnline()) {
+										getPlayer().sendMessage("§cJe kunt de persoonlijke rekening van §4" + target.getName() + " §cniet openen omdat hij/zij niet online is.");
+										return;
+									}
 								}
 							}
 
-							AccountChooseUI accountChooseUI = new AccountChooseUI(getPlayer(), bank);
+							AccountChooseUI accountChooseUI = new AccountChooseUI(getPlayer(), bank, target);
 							accountChooseUI.open();
 						}));
 				i++;

@@ -7,7 +7,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Door: Maiky
@@ -37,6 +39,8 @@ public class Configuration {
 
 		// Load configuration
 		this.configuration = YamlConfiguration.loadConfiguration(this.file);
+		this.configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(this.plugin.getResource(this.fileName))));
+		this.configuration.options().copyDefaults(true);
 	}
 
 	public YamlConfiguration get() {
