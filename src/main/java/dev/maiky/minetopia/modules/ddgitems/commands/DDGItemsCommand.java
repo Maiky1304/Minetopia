@@ -7,6 +7,8 @@ import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.ddgitems.items.classes.ItemType;
 import dev.maiky.minetopia.modules.ddgitems.ui.ItemsUI;
+import dev.maiky.minetopia.modules.ddgitems.ui.SelectUI;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -20,32 +22,28 @@ import org.bukkit.entity.Player;
 @CommandPermission("minetopia.admin.ddgitems")
 public class DDGItemsCommand extends BaseCommand {
 
-	@Subcommand("main")
-	@Syntax("<type>")
-	@CommandCompletion("@itemTypes")
-	@Default
-	@Description("Open the DDG Items GUI")
-	public void onMain(Player player, ItemType type) {
-		ItemsUI itemsUI = new ItemsUI(player, type, 0);
-		itemsUI.open();
+	@HelpCommand
+	public void onHelp(CommandSender sender) {
+		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
-	@HelpCommand
-	public void onHelp(CommandSender sender) {
-		Minetopia.showHelp(sender, this, getSubCommands());
+	@Default
+	@Subcommand("main")
+	@Description("Open the DDG Items GUI")
+	public void onMain(Player player) {
+		SelectUI ui = new SelectUI(player);
+		ui.open();
 	}
 
 }

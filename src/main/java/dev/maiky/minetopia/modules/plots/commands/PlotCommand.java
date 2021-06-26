@@ -6,6 +6,7 @@ import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -44,8 +45,13 @@ public class PlotCommand extends BaseCommand {
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Conditions("MTUser|Plot")
@@ -254,13 +260,6 @@ public class PlotCommand extends BaseCommand {
 			domain.removePlayer(u);
 		}
 		return true;
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
 	}
 
 }

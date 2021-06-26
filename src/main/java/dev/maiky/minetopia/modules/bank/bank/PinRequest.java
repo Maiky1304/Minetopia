@@ -4,6 +4,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.bank.BankModule;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
 import javafx.util.Callback;
@@ -71,8 +72,8 @@ public class PinRequest {
 
 			String converted = Numbers.convert(Numbers.Type.MONEY, this.amount);
 
-			from.sendMessage(Text.colors("&6Je hebt het betaalproces met &c" + to.getName() + " &6gestart, met een bedrag van &c" + converted + "&6."));
-			to.sendMessage(Text.colors("&6Je hebt een pinverzoek ontvangen van &c" + from.getName() + " &6met een bedrag van &c" + converted + "&6."));
+			from.sendMessage(Message.BANKING_REQUESTS_STARTED.format(to.getName(), converted));
+			to.sendMessage(Message.BANKING_REQUESTS_RECEIVED.format(from.getName(), converted));
 
 			this.state = State.CLICK;
 
@@ -86,7 +87,7 @@ public class PinRequest {
 					.filter(e -> e.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR)
 					.filter(BankModule::isBankCard)
 					.handler(e -> {
-						to.sendMessage(Text.colors("&6Typ &caccept &6in de chat om de betaling te voltooien!"));
+						to.sendMessage(Text.colors(Message.BANKING_REQUESTS_TYPEACCEPT.format(Message.BANKING_REQUESTS_ACCEPTKEYWORD)));
 						state = State.CHAT;
 					}).bindWith(terminable);
 
@@ -98,7 +99,7 @@ public class PinRequest {
 						e.setCancelled(true);
 
 						String message = e.getMessage();
-						if (!message.equalsIgnoreCase("accept")) {
+						if (!message.equalsIgnoreCase(Message.BANKING_REQUESTS_ACCEPTKEYWORD.raw())) {
 							this.endRequest(Reason.CANCELLED);
 							return;
 						}
@@ -134,18 +135,18 @@ public class PinRequest {
 	public void endRequest(Reason reason) {
 		if (reason == Reason.SUCCESS) {
 			String converted = Numbers.convert(Numbers.Type.MONEY, this.amount);
-			from.sendMessage(Text.colors("&6De betaling met &c" + to.getName() + " &6van &c" + converted + " &6is voltooid."));
-			to.sendMessage(Text.colors("&6Je hebt de betaling met &c" + from.getName() + " &6van &c" + converted + " &6voltooid."));
+			from.sendMessage(Message.BANKING_REQUESTS_SUCCESS_WORKER.format(to.getName(), converted));
+			to.sendMessage(Message.BANKING_REQUESTS_SUCCESS_CLIENT.format(from.getName(), converted));
 		} else if (reason == Reason.INSUFFICIENT_BALANCE) {
-			from.sendMessage(Text.colors("&cDe betaling is mislukt omdat de klant onvoldoende banksaldo heeft."));
-			to.sendMessage(Text.colors("&cJe hebt onvoldoende saldo het betaalproces is geannuleerd."));
+			from.sendMessage(Message.BANKING_REQUESTS_INSUFFICIENTBALANCE_WORKER.raw());
+			to.sendMessage(Message.BANKING_REQUESTS_INSUFFICIENTBALANCE_CLIENT.raw());
 		} else if (reason == Reason.CLIENT_LEFT) {
-			from.sendMessage(Text.colors("&6De klant heeft de server &cverlaten &6tijdens het betaalproces daarom is de betaling geannuleerd."));
+			from.sendMessage(Message.BANKING_REQUESTS_CLIENTLEFT.raw());
 		} else if (reason == Reason.SHOPKEEPER_LEFT) {
-			to.sendMessage(Text.colors("&6De winkelier heeft de server &cverlaten &6tijdens het betaalproces daarom is de betaling geannuleerd."));
+			to.sendMessage(Message.BANKING_REQUESTS_WORKERLEFT.raw());
 		} else if (reason == Reason.CANCELLED) {
-			to.sendMessage(Text.colors("&6Je hebt het pinverzoek succesvol geannuleerd."));
-			from.sendMessage(Text.colors("&6De klant &c" + to.getName() + " &6heeft het pinverzoek geweigerd."));
+			from.sendMessage(Message.BANKING_REQUESTS_CANCELLED_WORKER.format(to.getName()));
+			to.sendMessage(Message.BANKING_REQUESTS_CANCELLED_CLIENT.raw());
 		} else {
 			from.sendMessage(Text.colors("&cDe betaling is wegens een onbekende reden geannuleerd, neem contact op met Maiky#0001"));
 			to.sendMessage(Text.colors("&cDe betaling is wegens een onbekende reden geannuleerd, neem contact op met Maiky#0001"));

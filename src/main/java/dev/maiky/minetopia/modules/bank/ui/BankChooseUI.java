@@ -3,6 +3,7 @@ package dev.maiky.minetopia.modules.bank.ui;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Slot;
@@ -35,7 +36,7 @@ public class BankChooseUI extends Gui {
 	private final OfflinePlayer target;
 
 	public BankChooseUI(Player player, OfflinePlayer target) {
-		super(player, 3, "&3Kies een rekeningsoort:");
+		super(player, 3, Message.BANKING_GUI_CHOOSETYPE_TITLE.raw());
 		this.manager = BankManager.with(DataModule.getInstance().getSqlHelper());
 		this.target = target;
 
@@ -56,13 +57,13 @@ public class BankChooseUI extends Gui {
 						{
 							if (bank != Bank.PERSONAL) {
 								if ( this.manager.filterAndGet(bank, getPlayer().getUniqueId()).size() == 0 ) {
-									getPlayer().sendMessage("§cJij hebt geen rekening in deze categorie.");
+									getPlayer().sendMessage(Message.BANKING_GUI_CHOOSETYPE_ERROR_NOACCOUNT.raw());
 									return;
 								}
 							} else {
 								if (target != null) {
 									if (!target.isOnline()) {
-										getPlayer().sendMessage("§cJe kunt de persoonlijke rekening van §4" + target.getName() + " §cniet openen omdat hij/zij niet online is.");
+										getPlayer().sendMessage(Message.BANKING_GUI_CHOOSETYPE_ERROR_CANTOPENOTHERPERSONAL.format(target.getName()));
 										return;
 									}
 								}
@@ -84,19 +85,19 @@ public class BankChooseUI extends Gui {
 							if (bank != Bank.PERSONAL) {
 								if (target == null) {
 									if ( this.manager.filterAndGet(bank, getPlayer().getUniqueId()).size() == 0 ) {
-										getPlayer().sendMessage("§cJij hebt geen rekening in deze categorie.");
+										getPlayer().sendMessage(Message.BANKING_GUI_CHOOSETYPE_ERROR_NOACCOUNT.raw());
 										return;
 									}
 								} else {
 									if ( this.manager.filterAndGet(bank, target.getUniqueId()).size() == 0 ) {
-										getPlayer().sendMessage("§4" + target.getName() + " heeft geen rekening in deze categorie.");
+										getPlayer().sendMessage(Message.BANKING_GUI_CHOOSETYPE_ERROR_NOACCOUNTOTHER.format(target.getName()));
 										return;
 									}
 								}
 							} else {
 								if (target != null) {
 									if (!target.isOnline()) {
-										getPlayer().sendMessage("§cJe kunt de persoonlijke rekening van §4" + target.getName() + " §cniet openen omdat hij/zij niet online is.");
+										getPlayer().sendMessage(Message.BANKING_GUI_CHOOSETYPE_ERROR_CANTOPENOTHERPERSONAL.format(target.getName()));
 										return;
 									}
 								}

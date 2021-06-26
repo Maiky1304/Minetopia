@@ -3,6 +3,8 @@ package dev.maiky.minetopia.util;
 import org.bukkit.ChatColor;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Door: Maiky
@@ -14,6 +16,11 @@ public class Text {
 
 	public static String colors(String string) {
 		return ChatColor.translateAlternateColorCodes('&', string);
+	}
+	public static List<String> colors(List<String> list) {
+		List<String> copy = new ArrayList<>();
+		list.forEach(s -> copy.add(colors(s)));
+		return copy;
 	}
 	public static String strip(String string) {
 		return ChatColor.stripColor(string);

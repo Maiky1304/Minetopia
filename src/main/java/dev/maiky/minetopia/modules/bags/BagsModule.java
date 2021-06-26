@@ -6,6 +6,7 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.bags.bag.Bag;
 import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.bags.commands.BagCommand;
+import dev.maiky.minetopia.modules.bags.listeners.BagOpenListener;
 import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BagManager;
@@ -60,43 +61,7 @@ public class BagsModule implements MinetopiaModule {
 	}
 
 	private void registerEvents() {
-		List<Material> materialList = new ArrayList<>();
-		for (BagType value : BagType.values()) materialList.add(value.material);
-
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
-				.filter(PlayerInteractEvent::hasItem)
-				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
-				.filter(e -> materialList.contains(e.getItem().getType()))
-				.filter(e -> {
-					ItemStack nms = CraftItemStack.asNMSCopy(e.getItem());
-					if (nms.getTag() == null)
-						return false;
-					return nms.getTag().hasKey("id");
-				}).handler(e ->
-		{
-			e.setCancelled(true);
-
-			ItemStack nms = CraftItemStack.asNMSCopy(e.getItem());
-			NBTTagCompound tagCompound = nms.getTag();
-
-			assert tagCompound != null;
-			int id = tagCompound.getInt("id");
-
-			BagManager bagManager = BagManager.with(DataModule.getInstance().getSqlHelper());
-			Bag bag = bagManager.getBag(id);
-			if (bag == null) {
-				e.getPlayer().sendMessage("§cEr is iets fout gegaan met het ophalen van jouw bag, contacteer een developer.");
-				return;
-			}
-
-			bag.getHistory().put(e.getPlayer().getName(), new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-			bagManager.saveBag(bag);
-
-			org.bukkit.inventory.ItemStack[] itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
-			KofferUI kofferUI = new KofferUI(e.getPlayer(), bag.getId(), itemStacks, 0);
-			kofferUI.open();
-		}).bindWith(composite);
+		this.composite.bindModule(new BagOpenListener());
 	}
 
 	private void registerCommands() {

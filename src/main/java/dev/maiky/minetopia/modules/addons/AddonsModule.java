@@ -96,7 +96,11 @@ public class AddonsModule implements MinetopiaModule {
 
 				Class<? extends Addon> typeClass = clazz.asSubclass(Addon.class);
 				Addon addon = typeClass.newInstance();
-				addon.enable();
+				try {
+					addon.enable();
+				} catch (Exception exception) {
+					Minetopia.getInstance().getLogger().warning("Unable to load addon " + addonName + ": " + exception.toString());
+				}
 				AddonsModule.addons.add(addon);
 				Bukkit.getLogger().info("Succesfully loaded the addon " + addonName);
 			} catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException exception) {

@@ -2,6 +2,7 @@ package dev.maiky.minetopia.modules.levels;
 
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.levels.listeners.LevelCheckListener;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.levels.ui.LevelCheckUI;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
@@ -43,21 +44,7 @@ public class LevelsModule implements MinetopiaModule {
 	}
 
 	private void registerEvents() {
-		Events.subscribe(PlayerInteractAtEntityEvent.class)
-				.filter(e -> e.getRightClicked().isCustomNameVisible())
-				.filter(e -> e.getRightClicked().getCustomName() != null)
-				.filter(e -> e.getHand() == EquipmentSlot.HAND)
-				.filter(e -> Text.strip(e.getRightClicked().getCustomName()).equalsIgnoreCase("LevelCheck"))
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
-				.filter(e -> {
-					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
-					if ( new LevelCheck(user).calculatePossibleLevel() > user.getLevel() )
-						return true;
-					e.getPlayer().sendMessage("§cJe kan op dit moment niet naar een hoger level.");
-					return false;
-				})
-				.handler(e -> new LevelCheckUI(e.getPlayer(), e.getRightClicked()).open())
-		.bindWith(composite);
+		this.composite.bindModule(new LevelCheckListener());
 	}
 
 	@Override

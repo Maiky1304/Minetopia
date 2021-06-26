@@ -4,6 +4,7 @@ import dev.maiky.minetopia.modules.colors.fonts.FontSet;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
@@ -17,9 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Door: Maiky
@@ -73,7 +72,7 @@ public class PrefixColorUI extends Gui {
 			.mask("100000001");
 
 	public PrefixColorUI(Player player, int page) {
-		super(player, 6, "§0Kies een prefixkleur");
+		super(player, 6, Message.COLORS_GUI_PREFIXCOLOR_TITLE.setLimit(18).raw());
 		this.page = page;
 		this.user = PlayerManager.getCache().get(player.getUniqueId());
 
@@ -84,29 +83,27 @@ public class PrefixColorUI extends Gui {
 
 	private void prepare() {
 		this.colorItems.add(ItemStackBuilder.of(nbtFormat(ItemStackBuilder.of(Material.IRON_INGOT)
-				.name("§7Standaard prefixkleur").lore("§a[Unlocked]").build(), ChatColor.CHATCOLOR_NORMAL_GRAY.toString().toLowerCase()))
+				.name("§7Standaard prefixkleur").lore(Message.COLORS_GUI_UNLOCKEDLORE_PERMANENT.formatAsList()).build(), ChatColor.CHATCOLOR_NORMAL_GRAY.toString().toLowerCase()))
 		.build(() -> {
 			this.user.setCurrentPrefixColor(ChatColor.CHATCOLOR_NORMAL_GRAY);
-			String message = "&6Je hebt de kleur van je prefix veranderd naar &c%s&6.";
-			getPlayer().sendMessage(String.format(Text.colors(message), "Standaard prefixkleur"));
+			getPlayer().sendMessage(Message.COLORS_GUI_COLORCHANGED.format("prefix", "Standaard levelkleur"));
 		}));
 
 		for (ChatColor color : this.user.getPrefixColors().keySet()) {
 			String expiry = this.user.getPrefixColors().get(color);
 			boolean permanent = expiry.equals("-");
 
-			String[] lore;
+			List<String> lore;
 			if (permanent) {
-				lore = new String[]{"§a[Unlocked]"};
-			} else lore = new String[]{"§a[Unlocked]", "Verloopt op " + new SimpleDateFormat("dd/MM/yyyy HH:mm")
-			.format(new Date(Long.parseLong(expiry)))};
+				lore = Message.COLORS_GUI_UNLOCKEDLORE_PERMANENT.formatAsList();
+			} else lore = Message.COLORS_GUI_UNLOCKEDLORE_TEMPORARY.formatAsList(new SimpleDateFormat("dd/MM/yyyy HH:mm")
+					.format(new Date(Long.parseLong(expiry))));
 
 			Item item = ItemStackBuilder.of(nbtFormat(ItemStackBuilder.of(Material.IRON_INGOT)
 					.name("§" + color.getColor() + (color.font ? FontSet.process(color.itemName) : color.itemName)).lore(lore).build(), color.toString().toLowerCase()))
 					.build(() -> {
 						this.user.setCurrentPrefixColor(color);
-						String message = "&6Je hebt de kleur van je prefix veranderd naar &c%s&6.";
-						getPlayer().sendMessage(String.format(Text.colors(message), color.itemName));
+						getPlayer().sendMessage(Message.COLORS_GUI_COLORCHANGED.format("prefix", "Standaard levelkleur"));
 					});
 			this.colorItems.add(item);
 		}
@@ -115,7 +112,7 @@ public class PrefixColorUI extends Gui {
 			if (this.user.getPrefixColors().containsKey(color)) continue;
 
 			Item item = ItemStackBuilder.of(nbtFormat(ItemStackBuilder.of(Material.IRON_INGOT)
-					.name("§" + color.getColor() + (color.font ? FontSet.process(color.itemName) : color.itemName)).lore("§c[Locked]").build(), color.toString().toLowerCase()))
+					.name("§" + color.getColor() + (color.font ? FontSet.process(color.itemName) : color.itemName)).lore(Message.COLORS_GUI_LOCKEDLORE.formatAsList()).build(), color.toString().toLowerCase()))
 					.buildItem().build();
 			this.colorItems.add(item);
 		}
@@ -145,18 +142,18 @@ public class PrefixColorUI extends Gui {
 		MenuPopulator paginator = this.PAGINATION.newPopulator(this);
 		if (page == 0) {
 			paginator.accept(ItemStackBuilder.of(Material.AIR).buildItem().build());
-			paginator.accept(ItemStackBuilder.of(Material.ARROW).name("Pagina vooruit")
+			paginator.accept(ItemStackBuilder.of(Material.ARROW).name(Message.COMMON_GUI_PAGEFORWARD.raw())
 			.build(() -> new PrefixColorUI(getPlayer(), 1).open()));
 		}
 
 		if (page == 1) {
-			paginator.accept(ItemStackBuilder.of(Material.ARROW).name("Pagina terug")
+			paginator.accept(ItemStackBuilder.of(Material.ARROW).name(Message.COMMON_GUI_PAGEBACKWARDS.raw())
 					.build(() -> new PrefixColorUI(getPlayer(), 0).open()));
 			paginator.accept(ItemStackBuilder.of(Material.AIR).buildItem().build());
 		}
 
 		this.CLOSE.newPopulator(this)
-				.accept(ItemStackBuilder.of(Material.BARRIER).name("&cSluit het menu").build(this::close));
+				.accept(ItemStackBuilder.of(Material.BARRIER).name(Message.COMMON_GUI_CLOSEMENU.format(org.bukkit.ChatColor.RED)).build(this::close));
 	}
 
 	private ItemStack nbtFormat(ItemStack itemStack, String string) {

@@ -3,9 +3,9 @@ package dev.maiky.minetopia.modules.boosters;
 import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.boosters.booster.commands.BoosterCommand;
-import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
-import dev.maiky.minetopia.modules.boosters.booster.tasks.BoostTask;
+import dev.maiky.minetopia.modules.boosters.commands.BoosterCommand;
+import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.tasks.BoostTask;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 
 /**

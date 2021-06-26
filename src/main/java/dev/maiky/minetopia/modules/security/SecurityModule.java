@@ -5,6 +5,8 @@ import co.aikar.commands.ConditionFailedException;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
+import dev.maiky.minetopia.modules.security.listeners.DetectorListener;
+import lombok.Getter;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -66,7 +68,7 @@ public class SecurityModule implements MinetopiaModule {
 		manager.registerCommand(new BodySearchCommand());
 	}
 
-	private static final List<Material> illegalItems = Arrays.asList(
+	private static final @Getter List<Material> illegalItems = Arrays.asList(
 			Material.SUGAR,
 			Material.IRON_HOE,
 			Material.STICK,
@@ -87,65 +89,10 @@ public class SecurityModule implements MinetopiaModule {
 	}
 
 	private void registerEvents() {
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> e.getAction() == Action.PHYSICAL)
-				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
-				.filter(e -> e.getClickedBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN)
-				.getType().toString().contains("SIGN"))
-				.handler(e -> {
-					Player p = e.getPlayer();
-
-					Sign sign = (Sign) e.getClickedBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getState();
-					if (!sign.getLine(0).equals("[DETECTOR]")) {
-						return;
-					}
-					int radius = Integer.parseInt(sign.getLine(1));
-
-					boolean carryingBag = false;
-					boolean carryingIllegalItems = false;
-					for (Material material : illegalItems) {
-						if (p.getInventory().getItemInOffHand() != null) {
-							if (p.getInventory().getItemInOffHand().getType() == material) {
-								carryingIllegalItems = true;
-								break;
-							}
-						}
-
-						if (p.getInventory().contains(material)) {
-							carryingIllegalItems = true;
-							break;
-						}
-					}
-
-					if (!carryingIllegalItems){
-
-						if (p.getInventory().contains(Material.CARROT_STICK)) {
-							carryingBag = true;
-						}
-
-					}
-
-					List<Player> nearbyPlayers = new ArrayList<>();
-					for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-						if (onlinePlayer.getLocation().distance(p.getLocation())
-								<= 25) nearbyPlayers.add(onlinePlayer);
-					}
-
-					List<Block> blocks = getDetectionBlocks(e.getClickedBlock().getLocation(), radius);
-					if (blocks.isEmpty())return;
-
-					for(Block block : blocks) {
-						for (Player nearbyPlayer : nearbyPlayers) {
-							nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, (carryingIllegalItems ? (byte)14 : (carryingBag ? (byte)4 : 13)));
-							Schedulers.sync().runLater(() -> {
-								nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, (byte)15);
-							}, 40).bindWith(composite);
-						}
-					}
-				}).bindWith(composite);
+		this.composite.bindModule(new DetectorListener());
 	}
 
-	private List<Block> getDetectionBlocks(Location location, int radius) {
+	public static List<Block> getDetectionBlocks(Location location, int radius) {
 		List<Block> blocks = new ArrayList<>();
 		for(int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
 			for(int y = location.getBlockY() - radius; y <= location.getBlockY() + radius; y++) {

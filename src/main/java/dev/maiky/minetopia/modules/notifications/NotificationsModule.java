@@ -4,6 +4,8 @@ import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.notifications.command.NotificationCommand;
+import dev.maiky.minetopia.modules.notifications.listeners.*;
+import dev.maiky.minetopia.modules.notifications.listeners.impl.BalanceUpdateListener;
 import dev.maiky.minetopia.modules.notifications.notifications.Notification;
 import dev.maiky.minetopia.modules.notifications.notifications.NotificationQueue;
 import dev.maiky.minetopia.util.Numbers;
@@ -96,19 +98,9 @@ public class NotificationsModule implements MinetopiaModule {
 	}
 
 	private void registerEvents() {
-		Events.subscribe(PlayerJoinEvent.class).handler(e -> NotificationQueue.getQueueCache().put(e.getPlayer().getUniqueId(), new NotificationQueue()))
-		.bindWith(terminable);
-		Events.subscribe(PlayerQuitEvent.class).handler(e -> NotificationQueue.getQueueCache().remove(e.getPlayer().getUniqueId()))
-		.bindWith(terminable);
-		Events.subscribe(UserBalanceUpdateEvent.class)
-				.handler(e -> {
-					String amount = Numbers.convert(Numbers.Type.MONEY, e.getNewBalance().doubleValue() - e.getOldBalance().doubleValue());
-					ChatColor color = amount.contains("-") ? ChatColor.RED : ChatColor.GREEN;
-					NotificationQueue queue = NotificationQueue.getQueueCache().get(e.getPlayer().getUniqueId());
-					Notification notification = new Notification(e.getPlayer(), color + (amount.contains("-") ? "-" : "+") +
-							Numbers.convert(Numbers.Type.MONEY, Math.abs(e.getNewBalance().doubleValue() - e.getOldBalance().doubleValue())), 2);
-					queue.queue.add(notification);
-				}).bindWith(terminable);
+		this.terminable.bindModule(new JoinListener());
+		this.terminable.bindModule(new QuitListener());
+		this.terminable.bindModule(new BalanceUpdateListener());
 	}
 
 	@Override

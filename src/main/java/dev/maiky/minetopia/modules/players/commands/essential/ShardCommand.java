@@ -8,6 +8,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
@@ -30,6 +31,17 @@ public class ShardCommand extends BaseCommand {
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Default
@@ -61,12 +73,6 @@ public class ShardCommand extends BaseCommand {
 
 		String message = "§6Success! Shards of §c%s §6were increased by §c%s§6 their balance is now §c%s&6.";
 		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), amount, user.getGrayshards())));
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
 	}
 
 	@Subcommand("remove")
@@ -108,12 +114,4 @@ public class ShardCommand extends BaseCommand {
 		String message = "&6De speler &c%s &6heeft &c%s &6BlackShards.";
 		sender.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards()))));
 	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
-	}
-
 }

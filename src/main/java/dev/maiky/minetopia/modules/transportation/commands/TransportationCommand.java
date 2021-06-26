@@ -11,6 +11,7 @@ import dev.maiky.minetopia.modules.data.managers.PortalManager;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.modules.transportation.portal.PortalData;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
 import dev.maiky.minetopia.util.Text;
 import lombok.Getter;
@@ -39,24 +40,21 @@ public class TransportationCommand extends BaseCommand {
 		this.configuration = configuration;
 	}
 
+	@Default
 	@HelpCommand
-	@Subcommand("main")
-	@Description("Read the help message")
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
-	}
-
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("create")

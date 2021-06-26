@@ -7,6 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -29,25 +30,21 @@ import java.util.UUID;
 public class AdminToolCommand extends BaseCommand {
 
 
-	@HelpCommand
 	@Default
-	@Subcommand("main")
-	@Description("Shows the subcommands")
+	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("krijg")

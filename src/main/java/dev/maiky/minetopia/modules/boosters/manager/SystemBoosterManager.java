@@ -1,6 +1,6 @@
-package dev.maiky.minetopia.modules.boosters.booster.manager;
+package dev.maiky.minetopia.modules.boosters.manager;
 
-import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import dev.maiky.minetopia.modules.data.DataModule;
 import redis.clients.jedis.Jedis;
 

@@ -9,6 +9,7 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -26,6 +27,22 @@ import java.util.UUID;
 @CommandPermission("minetopia.common.time")
 public class TimeCommand extends BaseCommand {
 
+	@HelpCommand
+	public void onHelp(CommandSender sender) {
+		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
+	}
+
 	@Default
 	@Subcommand("main")
 	@Description("View your own online time")
@@ -37,11 +54,6 @@ public class TimeCommand extends BaseCommand {
 		String string = "§c%s §6dagen, §c%s §6uren, §c%s §6minuten, §c%s §6seconden.";
 
 		player.sendMessage(String.format(string, time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
-	}
-
-	@HelpCommand
-	public void onHelp(CommandSender sender) {
-		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 	@Deprecated
@@ -64,16 +76,4 @@ public class TimeCommand extends BaseCommand {
 		sender.sendMessage(String.format(string, offlinePlayer.getName(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
 	}
 
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
-	}
 }

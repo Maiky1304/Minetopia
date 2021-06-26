@@ -7,6 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -19,7 +20,7 @@ import org.bukkit.entity.Player;
  * Package: dev.maiky.minetopia.modules.districts.commands
  */
 
-@CommandAlias("districts")
+@CommandAlias("districts|areas|subcity|substad|stad|steden|town|dorp|gebied|gebieden")
 @CommandPermission("minetopia.admin.districts")
 public class DistrictsCommand extends BaseCommand {
 
@@ -29,10 +30,20 @@ public class DistrictsCommand extends BaseCommand {
 		this.configuration = configuration;
 	}
 
-	@Default
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("create")
@@ -41,15 +52,14 @@ public class DistrictsCommand extends BaseCommand {
 		Block block = player.getTargetBlock(null, 50);
 
 		if (this.configuration.get().contains(block.getType().toString())) {
-			throw new ConditionFailedException("Er bestaat al een district met het blok " + block.getType().toString() + ", gebruik §4/"
-			+ getExecCommandLabel() + " delete " + block.getType().toString() + " §com deze te verwijderen.");
+			throw new ConditionFailedException(Message.DISTRICTS_ERROR_ALREADYEXISTS.format(block.getType().toString(),
+					getExecCommandLabel(), block.getType().toString()));
 		}
 
-		this.configuration.get().set(block.getType().toString() + ".name", "???");
+		this.configuration.get().set(block.getType().toString() + ".name", "Onbekend");
 		this.configuration.save();
-		String message = "&6Success! Created district with the block &c%s&6, edit the name with &c%s&6.";
-		player.sendMessage(String.format(Text.colors(message), block.getType(), "/" + getExecCommandLabel() + " setname "
-		+ block.getType() + " <name>"));
+		player.sendMessage(Message.DISTRICTS_CREATED.format(block.getType().toString(), String.format("/%s setname %s <name>",
+				getExecCommandLabel(), block.getType())));
 	}
 
 	@Subcommand("delete")
@@ -60,13 +70,12 @@ public class DistrictsCommand extends BaseCommand {
 		Material material = Material.valueOf(type.toUpperCase());
 
 		if (!this.configuration.get().contains(material.toString())) {
-			throw new ConditionFailedException("Er bestaat geen district met het blok " + material.toString() + ".");
+			throw new ConditionFailedException(Message.DISTRICTS_ERROR_DOESNTEXIST.format(material.toString()));
 		}
 
 		this.configuration.get().set(material.toString(), null);
 		this.configuration.save();
-		String message = "&6Success! Deleted district with the block &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), material.toString()));
+		sender.sendMessage(Message.DISTRICTS_DELETED.format(material.toString()));
 	}
 
 	@Subcommand("setname")
@@ -86,7 +95,7 @@ public class DistrictsCommand extends BaseCommand {
 		Material material = Material.valueOf(type.toUpperCase());
 
 		if (!this.configuration.get().contains(material.toString())) {
-			throw new ConditionFailedException("Er bestaat geen district met het blok " + material.toString() + ".");
+			throw new ConditionFailedException(Message.DISTRICTS_ERROR_DOESNTEXIST.format(material.toString()));
 		}
 
 		this.configuration.get().set(material.toString() + ".name", builder.substring(0, builder.length()-1));
@@ -94,8 +103,7 @@ public class DistrictsCommand extends BaseCommand {
 
 		Minetopia.getPlugin(Minetopia.class).districtsModule.initializeCache();
 
-		String message = "&6Success! Changed the name of the district with the block &c%s &6to &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), material.toString(), builder.substring(0, builder.length()-1)));
+		sender.sendMessage(Message.DISTRICTS_RENAMED.format(material.toString(), builder.substring(0, builder.length()-1)));
 	}
 
 	@Subcommand("setcolor")
@@ -103,12 +111,12 @@ public class DistrictsCommand extends BaseCommand {
 	@Description("Edit the color of a district")
 	@CommandCompletion("@existingDistricts")
 	public void onEdit(CommandSender sender, @Conditions("validateMaterial") String type, String color) {
-		if (color.length() > 1) throw new ConditionFailedException("This is not a valid color code!");
+		if (color.length() > 1) throw new ConditionFailedException(Message.COMMON_ERROR_INVALIDCOLORCODE.raw());
 
 		Material material = Material.valueOf(type.toUpperCase());
 
 		if (!this.configuration.get().contains(material.toString())) {
-			throw new ConditionFailedException("Er bestaat geen district met het blok " + material.toString() + ".");
+			throw new ConditionFailedException(Message.DISTRICTS_ERROR_DOESNTEXIST.format(material.toString()));
 		}
 
 		this.configuration.get().set(material.toString() + ".color", color);
@@ -116,32 +124,18 @@ public class DistrictsCommand extends BaseCommand {
 
 		Minetopia.getPlugin(Minetopia.class).districtsModule.initializeCache();
 
-		String message = "&6Success! Changed the color of the district with the block &c%s &6to &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), material.toString(), "&" + color));
+		sender.sendMessage(Message.DISTRICTS_RECOLORED.format(material.toString(), "&" + color));
 	}
 
 	@Subcommand("list")
 	@Description("See all districts")
 	public void onList(CommandSender sender) {
 		for (String key : this.configuration.get().getKeys(false)) {
-			sender.sendMessage("§2- §a" + key + " §2[§a" + this.configuration.get().getString(key + ".name") + "§2]");
+			sender.sendMessage(Message.DISTRICTS_LIST_ENTRY.format(key, this.configuration.get().getString(key + ".name")));
 		}
 		if (this.configuration.get().getKeys(false).size() == 0) {
-			sender.sendMessage("§cNo districs made yet, use §4/" + getExecCommandLabel() + " §cto create the first!");
+			sender.sendMessage(Message.DISTRICTS_LIST_EMPTY.format(getExecCommandLabel()));
 		}
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
 	}
 
 }

@@ -1,7 +1,8 @@
-package dev.maiky.minetopia.modules.boosters.booster.tasks;
+package dev.maiky.minetopia.modules.boosters.tasks;
 
-import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
-import dev.maiky.minetopia.modules.boosters.booster.manager.SystemBoosterManager;
+import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.manager.SystemBoosterManager;
+import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -57,9 +58,10 @@ public class BoostTask implements TerminableModule {
 			}
 
 			if (totalGrayshards != 0) {
-				String title = "GrayShard Booster: " + totalGrayshards + "% <= " + lastGrayshards;
+				String title = Message.BOOSTERS_BOSSBAR_GRAYSHARD_TITLE.format(totalGrayshards, lastGrayshards);
 				if (grayshards == null) {
-					grayshards = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID);
+					grayshards = Bukkit.createBossBar(title, BarColor.valueOf(Message.BOOSTERS_BOSSBAR_GRAYSHARD_BARCOLOR.raw()),
+							BarStyle.valueOf(Message.BOOSTERS_BOSSBAR_GRAYSHARD_BARSTYLE.raw()));
 				} else {
 					grayshards.setTitle(title);
 				}
@@ -73,9 +75,10 @@ public class BoostTask implements TerminableModule {
 			}
 
 			if (totalGoldshards != 0) {
-				String title = "GoldShard Booster: " + totalGoldshards + "% <= " + lastGoldshards;
+				String title = Message.BOOSTERS_BOSSBAR_GOLDSHARD_TITLE.format(totalGoldshards, lastGoldshards);
 				if (goldshards == null) {
-					goldshards = Bukkit.createBossBar(title, BarColor.YELLOW, BarStyle.SOLID);
+					goldshards = Bukkit.createBossBar(title, BarColor.valueOf(Message.BOOSTERS_BOSSBAR_GOLDSHARD_BARCOLOR.raw()),
+							BarStyle.valueOf(Message.BOOSTERS_BOSSBAR_GOLDSHARD_BARSTYLE.raw()));
 				} else {
 					goldshards.setTitle(title);
 				}

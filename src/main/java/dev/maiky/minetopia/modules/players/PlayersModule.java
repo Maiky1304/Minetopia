@@ -8,12 +8,13 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
-import dev.maiky.minetopia.modules.players.commands.essential.EmergencyCommand;
-import dev.maiky.minetopia.modules.players.commands.essential.HeadCommand;
-import dev.maiky.minetopia.modules.players.commands.essential.ShardCommand;
-import dev.maiky.minetopia.modules.players.commands.essential.TimeCommand;
+import dev.maiky.minetopia.modules.players.commands.essential.*;
 import dev.maiky.minetopia.modules.players.commands.staff.AdminToolCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
+import dev.maiky.minetopia.modules.players.listeners.AdminToolListener;
+import dev.maiky.minetopia.modules.players.listeners.JoinListener;
+import dev.maiky.minetopia.modules.players.listeners.QuitListener;
+import dev.maiky.minetopia.modules.players.listeners.TrashbinListener;
 import dev.maiky.minetopia.modules.players.placeholders.NameColorPlaceholder;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
 import dev.maiky.minetopia.modules.players.tasks.TimeTask;
@@ -221,6 +222,7 @@ public class PlayersModule implements MinetopiaModule {
 		minetopia.getCommandManager().registerCommand(new HeadCommand(), true);
 		minetopia.getCommandManager().registerCommand(new EmergencyCommand());
 		minetopia.getCommandManager().registerCommand(new AdminToolCommand());
+		minetopia.getCommandManager().registerCommand(new MinetopiaCommand());
 	}
 
 	private void registerTasks() {
@@ -237,83 +239,11 @@ public class PlayersModule implements MinetopiaModule {
 
 	private void registerEvents() {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		Events.subscribe(PlayerJoinEvent.class)
-				.filter(e -> !playerManager.exists(e.getPlayer().getUniqueId()))
-				.handler(e -> {
-					Player player = e.getPlayer();
-					MinetopiaUser user = new MinetopiaUser(player.getUniqueId(), player.getName());
-					playerManager.create(user);
-					LevelCheck check = new LevelCheck(user);
-					int points = check.calculatePoints();
-					user.setLevelPoints(points);
-					PlayerManager.getCache().put(user.getUuid(), user);
 
-					MinetopiaScoreboard minetopiaScoreboard = new MinetopiaScoreboard(player);
-					minetopiaScoreboard.initialize();
-					PlayerManager.getScoreboard().put(player.getUniqueId(), minetopiaScoreboard);
-				}).bindWith(composite);
-		Events.subscribe(PlayerJoinEvent.class)
-				.filter(e -> playerManager.exists(e.getPlayer().getUniqueId()))
-				.handler(e -> {
-					Player player = e.getPlayer();
-					MinetopiaUser user = playerManager.retrieve(player.getUniqueId());
-					if (user == null) {
-						player.kickPlayer("§cMinetopia: Oops! Something went wrong please contact a developer.");
-						return;
-					}
-					LevelCheck check = new LevelCheck(user);
-					int points = check.calculatePoints();
-					user.setLevelPoints(points);
-					PlayerManager.getCache().put(player.getUniqueId(), user);
-
-					MinetopiaScoreboard minetopiaScoreboard = new MinetopiaScoreboard(player);
-					minetopiaScoreboard.initialize();
-					PlayerManager.getScoreboard().put(player.getUniqueId(), minetopiaScoreboard);
-				}).bindWith(composite);
-		Events.subscribe(PlayerQuitEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
-				.handler(e -> {
-					playerManager.update(PlayerManager.getCache().get(e.getPlayer().getUniqueId()));
-					PlayerManager.getCache().remove(e.getPlayer().getUniqueId());
-				}).bindWith(composite);
-		Events.subscribe(PlayerQuitEvent.class)
-				.filter(e -> PlayerManager.getScoreboard().containsKey(e.getPlayer().getUniqueId()))
-				.handler(e -> {
-					PlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).getPlayerBoard().delete();
-					PlayerManager.getScoreboard().remove(e.getPlayer().getUniqueId());
-				}).bindWith(composite);
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
-				.filter(PlayerInteractEvent::hasBlock)
-				.filter(e -> e.getClickedBlock().getType() == Material.DROPPER)
-				.filter(e -> e.getAction() == Action.RIGHT_CLICK_BLOCK)
-				.filter(e -> e.getPlayer().getGameMode() != GameMode.CREATIVE)
-				.handler(e -> {
-					e.setCancelled(true);
-					e.getPlayer().openInventory(Bukkit.createInventory(null, 27, "§4Prullenbak"));
-					e.getPlayer().sendMessage("§4PAS OP: §cAlles wat je hierin gooit wordt voor ALTIJD verwijderd!");
-				}).bindWith(composite);
-		CooldownMap<Player> cooldownMap = CooldownMap.create(Cooldown.of(500, TimeUnit.MILLISECONDS));
-		Events.subscribe(PlayerInteractAtEntityEvent.class)
-				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
-				.filter(e -> e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NETHER_STAR)
-				.filter(e -> cooldownMap.test(e.getPlayer()))
-				.handler(e -> {
-					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getRightClicked().getName() + "§6.");
-					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getRightClicked().getUniqueId()));
-					adminToolUI.open();
-				}).bindWith(composite);
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
-				.filter(PlayerInteractEvent::hasItem)
-				.filter(e -> e.getItem().getType() == Material.NETHER_STAR)
-				.filter(e -> e.getAction().toString().startsWith("RIGHT"))
-				.filter(e -> cooldownMap.test(e.getPlayer()))
-				.handler(e -> {
-					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getPlayer().getName() + "§6.");
-					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getPlayer().getUniqueId()));
-					adminToolUI.open();
-				}).bindWith(composite);
+		this.composite.bindModule(new JoinListener(playerManager));
+		this.composite.bindModule(new QuitListener(playerManager));
+		this.composite.bindModule(new TrashbinListener());
+		this.composite.bindModule(new AdminToolListener());
 	}
 
 	@Override

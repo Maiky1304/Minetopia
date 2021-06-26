@@ -1,6 +1,6 @@
-package dev.maiky.minetopia.modules.boosters.booster.booster;
+package dev.maiky.minetopia.modules.boosters.booster;
 
-import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import lombok.Getter;
 
 /**

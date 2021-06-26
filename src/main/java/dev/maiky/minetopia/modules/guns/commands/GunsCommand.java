@@ -13,6 +13,7 @@ import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
 import dev.maiky.minetopia.modules.guns.models.util.Builder;
 import dev.maiky.minetopia.modules.guns.ui.GunUI;
+import dev.maiky.minetopia.util.Message;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -41,8 +42,6 @@ public class GunsCommand extends BaseCommand {
 	}
 
 	@Default
-	@Subcommand("main")
-	@Description("View all the subcommands")
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
@@ -50,15 +49,13 @@ public class GunsCommand extends BaseCommand {
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("get")
@@ -74,7 +71,7 @@ public class GunsCommand extends BaseCommand {
 				setLicense(weapon.getLicense()).buildItem();
 		player.getInventory().addItem(itemStack);
 
-		player.sendMessage("§6You have succesfully created a weapon with the modelname §c" + modelName + "§6.");
+		player.sendMessage(Message.GUNS_CREATED.format(model.modelName()));
 	}
 
 	@Subcommand("getammo")
@@ -88,7 +85,7 @@ public class GunsCommand extends BaseCommand {
 		ItemStack itemStack = Builder.with(model).buildAmmo();
 		player.getInventory().addItem(itemStack);
 
-		player.sendMessage("§6You have succesfully created ammo for the model with the name §c" + modelName + "§6.");
+		player.sendMessage(Message.GUNS_GETAMMO.format(model.modelName()));
 	}
 
 	@Subcommand("setdurability")
@@ -105,8 +102,7 @@ public class GunsCommand extends BaseCommand {
 		weapon.setDurability(durability);
 		weaponManager.updateWeapon(weapon);
 
-		player.sendMessage("§6You have succesfully set the durability of the gun with the license §c" + license +
-				"§6 to §c" + durability + "§6.");
+		player.sendMessage(Message.GUNS_SETDURABILITY.format(license, durability));
 	}
 
 	@Subcommand("give")
@@ -115,7 +111,7 @@ public class GunsCommand extends BaseCommand {
 	@Description("Give a weapon to a player")
 	@CommandCompletion("@players @models @nothing")
 	public void onGive(CommandSender sender, @Conditions("online") OfflinePlayer offlinePlayer,  @Conditions("verifyModel") String modelName, int durability) {
-		if (offlinePlayer.getPlayer().getInventory().firstEmpty() == -1) throw new ConditionFailedException("Deze speler heeft geen inventory ruimte.");
+		if (offlinePlayer.getPlayer().getInventory().firstEmpty() == -1) throw new ConditionFailedException(Message.COMMON_ERROR_OTHER_NOINVSPACE.raw());
 
 		Player target = offlinePlayer.getPlayer();
 		Model model = module.getModel(modelName);

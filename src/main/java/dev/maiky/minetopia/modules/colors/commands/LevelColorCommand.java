@@ -11,6 +11,7 @@ import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -38,6 +39,17 @@ public class LevelColorCommand extends BaseCommand {
 		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
+	}
+
 	@Default
 	@Conditions("MTUser")
 	@Subcommand("main")
@@ -45,12 +57,6 @@ public class LevelColorCommand extends BaseCommand {
 	public void onMain(Player player) {
 		LevelColorUI ui = new LevelColorUI(player, 0);
 		ui.open();
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
 	}
 
 	@Subcommand("add")
@@ -69,7 +75,7 @@ public class LevelColorCommand extends BaseCommand {
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
 		if (user.getLevelColors().containsKey(color)) {
-			throw new ConditionFailedException("Deze speler heeft deze kleur al in zijn/haar bezit!");
+			throw new ConditionFailedException(Message.COLORS_ERROR_ALREADYOWNED.raw());
 		}
 
 		String string = null;
@@ -85,11 +91,9 @@ public class LevelColorCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "&6Success! You have added the levelcolor &c%s &6to the user &c%s&6.";
-		String message2 = "§6Extra: §c%s";
-		sender.sendMessage(String.format(Text.colors(message), color.itemName, offlinePlayer.getName()));
-		if (string != null)
-			sender.sendMessage(String.format(Text.colors(message2), string));
+		if (string == null)
+			sender.sendMessage(Message.COLORS_ADD_PERMANENT.format(color.itemName, offlinePlayer.getName()));
+		else sender.sendMessage(Message.COLORS_ADD_TEMPORARY.format(color.itemName, offlinePlayer.getName(), string));
 	}
 
 	@Subcommand("remove")
@@ -108,15 +112,14 @@ public class LevelColorCommand extends BaseCommand {
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
 		if (!user.getLevelColors().containsKey(color)) {
-			throw new ConditionFailedException("Deze speler heeft deze kleur niet in zijn/haar bezit!");
+			throw new ConditionFailedException(Message.COLORS_ERROR_NOTOWNED.raw());
 		}
 
 		user.getLevelColors().remove(color);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "&6Success! You have removed the levelcolor &c%s &6from the user &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), color.itemName, offlinePlayer.getName()));
+		sender.sendMessage(Message.COLORS_REMOVE.format(color.itemName, offlinePlayer.getName()));
 	}
 
 	@Subcommand("list")
@@ -133,24 +136,14 @@ public class LevelColorCommand extends BaseCommand {
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
-		String divider = "§6§m----------------------------------------------------";
-		String holder = " &c- &%s%s &c%s";
-
-		sender.sendMessage(divider);
+		sender.sendMessage(Message.COLORS_LIST_HEADERFOOTER.raw());
 		for (LevelColor color : user.getLevelColors().keySet()) {
-			sender.sendMessage(String.format(Text.colors(holder), color.getColor(), color.itemName, (
+			sender.sendMessage(Message.COLORS_LIST_ENTRY.format(color.getColor(), color.itemName, (
 					user.getLevelColors().get(color).equals("-") ? "" :
 							"T/m " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(Long.parseLong(user.getLevelColors().get(color))))
-					)));
+			)));
 		}
-		sender.sendMessage(divider);
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		sender.sendMessage(Message.COLORS_LIST_HEADERFOOTER.raw());
 	}
 
 	public Response get(String string) throws ConditionFailedException {
@@ -171,7 +164,7 @@ public class LevelColorCommand extends BaseCommand {
 		try {
 			time = Integer.parseInt(timePart.toString());
 		} catch (NumberFormatException exception) {
-			throw new ConditionFailedException("Dit is geen geldig tijdformaat, gebruik bijvoorbeeld: 1, 1min, 1mo of 1y");
+			throw new ConditionFailedException(Message.COMMON_ERROR_INVALIDTIMEFORMAT.raw());
 		}
 
 		String timeString = "";
@@ -188,7 +181,7 @@ public class LevelColorCommand extends BaseCommand {
 			timeUnit = 12;
 			timeString = time + (time == 1 ? " minuut" : " minuten");
 		} else {
-			throw new ConditionFailedException("Dit is geen geldig tijdformaat, gebruik bijvoorbeeld: 1, 1min, 1mo of 1y");
+			throw new ConditionFailedException(Message.COMMON_ERROR_INVALIDTIMEFORMAT.raw());
 		}
 
 		Date date = new Date();

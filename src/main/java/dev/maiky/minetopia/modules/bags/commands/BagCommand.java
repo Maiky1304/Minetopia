@@ -12,8 +12,8 @@ import dev.maiky.minetopia.modules.bags.ui.CreateUI;
 import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
@@ -52,7 +52,7 @@ public class BagCommand extends BaseCommand {
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
@@ -75,18 +75,18 @@ public class BagCommand extends BaseCommand {
 
 		if (checkHand) {
 			if (player.getInventory().getItemInMainHand() == null) {
-				throw new ConditionFailedException("Je hebt geen koffer in je hand.");
+				throw new ConditionFailedException(Message.BAGS_ERROR_NOTINHAND.raw());
 			}
 
 			if (!this.materialList.contains(player.getInventory().getItemInMainHand().getType())) {
-				throw new ConditionFailedException("Je hebt geen koffer in je hand.");
+				throw new ConditionFailedException(Message.BAGS_ERROR_NOTINHAND.raw());
 			}
 
 			net.minecraft.server.v1_12_R1.ItemStack nms = CraftItemStack.asNMSCopy(player.getInventory().getItemInMainHand());
 			if (nms.getTag() == null)
-				throw new ConditionFailedException("Je hebt geen koffer in je hand.");
+				throw new ConditionFailedException(Message.BAGS_ERROR_NOTINHAND.raw());
 			if (!nms.getTag().hasKey("id"))
-				throw new ConditionFailedException("Je hebt geen koffer in je hand.");
+				throw new ConditionFailedException(Message.BAGS_ERROR_NOTINHAND.raw());
 
 			bag = this.manager.getBag(nms.getTag().getInt("id"));
 		} else {
@@ -94,16 +94,16 @@ public class BagCommand extends BaseCommand {
 		}
 
 		if (bag == null)
-			throw new ConditionFailedException("There is no bag with the ID " + id + ".");
+			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 
-		player.sendMessage("§3Geschiedenis voor de koffer §b" + bag.getId() + "§3:");
+		player.sendMessage(Message.BAGS_HISTORY_HEADER.format(bag.getId()));
 		for (String string : bag.getHistory().keySet()) {
-			player.sendMessage(String.format(" §3- §b%s §3op §b%s", string, bag.getHistory().get(string)));
+			player.sendMessage(Message.BAGS_HISTORY_LINE.format(string, bag.getHistory().get(string)));
 		}
 		if (bag.getHistory().size() == 0)
-			player.sendMessage(" §3- §cGeen data gevonden...");
+			player.sendMessage(Message.BAGS_HISTORY_NODATA.raw());
 		player.sendMessage(" ");
-		player.sendMessage("§3Het ophalen duurde §b" + ((System.currentTimeMillis() - start)) + "ms§3.");
+		player.sendMessage(Message.BAGS_HISTORY_TOOK.format(((System.currentTimeMillis() - start))));
 	}
 
 	@Subcommand("create")
@@ -112,16 +112,14 @@ public class BagCommand extends BaseCommand {
 	@CommandCompletion("@bagTypes")
 	public void createBag(Player player, BagType type, int rows) {
 		if (player.getInventory().firstEmpty() == -1) {
-			throw new ConditionFailedException("Je hebt geen genoeg inventory ruimte.");
+			throw new ConditionFailedException(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 		}
 
 		Bag bag = this.manager.createBag(type, rows);
 		ItemStack item = bag.getType().create(bag.getId());
 
 		player.getInventory().addItem(item);
-
-		String message = "&6Success! Created a bag with the id &c%s&6, it was added to your inventory.";
-		player.sendMessage(String.format(Text.colors(message), bag.getId()));
+		player.sendMessage(Message.BAGS_CREATED.format(bag.getId()));
 	}
 
 	@Subcommand("openbag")
@@ -130,7 +128,7 @@ public class BagCommand extends BaseCommand {
 	public void openBag(Player player, int id) {
 		Bag bag = this.manager.getBag(id);
 		if (bag == null)
-			throw new ConditionFailedException("There is no bag with the ID " + id + ".");
+			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 		ItemStack[] itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
 
 		bag.getHistory().put("[Lookup] " + player.getName(), new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
@@ -145,12 +143,12 @@ public class BagCommand extends BaseCommand {
 	@Description("Retrieve a bag by id")
 	public void retrieveBag(Player player, int id) {
 		if (player.getInventory().firstEmpty() == -1) {
-			throw new ConditionFailedException("Je hebt geen genoeg inventory ruimte.");
+			throw new ConditionFailedException(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 		}
 
 		Bag bag = this.manager.getBag(id);
 		if (bag == null)
-			throw new ConditionFailedException("There is no bag with the ID " + id + ".");
+			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 
 		ItemStack itemStack = bag.getType().create(bag.getId());
 		player.getInventory().addItem(itemStack);

@@ -291,7 +291,7 @@ public class ItemsModule implements MinetopiaModule {
 						+ interactable.getClass().getName() + " §cte gebruiken.");
 						return;
 					}
-					System.out.println("Cancelled");
+
 					e.setCancelled(true);
 					interactable.event().execute(e);
 				}).bindWith(composite);

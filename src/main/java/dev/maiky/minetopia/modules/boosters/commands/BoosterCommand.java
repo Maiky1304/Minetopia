@@ -1,4 +1,4 @@
-package dev.maiky.minetopia.modules.boosters.booster.commands;
+package dev.maiky.minetopia.modules.boosters.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.CommandIssuer;
@@ -6,11 +6,12 @@ import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.boosters.booster.enums.BoosterType;
-import dev.maiky.minetopia.modules.boosters.booster.manager.SystemBoosterManager;
+import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
+import dev.maiky.minetopia.modules.boosters.manager.SystemBoosterManager;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -37,15 +38,13 @@ public class BoosterCommand extends BaseCommand {
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("add")
@@ -67,8 +66,8 @@ public class BoosterCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
 
-		player.sendMessage("§6Succesvol de booster soort §c" + type.toString().toLowerCase() + " §6toegevoegd aan §c"
-		+ offlinePlayer.getName() + "§6 van §c" + percentage + "%§6.");
+		player.sendMessage(Message.BOOSTERS_ADD.format(type.toString().toLowerCase(), offlinePlayer.getName(),
+				percentage));
 	}
 
 	@Subcommand("remove")
@@ -90,11 +89,8 @@ public class BoosterCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
 
-		player.sendMessage("§6Succesvol de booster soort §c" + type.toString().toLowerCase() + " §6verwijderd van §c"
-				+ offlinePlayer.getName() + "§6 van §c" + percentage + "%§6.");
+		player.sendMessage(Message.BOOSTERS_REMOVE.format(type.toString().toLowerCase(), offlinePlayer.getName(), percentage));
 	}
-
-
 
 	@Subcommand("info")
 	@Syntax("<type> [speler]")
@@ -118,7 +114,7 @@ public class BoosterCommand extends BaseCommand {
 		MinetopiaUser user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
 		int total = type == BoosterType.GRAYSHARD ? user.getGrayshardBoost() : user.getGoldshardBoost();
 
-		player.sendMessage("§6De speler §c" + offlinePlayer.getName() + " §6heeft in totaal §c" + total + "% §6" + type.toString().toLowerCase() + "boost.");
+		player.sendMessage(Message.BOOSTERS_INFO.format(offlinePlayer.getName(), total, type.toString().toLowerCase()));
 	}
 
 	@Subcommand("activate")
@@ -127,23 +123,23 @@ public class BoosterCommand extends BaseCommand {
 	@CommandPermission("minetopia.common.booster.activate")
 	@CommandCompletion("@boosterTypes")
 	public void onActivate(Player player, BoosterType type, int percentage) {
-		if (percentage <= 0) throw new ConditionFailedException("Gebruik een waarde van minimaal 1.");
+		if (percentage <= 0) throw new ConditionFailedException(Message.COMMON_ERROR_USEATLEAST.format(1));
 
 		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
 
 		if (type == BoosterType.GRAYSHARD) {
-			if (user.getGrayshardBoost() < percentage) throw new ConditionFailedException("Je hebt geen genoeg Grayshardboost hiervoor.");
+			if (user.getGrayshardBoost() < percentage) throw new ConditionFailedException(Message.BOOSTERS_ERROR_NOTENOUGHGRAYSHARD.raw());
 			user.setGrayshardBoost(user.getGrayshardBoost() - percentage);
 		} else {
-			if (user.getGoldshardBoost() < percentage) throw new ConditionFailedException("Je hebt geen genoeg Goldshardboost hiervoor.");
+			if (user.getGoldshardBoost() < percentage) throw new ConditionFailedException(Message.BOOSTERS_ERROR_NOTENOUGHGOLDSHARD.raw());
 			user.setGoldshardBoost(user.getGoldshardBoost() - percentage);
 		}
 
-		player.sendMessage("§6Je hebt een " + type.toString().toLowerCase() + "booster geactiveerd van §c" + percentage + "%§6.");
+		player.sendMessage(Message.BOOSTERS_ACTIVATED_SELF.format(type.toString().toLowerCase(), percentage));
 
 		SystemBoosterManager.update(player.getName(), type, SystemBoosterManager.get(type) + percentage);
-		Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage("§6Er is een " + type.toString().toLowerCase() + "booster geactiveerd door §c" + player.getName() + " §6van" +
-				" §c" + percentage + "%§6."));
+		Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(Message.BOOSTERS_ACTIVATED_BROADCAST.format(type.toString().toLowerCase(),
+				player.getName(), percentage)));
 	}
 
 }

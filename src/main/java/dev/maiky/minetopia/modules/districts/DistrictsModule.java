@@ -6,8 +6,12 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.districts.commands.DistrictsCommand;
+import dev.maiky.minetopia.modules.districts.listeners.JoinListener;
+import dev.maiky.minetopia.modules.districts.listeners.MovementListener;
+import dev.maiky.minetopia.modules.districts.listeners.QuitListener;
 import dev.maiky.minetopia.modules.players.PlayersModule;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import lombok.Getter;
 import me.lucko.helper.Events;
@@ -91,32 +95,12 @@ public class DistrictsModule implements MinetopiaModule {
 	private static final HashMap<String, String> blockCache = new HashMap<>();
 
 	private void registerEvents() {
-		Events.subscribe(PlayerJoinEvent.class, EventPriority.LOWEST)
-				.handler(e -> locationCache.put(e.getPlayer().getUniqueId(), getCurrentLocation(e.getPlayer())))
-				.bindWith(composite);
-
-		Events.subscribe(PlayerQuitEvent.class)
-				.handler(e -> locationCache.remove(e.getPlayer().getUniqueId()))
-				.bindWith(composite);
-
-		Events.subscribe(PlayerMoveEvent.class)
-				.filter(e -> e.getFrom().distanceSquared(e.getFrom()) >= 0)
-				.handler(e -> {
-					String current = getCurrentLocation(e.getPlayer());
-					if (!current.equals(locationCache.get(e.getPlayer().getUniqueId()))) {
-						locationCache.put(e.getPlayer().getUniqueId(), current);
-						PlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).initialize();
-						String color = getLocationCache().get(e.getPlayer().getUniqueId()) == null ? PlayersModule.getInstance().getCityColor()
-								: getBlockCache().get(getLocationCache().get(e.getPlayer().getUniqueId()));
-						e.getPlayer().sendTitle(Text.colors("&"
-						+ color + "Welkom in"), Text.colors("&" + color
-								+ current), 20, 50, 20);
-					}
-				})
-				.bindWith(composite);
+		this.composite.bindModule(new JoinListener());
+		this.composite.bindModule(new QuitListener());
+		this.composite.bindModule(new MovementListener());
 	}
 
-	private String getCurrentLocation(Player player) {
+	public static String getCurrentLocation(Player player) {
 		Configuration configuration = Minetopia.getPlugin(Minetopia.class)
 				.districtsModule.getConfiguration();
 		Location location = player.getLocation();
@@ -137,7 +121,7 @@ public class DistrictsModule implements MinetopiaModule {
 
 		commandManager.getCommandConditions().addCondition(Player.class, "lookingAtBlock", (context, execContext, value) -> {
 			if (value.getTargetBlock(null, 50) == null) {
-				throw new ConditionFailedException("Je kijkt niet naar een blok!");
+				throw new ConditionFailedException(Message.COMMON_ERROR_NOTLOOKINGATBLOCK.raw());
 			}
 		});
 
@@ -145,7 +129,7 @@ public class DistrictsModule implements MinetopiaModule {
 			try {
 				Material.valueOf(value.toUpperCase());
 			} catch (IllegalArgumentException exception) {
-				throw new ConditionFailedException("Dit is geen geldig block type!");
+				throw new ConditionFailedException(Message.COMMON_ERROR_INVALIDBLOCKTYPE.raw());
 			}
 		});
 

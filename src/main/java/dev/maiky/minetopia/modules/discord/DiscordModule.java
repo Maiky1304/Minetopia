@@ -46,7 +46,7 @@ public class DiscordModule implements MinetopiaModule {
 		Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
 
 		// Bot Token
-		final String botToken = minetopia.getConfiguration().get().getString("discord.token");
+		final String botToken = minetopia.getConfiguration().get().getString("discord.token", "");
 		if (botToken.length() == 0) {
 			Bukkit.getLogger().info("Discord Module is being disabled due to it being disabled for this server in the configuration.");
 			this.disable();
@@ -86,8 +86,7 @@ public class DiscordModule implements MinetopiaModule {
 		).queue();
 		jda.addEventListener(new StatsCommand());
 
-		MinecraftCommandLogger logger = new MinecraftCommandLogger(jda, minetopia.getConfiguration().get().getLong("discord", 736639994760003594L));
-		logger.register();
+		this.composite.bindModule(new MinecraftCommandLogger(jda, minetopia.getConfiguration().get().getLong("discord", 736639994760003594L)));
 	}
 
 	@Override

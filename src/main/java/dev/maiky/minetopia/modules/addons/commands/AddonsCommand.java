@@ -7,6 +7,7 @@ import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.addons.AddonsModule;
 import dev.maiky.minetopia.modules.addons.addon.Addon;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -24,14 +25,13 @@ import java.util.List;
 public class AddonsCommand extends BaseCommand {
 
 	@HelpCommand
-	@Description("Shows the subcommands")
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
@@ -51,11 +51,11 @@ public class AddonsCommand extends BaseCommand {
 
 		for (Addon addon : addonList) {
 			ChatColor color = addon.isEnabled() ? ChatColor.GREEN : ChatColor.RED;
-			builder.append(color).append(addon.getName()).append(ChatColor.RESET).append(", ");
+			builder.append(color).append(addon.getName()).append(ChatColor.RESET).append(Message.ADDONS_SEPERATOR.raw()).append(" ");
 		}
 
 		String raw = builder.substring(0, builder.length()-2);
-		sender.sendMessage("Addons (" + addonList.size() + "): " + raw);
+		sender.sendMessage(Message.ADDONS_VIEW.format(addonList.size(), raw));
 	}
 
 }

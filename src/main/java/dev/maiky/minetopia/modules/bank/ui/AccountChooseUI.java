@@ -4,6 +4,7 @@ import dev.maiky.minetopia.modules.bank.bank.Account;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import org.bukkit.OfflinePlayer;
@@ -25,7 +26,7 @@ public class AccountChooseUI extends Gui {
 	private final OfflinePlayer target;
 
 	public AccountChooseUI(Player player, Bank bank, OfflinePlayer target) {
-		super(player, 3, "§3Kies een rekening:");
+		super(player, 3, Message.BANKING_GUI_CHOOSEACCOUNT_TITLE.raw());
 
 		this.bank = bank;
 		this.target = target;

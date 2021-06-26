@@ -25,6 +25,8 @@ public class Verification {
 	private final JsonObject response;
 	private final JavaPlugin plugin;
 
+	private final boolean result;
+
 	public Verification(JavaPlugin plugin, String key) throws IOException {
 		this.key = key;
 		this.plugin = plugin;
@@ -33,6 +35,7 @@ public class Verification {
 
 		Response res = this.response();
 		if (res != Response.VALID) {
+			this.result = false;
 			if ( res == Response.BANNED ) {
 				plugin.getLogger().warning("De plugin is uitgeschakeld omdat het IP adres van de machine waar deze server op draait verbannen is van de license server.");
 			} else {
@@ -41,7 +44,13 @@ public class Verification {
 			Bukkit.getServer().getPluginManager().disablePlugin(plugin);
 			return;
 		}
+
+		this.result = true;
 		Bukkit.getLogger().info("License key succesvol gevalideerd, bedankt voor het gebruiken maken van een plugin van maiky.dev meer plugins nodig join dan onze discord: https://discord.gg/UP984CFcns");
+	}
+
+	public boolean failed() {
+		return !this.result;
 	}
 
 	private Response response() {

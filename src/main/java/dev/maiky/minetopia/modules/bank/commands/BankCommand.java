@@ -14,6 +14,7 @@ import dev.maiky.minetopia.modules.bank.manager.PinManager;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -49,25 +50,21 @@ public class BankCommand extends BaseCommand {
 		this.pinManager = pinManager;
 	}
 
-	@HelpCommand
 	@Default
-	@Subcommand("main")
-	@Description("Shows the subcommands")
+	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Subcommand("deletepinconsole")
@@ -75,12 +72,12 @@ public class BankCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.banking.delete")
 	public void onDelete(Player player) {
 		Block targetBlock = player.getTargetBlock(null, 15);
-		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException("Je kijkt niet naar een pin console blok!");
+		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException(Message.BANKING_ERROR_PINCONSOLE_LOOKING.raw());
 
 		Console console = this.pinManager.find(targetBlock.getLocation());
-		if (console == null) throw new ConditionFailedException("Geen registratie gevonden!");
+		if (console == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOREGISTRATION.raw());
 		this.pinManager.delete(console);
-		player.sendMessage("§6You have succesfully deleted the pin console you were looking at.");
+		player.sendMessage(Message.BANKING_PINCONSOLE_DELETED.raw());
 	}
 
 	@Subcommand("setupconsole")
@@ -89,16 +86,15 @@ public class BankCommand extends BaseCommand {
 	@Syntax("<soort> <id>")
 	@CommandCompletion("@bankTypes @nothing")
 	public void onSetup(Player player, @Conditions("noPrivate") Bank bank, int id) {
-		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException("There was no bank account found in the category "
-				+ bank.toString() + " with the ID " + id + ".");
+		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString(), id));
 
 		Block targetBlock = player.getTargetBlock(null, 15);
-		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException("Je kijkt niet naar een pin console blok!");
+		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException(Message.BANKING_ERROR_PINCONSOLE_LOOKING.raw());
 
 		Console console = new Console(targetBlock.getLocation(), id, bank);
 		this.pinManager.insert(console);
 
-		player.sendMessage("§6You have succesfully setup a pin console with the ID §c" + id + " §6in the category §c" + bank.toString().toLowerCase() + "§6.");
+		player.sendMessage(Message.BANKING_PINCONSOLE_SUCCESS.format(id, bank.toString().toLowerCase()));
 	}
 
 	@Subcommand("create")
@@ -107,10 +103,8 @@ public class BankCommand extends BaseCommand {
 	@Syntax("<soort>")
 	@CommandCompletion("@bankTypes")
 	public void createAccount(Player player, @Conditions("noPrivate") Bank bank) {
-		String message = "§6You have succesfully created a bank account with the ID §c%s§6 in the category §c%s§6.";
 		Account account = this.manager.createAccount(bank);
-
-		player.sendMessage(String.format(Text.colors(message), account.getId(), account.getBank().toString()));
+		player.sendMessage(Message.BANKING_ACCOUNT_SUCCESS.format(account.getId(), account.getBank().toString()));
 	}
 
 	@Subcommand("delete")
@@ -119,12 +113,11 @@ public class BankCommand extends BaseCommand {
 	@Syntax("<soort> <id>")
 	@CommandCompletion("@bankTypes @nothing")
 	public void deleteAccount(Player player, @Conditions("noPrivate") Bank bank, int id) {
-		String message = "§6You have succesfully deleted a bank account with the ID §c%s§6 in the category §c%s§6.";
-		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException("There was no bank account found in the category "
-		+ bank.toString() + " with the ID " + id + ".");
+		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT
+				.format(bank.toString().toLowerCase(), id));
 
 		this.manager.deleteAccount(bank, id);
-		player.sendMessage(String.format(Text.colors(message), id, bank.toString()));
+		player.sendMessage(Message.BANKING_ACCOUNT_DELETED.format(id, bank.toString().toLowerCase()));
 	}
 
 	@Subcommand("grant")
@@ -133,29 +126,22 @@ public class BankCommand extends BaseCommand {
 	@CommandCompletion("@bankTypes @nothing @players @bankPermissions")
 	@CommandPermission("minetopia.moderation.banking.permissions.grant")
 	public void createOverride(Player player, @Conditions("noPrivate") Bank bank, int id, OfflinePlayer target, Permission permission) {
-		String message = "&6You have succesfully created the override &c%s &6for the player &c%s &6on the bank account with the ID &c%s &6in the" +
-				" category &c%s&6.";
-
 		Account account = this.manager.getAccount(bank, id);
-		if (account == null) throw new ConditionFailedException("There was no bank account found in the category "
-				+ bank.toString() + " with the ID " + id + ".");
+		if (account == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
+				id));
 
-		if (account.getPermissions().containsKey(target.getUniqueId()) && account.getPermissions().get(target.getUniqueId()).contains(permission)) throw new ConditionFailedException("The player " + target.getName()
-		+ " already has the permission override " + permission.toString() + " set to §4true §con the bank account with the ID " + id + " in the" +
-				" category " + bank.toString() + ".");
+		if (account.getPermissions().containsKey(target.getUniqueId()) && account.getPermissions().get(target.getUniqueId()).contains(permission)) throw new ConditionFailedException(
+				Message.BANKING_ERROR_ALREADYHASPERMISSION.format(target.getName())
+		);
 
 		List<Permission> overrides = account.getPermissions().containsKey(target.getUniqueId()) ? account.getPermissions().get(target.getUniqueId())
 				: new ArrayList<>();
 		if (permission == Permission.ALL && (overrides.contains(Permission.DEPOSIT) && overrides.contains(Permission.WITHDRAW)))
-			throw new ConditionFailedException("The player " + target.getName()
-					+ " already has all the permission overrides set to §4true §con the bank account with the ID " + id + " in the" +
-					" category " + bank.toString() + ".");
+			throw new ConditionFailedException(Message.BANKING_ERROR_ALREADYHASALLPERMISSIONS.format(target.getName()));
 
 		if (permission == Permission.ALL) {
 			if (overrides.contains(Permission.ALL))
-				throw new ConditionFailedException("The player " + target.getName()
-						+ " already has all the permission overrides set to §4true §con the bank account with the ID " + id + " in the" +
-						" category " + bank.toString() + ".");
+				throw new ConditionFailedException(Message.BANKING_ERROR_ALREADYHASALLPERMISSIONS.format(target.getName()));
 			overrides.clear();
 			overrides.add(Permission.ALL);
 		} else {
@@ -170,7 +156,8 @@ public class BankCommand extends BaseCommand {
 		account.getPermissions().put(target.getUniqueId(), overrides);
 		manager.saveAccount(account);
 
-		player.sendMessage(String.format(Text.colors(message), permission.toString(), target.getName(), id, bank.toString()));
+		player.sendMessage(Message.BANKING_OVERRIDES_SUCCESS.format(permission.toString().toLowerCase(), target.getName(), id,
+				bank.toString().toLowerCase()));
 	}
 
 	@Subcommand("revoke")
@@ -179,20 +166,15 @@ public class BankCommand extends BaseCommand {
 	@CommandCompletion("@bankTypes @nothing @players @bankPermissions")
 	@CommandPermission("minetopia.moderation.banking.permissions.revoke")
 	public void revokeOverride(Player player, @Conditions("noPrivate") Bank bank, int id, OfflinePlayer offlinePlayer, Permission permission) {
-		String message = "&6You have succesfully revoked the override &c%s &6for the player &c%s &6on the bank account with the ID &c%s &6in the" +
-				" category &c%s&6.";
-
 		Account account = this.manager.getAccount(bank, id);
-		if ( account == null ) throw new ConditionFailedException("There was no bank account found in the category "
-				+ bank.toString() + " with the ID " + id + ".");
+		if ( account == null ) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
+				id));
 
 		if ( !account.getPermissions().containsKey(offlinePlayer.getUniqueId()) ||
 				(account.getPermissions().containsKey(offlinePlayer.getUniqueId()) && (!account.getPermissions()
 						.get(offlinePlayer.getUniqueId()).contains(Permission.ALL) && !account.getPermissions()
 						.get(offlinePlayer.getUniqueId()).contains(permission))) )
-			throw new ConditionFailedException("The player " + offlinePlayer.getName()
-					+ " doesn't have the permission override " + permission.toString() + " set to §4true §con the bank account with the ID " + id + " in the" +
-					" category " + bank.toString() + ".");
+			throw new ConditionFailedException(Message.BANKING_ERROR_DOESNTHAVEPERMISSION.format(offlinePlayer.getName()));
 
 		List<Permission> overrides = account.getPermissions().containsKey(offlinePlayer.getUniqueId()) ? account.getPermissions().get(offlinePlayer.getUniqueId())
 				: new ArrayList<>();
@@ -212,7 +194,8 @@ public class BankCommand extends BaseCommand {
 		else account.getPermissions().put(offlinePlayer.getUniqueId(), overrides);
 		manager.saveAccount(account);
 
-		player.sendMessage(String.format(Text.colors(message), permission.toString(), offlinePlayer.getName(), id, bank.toString()));
+		player.sendMessage(Message.BANKING_OVERRIDES_DELETED.format(permission.toString().toLowerCase(), offlinePlayer.getName(), id, bank.toString()
+		.toLowerCase()));
 	}
 
 	@Subcommand("list")
@@ -223,18 +206,16 @@ public class BankCommand extends BaseCommand {
 	public void listAccounts(Player player, @Conditions("noPrivate") Bank bank, @Default("1") int page) {
 		int perPage = 10;
 
-		String header = "&6------ &cPagina %s/%s &6------";
-
 		List<Account> accounts = this.manager.allAccounts(bank);
 		int pages = accounts.size() / perPage;
 
-		if (page > (pages + 1)) throw new ConditionFailedException("Er bestaat geen pagina met dit nummer.");
+		if (page > (pages + 1)) throw new ConditionFailedException(Message.BANKING_LIST_PAGENOTFOUND.raw());
 		int index = (page - 1) * perPage;
 		int max = index + perPage;
 
-		player.sendMessage(Text.colors(String.format(header, page, (pages + 1))));
+		player.sendMessage(Message.BANKING_LIST_HEADER.format(page, (pages + 1)));
 		if (accounts.size() == 0) {
-			player.sendMessage("§cEr zijn nog geen rekeningen in deze categorie.");
+			player.sendMessage(Message.BANKING_LIST_NOACCOUNTS.raw());
 		} else {
 			for (int j = index; j < max; j++) {
 				try {
@@ -266,17 +247,14 @@ public class BankCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.banking.rename")
 	@CommandCompletion("@bankTypes @nothing @nothing")
 	public void rename(Player player, @Conditions("noPrivate") Bank bank, int id, String[] name) {
-		String message = "&6You have succesfully renamed the the bank account with the ID &c%s &6in the" +
-				" category &c%s&6 to &c%s&6.";
-
 		if (name.length == 0) {
 			this.showSyntax(getCurrentCommandIssuer(), this.getDefaultRegisteredCommand());
 			return;
 		}
 
 		Account account = this.manager.getAccount(bank, id);
-		if (account == null) throw new ConditionFailedException("There was no bank account found in the category "
-				+ bank.toString() + " with the ID " + id + ".");
+		if (account == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
+				id));
 
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i != name.length; i++)
@@ -285,7 +263,9 @@ public class BankCommand extends BaseCommand {
 
 		account.setCustomName(nameProcessed);
 		this.manager.saveAccount(account);
-		player.sendMessage(Text.colors(String.format(message, account.getId(), bank.toString(), nameProcessed)));
+		player.sendMessage(Message.BANKING_ACCOUNT_RENAMED.format(nameProcessed));
 	}
+
+
 
 }

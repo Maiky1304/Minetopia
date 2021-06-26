@@ -1,6 +1,5 @@
 package dev.maiky.minetopia.modules.players.classes;
 
-import dev.maiky.minetopia.modules.boosters.booster.booster.Booster;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.players.PlayersModule;

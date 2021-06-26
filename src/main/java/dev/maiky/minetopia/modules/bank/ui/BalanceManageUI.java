@@ -6,8 +6,8 @@ import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
-import dev.maiky.minetopia.util.Text;
 import lombok.Setter;
 import me.lucko.helper.Events;
 import me.lucko.helper.item.ItemStackBuilder;
@@ -52,9 +52,9 @@ public class BalanceManageUI extends Gui {
 	private final OfflinePlayer target;
 
 	public BalanceManageUI(Player player, Account account, OfflinePlayer target) {
-		super(player, 6, "&3Saldo: &b" + (account == null ? target == null ? Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(player))
+		super(player, 6, Message.BANKING_GUI_BALANCE_TITLE.format((account == null ? target == null ? Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(player))
 				: Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(target))
-				: Numbers.convert(Numbers.Type.MONEY, account.getBalance())));
+				: Numbers.convert(Numbers.Type.MONEY, account.getBalance()))));
 		this.account = account;
 		this.manager = BankManager.with(DataModule.getInstance().getSqlHelper());
 		this.target = target;
@@ -256,13 +256,12 @@ public class BalanceManageUI extends Gui {
 
 	public void withdraw(InventoryClickEvent event, double amount, boolean mass) {
 		if (!hasPermission(Permission.WITHDRAW)) {
-			getPlayer().sendMessage("§cJe mist het §4" + Permission.WITHDRAW.getLabel() + " §cvoor deze rekening, vraag toestemming aan de rekeninghouder.");
+			getPlayer().sendMessage(Message.BANKING_GUI_BALANCE_ERROR_MISSINGPERMISSIONS.format(Permission.WITHDRAW.getLabel()));
 			return;
 		}
 
 		ItemStack clone = event.getCurrentItem().clone();
 
-		String messageToSend = "§6Je hebt §c%s §6opgenomen van je %s rekening.";
 		ClickType type = event.getClick();
 
 		if (type == ClickType.LEFT) {
@@ -270,12 +269,12 @@ public class BalanceManageUI extends Gui {
 				OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
 
 				if (!economy.has(local, amount)) {
-					getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+					getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 					return;
 				}
 
 				if (availableItemSpace(event.getCurrentItem().getType()) == 0) {
-					getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+					getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 					return;
 				}
 
@@ -284,16 +283,16 @@ public class BalanceManageUI extends Gui {
 					getPlayer().getInventory().addItem(getCash(amount, 1));
 				}
 
-				event.getWhoClicked().sendMessage(Text.colors(String.format(messageToSend, Numbers.convert(Numbers.Type.MONEY, amount),
-						Bank.PERSONAL.label.toLowerCase())));
+				event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, amount),
+						Bank.PERSONAL.label.toLowerCase()));
 			} else {
 				if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < amount) {
-					getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+					getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 					return;
 				}
 
 				if (availableItemSpace(event.getCurrentItem().getType()) == 0) {
-					getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+					getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 					return;
 				}
 
@@ -301,15 +300,15 @@ public class BalanceManageUI extends Gui {
 
 					getPlayer().getInventory().addItem(getCash(amount, 1));
 
-					event.getWhoClicked().sendMessage(Text.colors(String.format(messageToSend, Numbers.convert(Numbers.Type.MONEY, amount),
-							this.account.getBank().label.toLowerCase())));
+					event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, amount),
+							this.account.getBank().label.toLowerCase()));
 				}
 			}
 
 			new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
 		} else if (type == ClickType.RIGHT && mass) {
 			getPlayer().closeInventory();
-			getPlayer().sendMessage("§7Voer een hoeveelheid §ebriefjes §7in die je wilt opnemen:");
+			getPlayer().sendMessage(Message.BANKING_GUI_BALANCE_QUESTION_AMOUNT.raw());
 
 			Events.subscribe(AsyncPlayerChatEvent.class)
 					.filter(e -> e.getPlayer().equals(getPlayer()))
@@ -328,7 +327,7 @@ public class BalanceManageUI extends Gui {
 							items = Integer.parseInt(message);
 						} catch (NumberFormatException exception) {
 							new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
-							getPlayer().sendMessage("§cDit is geen geldig getal!");
+							getPlayer().sendMessage(Message.COMMON_ERROR_NOTANUMBER.raw());
 							return;
 						}
 
@@ -337,13 +336,13 @@ public class BalanceManageUI extends Gui {
 
 							if (!economy.has(local, amount * items)) {
 								new BalanceManageUI(getPlayer(), null, this.target).open();
-								getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+								getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 								return;
 							}
 
 							if (availableItemSpace(clone.getType()) < items) {
 								new BalanceManageUI(getPlayer(), null, this.target).open();
-								getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+								getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 								return;
 							}
 
@@ -354,12 +353,12 @@ public class BalanceManageUI extends Gui {
 						} else {
 							if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < (amount * items)) {
 								new BalanceManageUI(getPlayer(), account, this.target).open();
-								getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+								getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 								return;
 							}
 
 							if (availableItemSpace(clone.getType()) < items) {
-								getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+								getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 								return;
 							}
 
@@ -376,17 +375,14 @@ public class BalanceManageUI extends Gui {
 
 	private void depositBig(InventoryClickEvent event, Material material, int items) {
 		if (!hasPermission(Permission.DEPOSIT)) {
-			getPlayer().sendMessage("§cJe mist het §4" + Permission.DEPOSIT.getLabel() + " §cvoor deze rekening, vraag toestemming aan de rekeninghouder.");
+			getPlayer().sendMessage(Message.BANKING_GUI_BALANCE_ERROR_MISSINGPERMISSIONS.format(Permission.DEPOSIT.getLabel()));
 			return;
 		}
-
-		String message = "§6Je hebt §c%s §6gestort op je %s rekening.";
-		String message2 = "§cHet geld wat je probeert te storten wordt niet geaccepteerd door de pinautomaat.";
 
 		int itemsToGive = event.getClick() == ClickType.RIGHT ? 1 : items;
 
 		if (!this.verifyLegitMoney(event.getCurrentItem().getItemMeta())) {
-			event.getWhoClicked().sendMessage(message2);
+			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_COUNTERFEIT.raw());
 			return;
 		}
 
@@ -406,8 +402,8 @@ public class BalanceManageUI extends Gui {
 				}
 			}
 
-			event.getWhoClicked().sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
-					Bank.PERSONAL.label.toLowerCase())));
+			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_DEPOSIT.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
+					Bank.PERSONAL.label.toLowerCase()));
 		} else {
 			manager.getAccount(this.account.getBank(), this.account.getId()).deposit(MAPPING.get(material) * itemsToGive);
 
@@ -421,8 +417,8 @@ public class BalanceManageUI extends Gui {
 				event.setCurrentItem(null);
 			}
 
-			event.getWhoClicked().sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
-					this.account.getBank().label.toLowerCase())));
+			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_DEPOSIT.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
+					account.getBank().label.toLowerCase()));
 		}
 
 		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
@@ -430,23 +426,22 @@ public class BalanceManageUI extends Gui {
 
 	public void withdrawBig(InventoryClickEvent event, Material material, int items) {
 		if (!hasPermission(Permission.WITHDRAW)) {
-			getPlayer().sendMessage("§cJe mist het §4" + Permission.WITHDRAW.getLabel() + " §cvoor deze rekening, vraag toestemming aan de rekeninghouder.");
+			getPlayer().sendMessage(Message.BANKING_GUI_BALANCE_ERROR_MISSINGPERMISSIONS.format(Permission.WITHDRAW.getLabel()));
 			return;
 		}
 
-		String message = "§6Je hebt §c%s §6opgenomen van je %s rekening.";
 		int itemsToGive = event.getClick() == ClickType.RIGHT ? 1 : items;
 
 		if (this.account == null) {
 			OfflinePlayer local = target == null ? Bukkit.getOfflinePlayer(getPlayer().getUniqueId()) : target;
 
 			if (!economy.has(local, MAPPING.get(material) * itemsToGive)) {
-				getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+				getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 				return;
 			}
 
 			if (availableItemSpace(material) < itemsToGive) {
-				getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+				getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 				return;
 			}
 
@@ -454,23 +449,23 @@ public class BalanceManageUI extends Gui {
 			if (response.transactionSuccess()) {
 				getPlayer().getInventory().addItem(getCash(MAPPING.get(material), itemsToGive));
 			}
-			event.getWhoClicked().sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
-					Bank.PERSONAL.label.toLowerCase())));
+			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
+					Bank.PERSONAL.label.toLowerCase()));
 		} else {
 			if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < MAPPING.get(material) * itemsToGive) {
-				getPlayer().sendMessage("§cJe hebt geen genoeg geld voor deze transactie.");
+				getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 				return;
 			}
 
 			if (availableItemSpace(material) < itemsToGive) {
-				getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+				getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 				return;
 			}
 
 			manager.getAccount(this.account.getBank(), this.account.getId()).withdraw(MAPPING.get(material) * itemsToGive);
 			getPlayer().getInventory().addItem(getCash(MAPPING.get(material), itemsToGive));
-			event.getWhoClicked().sendMessage(Text.colors(String.format(message, Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
-					this.account.getBank().label.toLowerCase())));
+			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
+					this.account.getBank().label.toLowerCase()));
 		}
 
 		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();

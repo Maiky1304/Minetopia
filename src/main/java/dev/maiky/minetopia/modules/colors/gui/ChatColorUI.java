@@ -4,7 +4,7 @@ import dev.maiky.minetopia.modules.colors.fonts.FontSet;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
-import dev.maiky.minetopia.util.Text;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;
@@ -73,7 +73,7 @@ public class ChatColorUI extends Gui {
 			.mask("100000001");
 
 	public ChatColorUI(Player player, int page) {
-		super(player, 4, "§0Kies een chatkleur");
+		super(player, 6, Message.COLORS_GUI_CHATCOLOR_TITLE.setLimit(32).raw());
 		this.page = page;
 		this.user = PlayerManager.getCache().get(player.getUniqueId());
 
@@ -87,26 +87,24 @@ public class ChatColorUI extends Gui {
 				.name("§7Standaard chatkleur").lore("§a[Unlocked]").build(), ChatColor.CHATCOLOR_NORMAL_GRAY.toString().toLowerCase()))
 		.build(() -> {
 			this.user.setCurrentChatColor(ChatColor.CHATCOLOR_NORMAL_GRAY);
-			String message = "&6Je hebt de kleur van je chat veranderd naar &c%s&6.";
-			getPlayer().sendMessage(String.format(Text.colors(message), "Standaard chatkleur"));
+			getPlayer().sendMessage(Message.COLORS_GUI_COLORCHANGED.format("chat", "Standaard levelkleur"));
 		}));
 
 		for (ChatColor color : this.user.getChatColors().keySet()) {
 			String expiry = this.user.getChatColors().get(color);
 			boolean permanent = expiry.equals("-");
 
-			String[] lore;
+			List<String> lore;
 			if (permanent) {
-				lore = new String[]{"§a[Unlocked]"};
-			} else lore = new String[]{"§a[Unlocked]", "Verloopt op " + new SimpleDateFormat("dd/MM/yyyy HH:mm")
-			.format(new Date(Long.parseLong(expiry)))};
+				lore = Message.COLORS_GUI_UNLOCKEDLORE_PERMANENT.formatAsList();
+			} else lore = Message.COLORS_GUI_UNLOCKEDLORE_TEMPORARY.formatAsList(new SimpleDateFormat("dd/MM/yyyy HH:mm")
+					.format(new Date(Long.parseLong(expiry))));
 
 			Item item = ItemStackBuilder.of(nbtFormat(ItemStackBuilder.of(Material.IRON_INGOT)
 					.name("§" + color.getColor() + (color.font ? FontSet.process(color.itemName) : color.itemName)).lore(lore).build(), color.toString().toLowerCase()))
 					.build(() -> {
 						this.user.setCurrentChatColor(color);
-						String message = "&6Je hebt de kleur van je chat veranderd naar &c%s&6.";
-						getPlayer().sendMessage(String.format(Text.colors(message), color.itemName));
+						getPlayer().sendMessage(Message.COLORS_GUI_COLORCHANGED.format("chat", "Standaard levelkleur"));
 					});
 			this.colorItems.add(item);
 		}

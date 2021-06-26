@@ -1,7 +1,7 @@
 package dev.maiky.minetopia.modules.players.tasks;
 
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.boosters.booster.tasks.BoostTask;
+import dev.maiky.minetopia.modules.boosters.tasks.BoostTask;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;

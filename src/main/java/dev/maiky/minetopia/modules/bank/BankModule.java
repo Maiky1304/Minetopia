@@ -8,9 +8,12 @@ import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
 import dev.maiky.minetopia.modules.bank.commands.BankCommand;
 import dev.maiky.minetopia.modules.bank.commands.PinCommand;
+import dev.maiky.minetopia.modules.bank.listeners.ATMInteractListener;
+import dev.maiky.minetopia.modules.bank.listeners.DebitCardListener;
 import dev.maiky.minetopia.modules.bank.manager.PinManager;
 import dev.maiky.minetopia.modules.bank.ui.BankChooseUI;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -67,27 +70,15 @@ public class BankModule implements MinetopiaModule {
 		manager.getCommandCompletions().registerStaticCompletion("bankTypes", Bank.list());
 		manager.getCommandCompletions().registerStaticCompletion("bankPermissions", Permission.list());
 		manager.getCommandConditions().addCondition(Bank.class, "noPrivate", (context, execContext, value) -> {
-			if (value == Bank.PERSONAL) throw new ConditionFailedException("You are not allowed to use Private bank type!");
+			if (value == Bank.PERSONAL) throw new ConditionFailedException(Message.BANKING_ERROR_NOPRIVATE.raw());
 		});
 		manager.registerCommand(new BankCommand(this.pinManager));
 		manager.registerCommand(new PinCommand(this.pinManager));
 	}
 
 	private void registerEvents() {
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(PlayerInteractEvent::hasBlock)
-				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
-				.filter(e -> e.getClickedBlock().getType() == Material.RED_SANDSTONE_STAIRS)
-				.handler(e -> {
-					e.setCancelled(true);
-					new BankChooseUI(e.getPlayer(), null).open();
-				})
-		.bindWith(composite);
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(PlayerInteractEvent::hasItem)
-				.filter(BankModule::isBankCard)
-				.handler(e -> e.getPlayer().sendMessage("§6Banksaldo: §c" + Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(e.getPlayer()))))
-		.bindWith(composite);
+		this.composite.bindModule(new ATMInteractListener());
+		this.composite.bindModule(new DebitCardListener());
 	}
 
 	public static boolean isBankCard(PlayerInteractEvent event) {

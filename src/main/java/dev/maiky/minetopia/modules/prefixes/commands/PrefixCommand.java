@@ -10,6 +10,7 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.prefixes.ui.PrefixUI;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -31,6 +32,17 @@ public class PrefixCommand extends BaseCommand {
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
 		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Default
@@ -76,12 +88,6 @@ public class PrefixCommand extends BaseCommand {
 
 		String message = "&6Success! You have added the prefix &c%s &6to the player &c%s&6.";
 		sender.sendMessage(String.format(Text.colors(message), output, offlinePlayer.getName()));
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
 	}
 
 	@Subcommand("remove")
@@ -170,13 +176,6 @@ public class PrefixCommand extends BaseCommand {
 
 		String message = "&6Success! Cleared all of &c%s &6their prefixes.";
 		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName()));
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
 	}
 
 }

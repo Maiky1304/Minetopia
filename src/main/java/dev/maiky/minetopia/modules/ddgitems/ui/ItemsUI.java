@@ -3,6 +3,7 @@ package dev.maiky.minetopia.modules.ddgitems.ui;
 import dev.maiky.minetopia.modules.ddgitems.items.ItemLoader;
 import dev.maiky.minetopia.modules.ddgitems.items.classes.ItemData;
 import dev.maiky.minetopia.modules.ddgitems.items.classes.ItemType;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuPopulator;
@@ -26,7 +27,7 @@ public class ItemsUI extends Gui {
 	private final int page;
 
 	public ItemsUI(Player player, ItemType type, int page) {
-		super(player, 6, "§3DDG Items §7- §0Pagina " + (page + 1));
+		super(player, 6, Message.DDGITEMS_CATEGORY_TITLE.format((page + 1)));
 		this.type = type;
 		this.page = page;
 		this.prepare();
@@ -113,13 +114,13 @@ public class ItemsUI extends Gui {
 				{
 					if (custom.size() == 0) {
 						if (getPlayer().getInventory().firstEmpty() == -1) {
-							getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+							getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 							return;
 						}
 						getPlayer().getInventory().addItem(itemStack);
 					}else{
 						if (getPlayer().getInventory().firstEmpty() == -1) {
-							getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte hiervoor.");
+							getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 							return;
 						}
 
@@ -127,7 +128,7 @@ public class ItemsUI extends Gui {
 
 						for (ItemData data1 : custom) {
 							if (getPlayer().getInventory().firstEmpty() == -1) {
-								getPlayer().sendMessage("§cJe hebt geen genoeg inventory ruimte om nog meer items te storen.");
+								getPlayer().sendMessage(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 								break;
 							}
 
@@ -146,14 +147,14 @@ public class ItemsUI extends Gui {
 
 		MenuPopulator close = this.CLOSE.newPopulator(this);
 		while(close.hasSpace())
-			close.accept(ItemStackBuilder.of(Material.BARRIER).name("&cSluit het menu").build(this::close));
+			close.accept(ItemStackBuilder.of(Material.BARRIER).name(Message.COMMON_GUI_CLOSEMENU.raw()).build(this::close));
 
 		MenuPopulator paginator = this.PAGINATION.newPopulator(this);
 		for (int i = 0; i < 2; i ++) {
 			if (i == 0) {
 				if (this.page != 0 && this.page <= pages) {
 					paginator.accept(ItemStackBuilder.of(Material.ARROW)
-							.name("Vorige pagina").build(() -> new ItemsUI(getPlayer(), this.type, page - 1).open()));
+							.name(Message.COMMON_GUI_PAGEBACKWARDS.raw()).build(() -> new ItemsUI(getPlayer(), this.type, page - 1).open()));
 				} else {
 					paginator.accept(ItemStackBuilder.of(Material.AIR)
 							.buildItem().build());
@@ -161,7 +162,7 @@ public class ItemsUI extends Gui {
 			} else {
 				if (this.page != pages) {
 					paginator.accept(ItemStackBuilder.of(Material.ARROW)
-							.name("Volgende pagina").build(() -> new ItemsUI(getPlayer(), this.type, page + 1).open()));
+							.name(Message.COMMON_GUI_PAGEFORWARD.raw()).build(() -> new ItemsUI(getPlayer(), this.type, page + 1).open()));
 				} else {
 					paginator.accept(ItemStackBuilder.of(Material.AIR)
 							.buildItem().build());

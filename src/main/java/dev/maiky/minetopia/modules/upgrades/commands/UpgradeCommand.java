@@ -10,6 +10,7 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.ui.UpgradeUI;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -28,6 +29,22 @@ import java.util.UUID;
 @CommandPermission("minetopia.common.upgrades")
 public class UpgradeCommand extends BaseCommand {
 
+	@HelpCommand
+	public void onHelp(CommandSender sender) {
+		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
+	@Override
+	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
+	}
+
 	@Default
 	@Conditions("MTUser")
 	@Subcommand("main")
@@ -35,12 +52,6 @@ public class UpgradeCommand extends BaseCommand {
 	public void onUpgrade(Player player) {
 		UpgradeUI upgradeUI = new UpgradeUI(player);
 		upgradeUI.open();
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
 	}
 
 	@Subcommand("info")
@@ -106,18 +117,6 @@ public class UpgradeCommand extends BaseCommand {
 
 		String message = "§6Success! Upgrades of §c%s §6were decreased by §c%s§6 their balance is now §c%s&6.";
 		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName(), amount, upgrades.getPoints()));
-	}
-
-	@Override
-	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
-	}
-
-	@HelpCommand
-	public void onHelp(CommandSender sender) {
-		Minetopia.showHelp(sender, this, getSubCommands());
 	}
 
 }

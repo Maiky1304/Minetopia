@@ -17,7 +17,6 @@ import dev.maiky.minetopia.modules.discord.DiscordModule;
 import dev.maiky.minetopia.modules.districts.DistrictsModule;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.items.ItemsModule;
-import dev.maiky.minetopia.modules.leaderboards.LeaderboardsModule;
 import dev.maiky.minetopia.modules.levels.LevelsModule;
 import dev.maiky.minetopia.modules.notifications.NotificationsModule;
 import dev.maiky.minetopia.modules.players.PlayersModule;
@@ -27,6 +26,7 @@ import dev.maiky.minetopia.modules.security.SecurityModule;
 import dev.maiky.minetopia.modules.transportation.TransportationModule;
 import dev.maiky.minetopia.modules.upgrades.UpgradesModule;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
 import me.lucko.helper.Services;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
@@ -61,7 +61,10 @@ public final class Minetopia extends ExtendedJavaPlugin {
 
 	// Configurations
 	@Getter
-	private Configuration configuration, migrations;
+	private Configuration configuration, migrations, messages;
+
+	// Instance
+	private static @Getter Minetopia instance;
 
 	// Modules
 	public PlayersModule playersModule;
@@ -82,7 +85,6 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	public GunsModule gunsModule;
 	public NotificationsModule notificationsModule;
 	public DiscordModule discordModule;
-	public LeaderboardsModule leaderboardsModule;
 	public AddonsModule addonsModule;
 	public BoosterModule boosterModule;
 
@@ -100,6 +102,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 
 	@Override
 	protected void enable() {
+		// Instance
+		instance = this;
+
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 		getLogger().info(" ");
@@ -135,6 +140,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		// Initialize the configurations
 		this.configuration = new Configuration(this, "config.yml");
 		this.migrations = new Configuration(this, "database/migrations.yml");
+		this.messages = new Configuration(this, "lang/dutch.yml");
 
 		// Initialize Repository
 		this.repository = Services.load(ProfileRepository.class);
@@ -144,15 +150,25 @@ public final class Minetopia extends ExtendedJavaPlugin {
 
 		// Load the configurations
 		this.getConfiguration().load();
-		this.getMigrations().load();
 
 		// Verification
 		try {
-			new Verification(this, this.getConfiguration().get().getString("license"));
+			Verification verification = new Verification(this, this.getConfiguration().get().getString("license"));
+
+			if (verification.failed()) {
+				getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
+				return;
+			}
 		} catch (IOException exception) {
+			getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 			this.setEnabled(false);
 			return;
 		}
+
+		this.getMigrations().load();
+		this.getMessages().load();
+
+		Message.loadAll();
 
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
@@ -175,7 +191,6 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.gunsModule = new GunsModule();
 		this.notificationsModule = new NotificationsModule();
 		this.discordModule = new DiscordModule();
-		this.leaderboardsModule = new LeaderboardsModule();
 		this.addonsModule = new AddonsModule();
 		this.boosterModule = new BoosterModule();
 
@@ -184,8 +199,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.loadModules(this.dataModule, this.playersModule, this.chatModule, this.upgradesModule, this.itemsModule,
 				this.plotsModule, this.levelsModule, this.districtsModule, this.securityModule, this.colorsModule,
 				this.prefixesModule, this.transportationModule, this.ddgItemsModule, this.bagsModule, this.bankModule,
-				this.discordModule, this.gunsModule, this.notificationsModule, this.leaderboardsModule, this.addonsModule,
-				this.boosterModule);
+				this.discordModule, this.gunsModule, this.notificationsModule, this.addonsModule, this.boosterModule);
 
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
@@ -210,6 +224,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		for (MinetopiaModule module : this.loadedModules.values()) {
 			this.getLogger().info(Text.colorize(String.format("     %s Module %s was succesfully unloaded!", Text.colorize("&c&l-&r"), Text.colorize("&b&l" + module.getName() + "&r"))));
 		}
+		if (this.loadedModules.size() == 0) {
+			this.getLogger().info(Text.colorize("     &cNo modules found... are you maybe blocked?"));
+		}
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
 		this.loadedModules.values().forEach(MinetopiaModule::disable);
@@ -233,6 +250,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		for (MinetopiaModule module : modules) {
 			this.getLogger().info(Text.colorize(String.format("     %s Module %s has succesfully loaded!", Text.colorize("&a&l+&r"), Text.colorize("&b&l" + module.getName() + "&r"))));
 		}
+		if (modules.length == 0) {
+			this.getLogger().info(Text.colorize("     &cNo modules found... are you maybe blocked?"));
+		}
 
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
@@ -252,7 +272,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	 * Default Help
 	 */
 	public static void showHelp(CommandSender issuer, BaseCommand baseCommand, SetMultimap<String, RegisteredCommand> multimap) {
-		issuer.sendMessage(String.format(dev.maiky.minetopia.util.Text.colors("&6/%s <subcommand> <arg>..."), baseCommand.getExecCommandLabel()));
+		issuer.sendMessage(Message.COMMON_COMMAND_HELP_HEADER.format(baseCommand.getExecCommandLabel()));
 		for (String subCommand : multimap.keys()) {
 			RegisteredCommand rc = multimap.get(subCommand).iterator().next();
 			if (rc.getHelpText() == null || rc.getHelpText().length()==1 || rc.getHelpText().length()==0)
@@ -266,11 +286,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 				}
 				if (failed) continue;
 			}
-			String message = "§a/%s §2%s §a%s§f- §a%s";
-			issuer.sendMessage(String.format(dev.maiky.minetopia.util.Text.colors(message),
-					baseCommand.getExecCommandLabel(),
+			issuer.sendMessage(Message.COMMON_COMMAND_HELP_EXAMPLE.format(baseCommand.getExecCommandLabel(),
 					rc.getPrefSubCommand().equals(" ") ? "" : rc.getPrefSubCommand(),
-					rc.getSyntaxText().equals(" ") ? "" : rc.getSyntaxText() + " ",
+					rc.getSyntaxText().equals(" ") ? "" : rc.getSyntaxText() + (rc.getHelpText().equals(" ") ? "" : " "),
 					rc.getHelpText().equals(" ") ? "" : rc.getHelpText()));
 		}
 	}

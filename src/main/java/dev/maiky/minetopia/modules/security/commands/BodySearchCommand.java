@@ -46,17 +46,6 @@ public class BodySearchCommand extends BaseCommand {
 
 	private static final HashMap<UUID, UUID> beingSearched = new HashMap<>();
 
-	@HelpCommand
-	public void onHelp(CommandSender sender) {
-		Minetopia.showHelp(sender, this, getSubCommands());
-	}
-
-	@CatchUnknown
-	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
-		this.onHelp(sender);
-	}
-
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
 		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
@@ -67,6 +56,7 @@ public class BodySearchCommand extends BaseCommand {
 	@Default
 	@Syntax("<player>")
 	@Description("Search a player")
+	@CommandCompletion("@players")
 	public void onSearch(Player player, @Conditions("online|notBeingSearched") OfflinePlayer offlinePlayer) {
 		final Player target = offlinePlayer.getPlayer();
 

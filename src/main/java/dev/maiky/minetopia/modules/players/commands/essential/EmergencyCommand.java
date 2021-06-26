@@ -10,6 +10,7 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.items.threads.message.Emergency;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.redis.Redis;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -32,15 +33,13 @@ public class EmergencyCommand extends BaseCommand {
 
 	@CatchUnknown
 	public void onUnknown(CommandSender sender) {
-		sender.sendMessage("§cUnknown subcommand");
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
 		this.onHelp(sender);
 	}
 
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Default

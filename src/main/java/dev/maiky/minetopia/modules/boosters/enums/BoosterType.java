@@ -1,6 +1,4 @@
-package dev.maiky.minetopia.modules.boosters.booster.enums;
-
-import dev.maiky.minetopia.modules.bank.bank.Bank;
+package dev.maiky.minetopia.modules.boosters.enums;
 
 import java.util.ArrayList;
 import java.util.Arrays;

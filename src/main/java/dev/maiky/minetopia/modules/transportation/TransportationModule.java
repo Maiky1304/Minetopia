@@ -8,6 +8,8 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PortalManager;
 import dev.maiky.minetopia.modules.transportation.commands.TransportationCommand;
+import dev.maiky.minetopia.modules.transportation.listeners.SignChangeListener;
+import dev.maiky.minetopia.modules.transportation.listeners.TeleporterUseListener;
 import dev.maiky.minetopia.modules.transportation.portal.LocalPortalData;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.modules.transportation.portal.PortalData;
@@ -85,83 +87,11 @@ public class TransportationModule implements MinetopiaModule {
 		commandManager.registerCommand(new TransportationCommand(this.configuration));
 	}
 
-	private final CooldownMap<Player> cooldownMap = CooldownMap.create(Cooldown.of(5, TimeUnit.SECONDS));
+	private static final @Getter CooldownMap<Player> cooldownMap = CooldownMap.create(Cooldown.of(5, TimeUnit.SECONDS));
 
 	private void registerEvents() {
-		Events.subscribe(PlayerInteractEvent.class)
-				.filter(PlayerInteractEvent::hasBlock)
-				.filter(e -> e.getAction() == Action.PHYSICAL)
-				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
-				.filter(e -> e.getClickedBlock().getRelative(BlockFace.UP).getType().equals(Material.WALL_SIGN))
-				.handler(e -> {
-					Sign sign = (Sign) e.getClickedBlock().getRelative(BlockFace.UP).getState();
-					String name = ChatColor.stripColor(sign.getLine(1));
-
-					PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
-					ConfigurationSection section = this.configuration.get().getConfigurationSection(Portal.BUKKIT.toString());
-
-					LocalPortalData data;
-					if (!section.contains(name)) {
-						PortalData portalData = manager.getPortalData(name);
-						data = new LocalPortalData(SerializationUtils.deserialize(portalData.getLocation()), portalData.getServer());
-					} else {
-						data = new LocalPortalData((Location) section.get(name + ".location"), null);
-					}
-
-					if (!cooldownMap.test(e.getPlayer()))
-						return;
-
-					if (data.getServer() == null) {
-						e.getPlayer().teleport(data.getLocation());
-					} else {
-						ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-						outputStream.writeUTF("Connect");
-						outputStream.writeUTF(data.getServer());
-					}
-
-					e.getPlayer().sendMessage("§6Je wordt nu geteleporteerd naar §c" + name + "§6.");
-				}).bindWith(composite);
-
-		Events.subscribe(SignChangeEvent.class)
-				.filter(e -> e.getLine(0).equalsIgnoreCase("[Portal]"))
-				.handler(e -> {
-					Portal type;
-					try {
-						type = Portal.valueOf(e.getLine(1).toUpperCase());
-					} catch (IllegalArgumentException exception) {
-						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal type!");
-						return;
-					}
-
-					PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
-					ConfigurationSection section = this.configuration.get().getConfigurationSection(type.toString());
-					String name = e.getLine(2);
-
-					if (type == Portal.BUKKIT && !section.contains(name)) {
-						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal naam type!");
-						return;
-					}
-
-					if (type == Portal.BUNGEECORD && !manager.getPortals().containsKey(name)) {
-						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal naam type!");
-						return;
-					}
-
-					Location location = type == Portal.BUNGEECORD ? SerializationUtils.deserialize(manager.getPortalData(name).getLocation()) : (Location) section.get(name + ".location");
-
-					String line = String.format("%.0f;%.0f;%.0f", location.getX(), location.getY(), location.getZ());
-					String line2 = String.format("%.0f;%.0f", location.getYaw(), location.getPitch());
-
-					e.setLine(0, "§f[§2T§aeleporter§f]");
-					e.setLine(1, name);
-					e.setLine(2, line);
-					e.setLine(3, line2);
-
-					e.getPlayer().sendMessage("§6Success! Portal created!");
-				}).bindWith(composite);
+		this.composite.bindModule(new TeleporterUseListener(this.configuration));
+		this.composite.bindModule(new SignChangeListener(this.configuration));
 	}
 
 	@Override
