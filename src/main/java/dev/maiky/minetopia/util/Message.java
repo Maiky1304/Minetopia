@@ -51,6 +51,7 @@ public enum Message {
 	COMMON_ERROR_INVALIDCOLORCODE("&cDit is geen geldige kleurencode."),
 	COMMON_ERROR_NOTLOOKINGATBLOCK("&cJe kijkt niet naar een blok!"),
 	COMMON_ERROR_INVALIDBLOCKTYPE("&cDit is geen geldig block soort!"),
+	COMMON_ERROR_PVP("&cPvP staat uitgeschakeld!"),
 
 	COMMON_GUI_PAGEFORWARD("Volgende pagina"),
 	COMMON_GUI_PAGEBACKWARDS("Vorige pagina"),
@@ -175,6 +176,9 @@ public enum Message {
 	GUNS_NOTIFICATIONS_BROKEN("Je wapen is kapot gegaan!"),
 	GUNS_NOTIFICATIONS_RELOADED("§6Je wapen is §csuccesvol §6herladen."),
 	GUNS_NOTIFICATIONS_RELOADING("§6Je wapen wordt herladen..."),
+
+	ITEMS_ERROR_NOPERMISSIONS("§cJij hebt geen permissions om deze §4{0} §cte gebruiken.", String.class),
+	ITEMS_POLICE_ALERT("§c[§4§l112§c] §7{0} §8(§7{1}§8)" + " §fheeft een 112 melding gedaan: §7{2}", String.class, String.class, String.class),
 
 	CHAT_FORMAT("&3[{0}&3] &8[{1}{2}&8] {3}{4}{5}: {6}", String.class, String.class, String.class, String.class, String.class, String.class, String.class),
 

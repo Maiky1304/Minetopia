@@ -5,6 +5,7 @@ import dev.maiky.minetopia.modules.items.threads.message.Emergency;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
 import dev.maiky.minetopia.util.Items;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Sounds;
 import me.lucko.helper.redis.Redis;
 import org.bukkit.Bukkit;
@@ -64,8 +65,7 @@ public class RadioThread extends Thread {
 
 						for (Player p : Bukkit.getOnlinePlayers()) {
 							if ( Items.hasItemMatches(p, Material.DIAMOND_HOE, (short) 67) ) {
-								p.sendMessage(String.format("§c[§4§l112§c] §7%s §8(§7%s§8)" + " §fheeft een 112 melding gedaan: §7%s",
-										radioMessage.getFrom(), location, emergency.getMessage()));
+								p.sendMessage(Message.ITEMS_POLICE_ALERT.format(radioMessage.getFrom(), location, emergency.getMessage()));
 							}
 						}
 					}

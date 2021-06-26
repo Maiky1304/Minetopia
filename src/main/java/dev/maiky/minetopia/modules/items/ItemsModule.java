@@ -14,6 +14,7 @@ import dev.maiky.minetopia.modules.items.projectile.Snowball;
 import dev.maiky.minetopia.modules.items.threads.RadioThread;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -233,7 +234,7 @@ public class ItemsModule implements MinetopiaModule {
 
 					MinetopiaUser user = PlayerManager.getCache().get(damager.getUniqueId());
 
-					String deny = "&cPvP staat uitgeschakeld!";
+					String deny = Message.COMMON_ERROR_PVP.raw();
 
 					if (damager.getInventory().getItemInMainHand() == null) {
 						e.setCancelled(true);
@@ -287,8 +288,7 @@ public class ItemsModule implements MinetopiaModule {
 					if (interactable == null) return;
 					if (itemStack.getDurability() != interactable.durability()) return;
 					if (!e.getPlayer().hasPermission(interactable.permission())) {
-						e.getPlayer().sendMessage("§cJij hebt geen permissions om deze §4"
-						+ interactable.getClass().getName() + " §cte gebruiken.");
+						e.getPlayer().sendMessage(Message.ITEMS_ERROR_NOPERMISSIONS.format(interactable.getClass().toString()));
 						return;
 					}
 
