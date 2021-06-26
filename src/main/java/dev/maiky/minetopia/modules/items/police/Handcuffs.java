@@ -3,6 +3,7 @@ package dev.maiky.minetopia.modules.items.police;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.items.Interaction;
 import dev.maiky.minetopia.modules.items.MinetopiaInteractable;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import org.bukkit.Material;
@@ -93,11 +94,9 @@ public class Handcuffs implements MinetopiaInteractable {
 					entity.removeMetadata("cuffed", minetopia);
 					entity.removeMetadata("cuffedBy", minetopia);
 
-					String message = "&6Je handboeien zijn losgemaakt door &c%s&6.";
-					entity.sendMessage(String.format(Text.colors(message), player.getName()));
+					entity.sendMessage(Message.ITEMS_POLICE_UNCUFF.format(player.getName()));
 
-					String message2 = "&6Je hebt de handboeien van &c%s &6losgemaakt.";
-					player.sendMessage(String.format(Text.colors(message2), entity.getName()));
+					player.sendMessage(Message.ITEMS_POLICE_UNCUFFEXEC.format(entity.getName()));
 				} else {
 					entity.removePotionEffect(SLOW_DIGGING);
 					entity.removePotionEffect(BLINDNESS);
@@ -111,11 +110,9 @@ public class Handcuffs implements MinetopiaInteractable {
 					entity.setMetadata("cuffed", new FixedMetadataValue(minetopia, true));
 					entity.setMetadata("cuffedBy", new FixedMetadataValue(minetopia, player.getUniqueId().toString()));
 
-					String message = "&6Je bent in de handboeien gezet door &c%s&6.";
-					entity.sendMessage(String.format(Text.colors(message), player.getName()));
+					entity.sendMessage(Message.ITEMS_POLICE_CUFF.format(player.getName()));
 
-					String message2 = "&6Je hebt &c%s &6in de handboeien gezet.";
-					player.sendMessage(String.format(Text.colors(message2), entity.getName()));
+					player.sendMessage(Message.ITEMS_POLICE_CUFFEXEC.format(entity.getName()));
 
 					BukkitRunnable runnable = new BukkitRunnable() {
 						@Override

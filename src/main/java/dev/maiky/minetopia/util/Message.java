@@ -52,6 +52,16 @@ public enum Message {
 	COMMON_ERROR_NOTLOOKINGATBLOCK("&cJe kijkt niet naar een blok!"),
 	COMMON_ERROR_INVALIDBLOCKTYPE("&cDit is geen geldig block soort!"),
 	COMMON_ERROR_PVP("&cPvP staat uitgeschakeld!"),
+	COMMON_ERROR_LEVELUP("§cJe kan op dit moment niet naar een hoger level."),
+
+	COMMON_SUCCESSFULLY_NOTIFYTEST("§6Succesfully sent this test message."),
+	COMMON_SUCCESSFULLY_HEAD("§3Je hebt dit item op je hoofd gezet."),
+	COMMON_SUCCESSFULLY_RELOAD("§aDe plugin is succesvol herladen!"),
+	COMMON_SUCCESSFULLY_SHARDS_ADDED("§6Success! Shards of §c{0} §6were increased by §c{1}§6 their balance is now §c{2}&6.", String.class, String.class, String.class),
+	COMMON_SUCCESSFULLY_SHARDS_REMOVED("§6Success! Shards of §c{0} §6were decreased by §c{1}§6 their balance is now §c{2}&6.", String.class, String.class, String.class),
+
+	COMMON_INFO_SHARDSINFO("&6De speler &c{0} &6heeft &c{1} &6BlackShards.", String.class, String.class),
+	COMMON_INFO_SHARDSINFOSELF("&6Jij hebt &c%s &6BlackShards.", String.class),
 
 	COMMON_GUI_PAGEFORWARD("Volgende pagina"),
 	COMMON_GUI_PAGEBACKWARDS("Vorige pagina"),
@@ -179,6 +189,22 @@ public enum Message {
 
 	ITEMS_ERROR_NOPERMISSIONS("§cJij hebt geen permissions om deze §4{0} §cte gebruiken.", String.class),
 	ITEMS_POLICE_ALERT("§c[§4§l112§c] §7{0} §8(§7{1}§8)" + " §fheeft een 112 melding gedaan: §7{2}", String.class, String.class, String.class),
+	ITEMS_POLICE_CHATCOOLDOWN("§cJe moet nog {0} seconden wachten voordat je dit weer kunt doen.", Integer.class),
+	ITEMS_POLICE_CHATSTATUS("&6Politiechat is nu &c{0}&6.", String.class),
+	ITEMS_POLICE_EMERGENCYBUTTON("§cDeze functie is tijdelijk uitgeschakeld, aangezien deze knop een server crash veroorzaakte. Als dit gefixed is komt er een mededeling."),
+	ITEMS_POLICE_EMERGENCYBUTTONMESSAGE("§c[§4§lNoodknop§c] §4{0} §fheeft op de noodknop gedrukt! (§c{1}§f)", String.class, String.class),
+	ITEMS_POLICE_CHATFORMAT("§3[§bPolitiechat§3] §7{0}§f: {1}", String.class, String.class),
+	ITEMS_POLICE_UNCUFF("&6Je handboeien zijn losgemaakt door &c{0}&6.", String.class),
+	ITEMS_POLICE_UNCUFFEXEC("&6Je hebt de handboeien van &c{0} &6losgemaakt.", String.class),
+	ITEMS_POLICE_CUFF("&6Je bent in de handboeien gezet door &c{0}&6.", String.class),
+	ITEMS_POLICE_CUFFEXEC("&6Je hebt &c{0} &6in de handboeien gezet."),
+	ITEMS_TASER_EMPTY("§cJe taser is leeg, vul hem bij."),
+	ITEMS_TASER_COOLDOWN("§4§lCooldown §8● §cJe moet nog §4{0} §cseconden wachten voordat je weer je taser kunt gebruiken.", String.class),
+	ITEMS_TASER_HIT("&6Je hebt &c{0} &6geraakt met een tazer.", String.class),
+	ITEMS_TASER_HITTED("&6Je bent geraakt door &c%s &6met een tazer.", String.class),
+
+	CONSUME_COCAINE("§6Je hebt cocaïne gesnoven, je voelt je een stuk sneller.."),
+	CONSUME_WEED("§6Je hebt wiet gerookt, je bent een even een stuk sneller."),
 
 	CHAT_FORMAT("&3[{0}&3] &8[{1}{2}&8] {3}{4}{5}: {6}", String.class, String.class, String.class, String.class, String.class, String.class, String.class),
 

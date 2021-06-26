@@ -5,6 +5,7 @@ import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -57,7 +58,7 @@ public class HeadCommand extends BaseCommand {
 			inventory.setItemInMainHand(null);
 		}
 
-		player.sendMessage("§3Je hebt dit item op je hoofd gezet.");
+		player.sendMessage(Message.COMMON_SUCCESSFULLY_HEAD.raw());
 	}
 
 }

@@ -1,5 +1,6 @@
 package dev.maiky.minetopia.modules.items.police;
 
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Schedulers;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
@@ -72,7 +73,7 @@ public class Taser implements Listener {
 			int green = getLoaded(displayName);
 
 			if (green == 0) {
-				p.sendMessage("§cJe taser is leeg, vul hem bij.");
+				p.sendMessage(Message.ITEMS_TASER_EMPTY.raw());
 				return;
 			}
 
@@ -95,7 +96,7 @@ public class Taser implements Listener {
 			double time = System.currentTimeMillis();
 			double diff = l - time;
 			double secs = diff / 1000;
-			p.sendMessage("§4§lCooldown §8● §cJe moet nog §4" + new DecimalFormat("0.0").format(secs) + " §cseconden wachten voordat je weer je taser kunt gebruiken.");
+			p.sendMessage(Message.ITEMS_TASER_COOLDOWN.format(new DecimalFormat("0.0").format(secs)));
 			return Response.STILL;
 		}
 		return Response.TAKE;
@@ -164,8 +165,8 @@ public class Taser implements Listener {
 		Player target = (Player) event.getEntity();
 		Arrow arrow = (Arrow) event.getDamager();
 		Player shooter = (Player) arrow.getShooter();
-		shooter.sendMessage(String.format(Text.colors("&6Je hebt &c%s &6geraakt met een tazer."), target.getName()));
-		target.sendMessage(String.format(Text.colors("&6Je bent geraakt door &c%s &6met een tazer."), shooter.getName()));
+		shooter.sendMessage(Message.ITEMS_TASER_HIT.format(target.getName()));
+		target.sendMessage(Message.ITEMS_TASER_HITTED.format(shooter.getName()));
 
 		if (target.hasPotionEffect(PotionEffectType.BLINDNESS))
 			target.removePotionEffect(PotionEffectType.BLINDNESS);

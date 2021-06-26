@@ -45,7 +45,7 @@ public class RadioThread extends Thread {
 
 						for (Player p : Bukkit.getOnlinePlayers()) {
 							if (Items.hasItemMatches(p, Material.DIAMOND_HOE, (short) 67)) {
-								p.sendMessage("§3[§bPolitiechat§3] §7" + radioMessage.getFrom() + "§f: " + msg);
+								p.sendMessage(Message.ITEMS_POLICE_CHATFORMAT.format(radioMessage.getFrom(), msg));
 							}
 						}
 					} else if (radioMessage.getType() == Type.EMERGENCY) {
@@ -54,8 +54,7 @@ public class RadioThread extends Thread {
 
 						for (Player p : Bukkit.getOnlinePlayers()) {
 							if (Items.hasItemMatches(p, Material.DIAMOND_HOE, (short) 67)) {
-								p.sendMessage("§c[§4§lNoodknop§c] §4" + radioMessage.getFrom() + " §fheeft op de noodknop gedrukt! (§c"
-								+ location + "§f)");
+								p.sendMessage(Message.ITEMS_POLICE_EMERGENCYBUTTONMESSAGE.format(radioMessage.getFrom(), location));
 								Sounds.playSoundRepeating(p, Sound.UI_BUTTON_CLICK, 0.75f, 5, 10);
 							}
 						}

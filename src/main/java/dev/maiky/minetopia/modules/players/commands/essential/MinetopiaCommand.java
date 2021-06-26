@@ -58,7 +58,7 @@ public class MinetopiaCommand extends BaseCommand {
 		Minetopia.getInstance().getMessages().reload();
 		Minetopia.getInstance().getConfiguration().reload();
 		Message.loadAll();
-		sender.sendMessage("§aDe plugin is succesvol herladen!");
+		sender.sendMessage(Message.COMMON_SUCCESSFULLY_RELOAD.raw());
 	}
 
 }

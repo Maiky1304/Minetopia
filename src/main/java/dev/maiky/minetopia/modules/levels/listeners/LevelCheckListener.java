@@ -29,6 +29,7 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.levels.ui.LevelCheckUI;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -51,7 +52,7 @@ public class LevelCheckListener implements TerminableModule {
 					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
 					if ( new LevelCheck(user).calculatePossibleLevel() > user.getLevel() )
 						return true;
-					e.getPlayer().sendMessage("§cJe kan op dit moment niet naar een hoger level.");
+					e.getPlayer().sendMessage(Message.COMMON_ERROR_LEVELUP.raw());
 					return false;
 				})
 				.handler(e -> new LevelCheckUI(e.getPlayer(), e.getRightClicked()).open())

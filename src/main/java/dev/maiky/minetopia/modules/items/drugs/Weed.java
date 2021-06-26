@@ -2,6 +2,7 @@ package dev.maiky.minetopia.modules.items.drugs;
 
 import dev.maiky.minetopia.modules.items.Interaction;
 import dev.maiky.minetopia.modules.items.MinetopiaInteractable;
+import dev.maiky.minetopia.util.Message;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -41,7 +42,7 @@ public class Weed implements MinetopiaInteractable {
 
 			@Override
 			public void execute(PlayerInteractEvent event) {
-				event.getPlayer().sendMessage("§6Je hebt wiet gerookt, je bent een even een stuk sneller.");
+				event.getPlayer().sendMessage(Message.CONSUME_WEED.raw());
 				event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 1));
 				event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 100, 1));
 				event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 100, 1));

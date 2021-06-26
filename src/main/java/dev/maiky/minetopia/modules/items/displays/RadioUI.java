@@ -7,6 +7,7 @@ import dev.maiky.minetopia.modules.items.threads.message.Emergency;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Skull;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.cooldown.Cooldown;
@@ -72,20 +73,18 @@ public class RadioUI extends Gui {
 
 	private void policeChat() {
 		if (!policeChatToggle.test(getPlayer())) {
-			getPlayer().sendMessage("§cJe moet nog " + policeChatToggle.get(getPlayer()).remainingTime(TimeUnit.SECONDS) +
-					" seconden wachten voordat je dit weer kunt doen.");
+			getPlayer().sendMessage(Message.ITEMS_POLICE_CHATCOOLDOWN.format(policeChatToggle.get(getPlayer()).remainingTime(TimeUnit.SECONDS)));
 			return;
 		}
 
 		this.user.setPoliceChat(!this.user.isPoliceChat());
 		this.redraw();
 
-		String message = "&6Politiechat is nu &c%s&6.";
-		getPlayer().sendMessage(String.format(Text.colors(message), (user.isPoliceChat() ? "ingeschakeld" : "uitgeschakeld")));
+		getPlayer().sendMessage(Message.ITEMS_POLICE_CHATSTATUS.format(user.isPoliceChat() ? "ingeschakeld" : "uitgeschakeld"));
 	}
 
 	private void emergencyButton() {
-		getPlayer().sendMessage("§cDeze functie is tijdelijk uitgeschakeld, aangezien deze knop een server crash veroorzaakte. Als dit gefixed is komt er een mededeling.");
+		getPlayer().sendMessage(Message.ITEMS_POLICE_EMERGENCYBUTTON.raw());
 		/*
 		if (!cooldownMap.test(getPlayer())) {
 			getPlayer().sendMessage("§cJe moet nog " + cooldownMap.get(getPlayer()).remainingTime(TimeUnit.SECONDS) +
