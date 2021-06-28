@@ -5,9 +5,6 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
-import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
-import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
-import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.commands.essential.*;
 import dev.maiky.minetopia.modules.players.commands.staff.AdminToolCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
@@ -18,38 +15,26 @@ import dev.maiky.minetopia.modules.players.listeners.TrashbinListener;
 import dev.maiky.minetopia.modules.players.placeholders.NameColorPlaceholder;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
 import dev.maiky.minetopia.modules.players.tasks.TimeTask;
-import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
-import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
+import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.bucket.Bucket;
 import me.lucko.helper.bucket.factory.BucketFactory;
 import me.lucko.helper.bucket.partitioning.PartitioningStrategies;
-import me.lucko.helper.cooldown.Cooldown;
-import me.lucko.helper.cooldown.CooldownMap;
 import me.lucko.helper.profiles.ProfileRepository;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.PlayerInventory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Door: Maiky
@@ -142,12 +127,12 @@ public class PlayersModule implements MinetopiaModule {
 		final Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
 
 		minetopia.getCommandManager().getCommandConditions().addCondition("MTUser", context -> {
-			if (!context.getIssuer().isPlayer()) throw new ConditionFailedException("Dit kan niet vanuit de console.");
+			if (!context.getIssuer().isPlayer()) throw new ConditionFailedException(Message.COMMON_ERROR_NOCONSOLE.raw());
 
 			Player player = context.getIssuer().getPlayer();
 			UUID uuid = player.getUniqueId();
 
-			if (!PlayerManager.getCache().containsKey(uuid)) throw new ConditionFailedException("Je playerdata is nog niet ingeladen!");
+			if (!PlayerManager.getCache().containsKey(uuid)) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYERDATANOTLOADED.raw());
 		});
 
 		minetopia.getCommandManager().getCommandConditions().addCondition(Integer.class, "limits", (c, exec, value) -> {
@@ -155,15 +140,15 @@ public class PlayersModule implements MinetopiaModule {
 				return;
 			}
 			if (c.hasConfig("min") && c.getConfigValue("min", 0) > value) {
-				throw new ConditionFailedException("De invoer moet minimaal " + c.getConfigValue("min", 0) + " zijn.");
+				throw new ConditionFailedException(Message.COMMON_ERROR_INPUT_MIN.format(c.getConfigValue("min", 0)));
 			}
 			if (c.hasConfig("max") && c.getConfigValue("max", 0) < value) {
-				throw new ConditionFailedException("De invoer mag maximaal " + c.getConfigValue("max", 0) + " zijn.");
+				throw new ConditionFailedException(Message.COMMON_ERROR_INPUT_MAX.format(c.getConfigValue("max", 0)));
 			}
 		});
 
 		minetopia.getCommandManager().getCommandConditions().addCondition(OfflinePlayer.class, "online", (context, execContext, value) -> {
-			if (!value.isOnline()) throw new ConditionFailedException("Deze speler is niet online!");
+			if (!value.isOnline()) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYEROFFLINE.raw());
 		});
 
 		minetopia.getCommandManager().getCommandConditions().addCondition(String.class, "database", (c, exec, value) -> {
@@ -172,11 +157,11 @@ public class PlayersModule implements MinetopiaModule {
 			if (value.length() == 32 || value.length() == 28) {
 				if (!repository.getProfile(UUID.fromString(value)).getName().isPresent())
 					repository.lookupProfile(UUID.fromString(value));
-				if (!repository.getProfile(UUID.fromString(value)).getName().isPresent()) throw new ConditionFailedException("Deze speler bestaat niet in de database.");
+				if (!repository.getProfile(UUID.fromString(value)).getName().isPresent()) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYERINVALID.raw());
 			} else {
 				if (!repository.getProfile(value).isPresent())
 					repository.lookupProfile(value);
-				if (!repository.getProfile(value).isPresent()) throw new ConditionFailedException("Deze speler bestaat niet in de database.");
+				if (!repository.getProfile(value).isPresent()) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYERINVALID.raw());
 			}
 		});
 
@@ -212,13 +197,14 @@ public class PlayersModule implements MinetopiaModule {
 				Material.GLASS,
 				Material.STAINED_GLASS);
 		minetopia.getCommandManager().getCommandConditions().addCondition(Player.class, "itemPossibleOnHead", (context, execContext, value) -> {
-			if (value.getInventory().getItemInMainHand() == null) throw new ConditionFailedException("Je hebt geen item in je hand!");
-			if (!allowedMaterials.contains(value.getInventory().getItemInMainHand().getType())) throw new ConditionFailedException("Je kunt dit item niet op je hoofd zetten!");
+			if (value.getInventory().getItemInMainHand() == null) throw new ConditionFailedException(Message.COMMON_ERROR_NOITEMINHAND.raw());
+			if (!allowedMaterials.contains(value.getInventory().getItemInMainHand().getType())) throw new ConditionFailedException(Message.COMMON_ERROR_HEADIMPOSSIBLE.raw());
 		});
 
 		minetopia.getCommandManager().registerCommand(new ModCommand());
 		minetopia.getCommandManager().registerCommand(new TimeCommand(), true);
-		minetopia.getCommandManager().registerCommand(new ShardCommand());
+		minetopia.getCommandManager().registerCommand(new GrayShardCommand());
+		minetopia.getCommandManager().registerCommand(new GoldShardCommand());
 		minetopia.getCommandManager().registerCommand(new HeadCommand(), true);
 		minetopia.getCommandManager().registerCommand(new EmergencyCommand());
 		minetopia.getCommandManager().registerCommand(new AdminToolCommand());

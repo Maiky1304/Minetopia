@@ -8,9 +8,9 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
+import dev.maiky.minetopia.modules.players.classes.enums.Shard;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -24,9 +24,9 @@ import java.util.UUID;
  * Package: dev.maiky.minetopia.modules.players.commands.essential
  */
 
-@CommandAlias("shard|blackshard|shards|blackshards")
+@CommandAlias("goldshards|goldshard")
 @CommandPermission("minetopia.common.shard")
-public class ShardCommand extends BaseCommand {
+public class GoldShardCommand extends BaseCommand {
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -46,10 +46,12 @@ public class ShardCommand extends BaseCommand {
 
 	@Default
 	@Subcommand("main")
+	@Syntax("<goldshard/goldshard>")
 	@Description("View your own shard balance")
-	public void on(@Conditions("MTUser") Player sender) {
+	public void on(@Conditions("MTUser") Player sender, Shard shard) {
 		MinetopiaUser user = PlayerManager.getCache().get(sender.getUniqueId());
-		sender.sendMessage(Message.COMMON_INFO_SHARDSINFOSELF.format(Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards())));
+		sender.sendMessage(Message.PLAYER_INFO_SHARDSINFOSELF.format(Numbers.convert(Numbers.Type.SHARDS,
+				shard.equals(Shard.GRAYSHARD) ? user.getGoldshards() : user.getGoldshards()), "Gold"));
 	}
 
 	@Subcommand("add")
@@ -66,11 +68,12 @@ public class ShardCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-		user.setGrayshards(user.getGrayshards() + amount);
+		user.setGoldshards(user.getGoldshards() + amount);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		sender.sendMessage(Message.COMMON_SUCCESSFULLY_SHARDS_ADDED.format(offlinePlayer.getName(), amount, user.getGrayshards()));
+		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_SHARDS_ADDED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gold",
+				offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards())));
 	}
 
 	@Subcommand("remove")
@@ -87,11 +90,14 @@ public class ShardCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-		user.setGrayshards(user.getGrayshards() - amount);
+		user.setGoldshards(user.getGoldshards() - amount);
+		if (user.getGoldshards() < 0)
+			user.setGoldshards(0);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		sender.sendMessage(Message.COMMON_SUCCESSFULLY_SHARDS_REMOVED.format(offlinePlayer.getName(), amount, user.getGrayshards()));
+		sender.sendMessage(Message.COMMON_SUCCESSFULLY_SHARDS_REMOVED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gold",
+				offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards())));
 	}
 
 	@Subcommand("info")
@@ -108,6 +114,6 @@ public class ShardCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-		sender.sendMessage(Message.COMMON_INFO_SHARDSINFO.format(offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards())));
+		sender.sendMessage(Message.PLAYER_INFO_SHARDSINFO.format(offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards()), "Gold"));
 	}
 }

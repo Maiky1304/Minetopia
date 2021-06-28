@@ -26,6 +26,7 @@
 package dev.maiky.minetopia.modules.players.listeners;
 
 import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
 import me.lucko.helper.cooldown.Cooldown;
 import me.lucko.helper.cooldown.CooldownMap;
@@ -56,7 +57,7 @@ public class AdminToolListener implements TerminableModule {
 				.filter(e -> e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NETHER_STAR)
 				.filter(e -> cooldownMap.test(e.getPlayer()))
 				.handler(e -> {
-					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getRightClicked().getName() + "§6.");
+					e.getPlayer().sendMessage(Message.PLAYER_ADMINTOOL_OTHER.format(e.getRightClicked().getName()));
 					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getRightClicked().getUniqueId()));
 					adminToolUI.open();
 				}).bindWith(consumer);
@@ -67,7 +68,7 @@ public class AdminToolListener implements TerminableModule {
 				.filter(e -> e.getAction().toString().startsWith("RIGHT"))
 				.filter(e -> cooldownMap.test(e.getPlayer()))
 				.handler(e -> {
-					e.getPlayer().sendMessage("§6Je opent nu het admintool menu van §c" + e.getPlayer().getName() + "§6.");
+					e.getPlayer().sendMessage(Message.PLAYER_ADMINTOOL_SELF.raw());
 					AdminToolUI adminToolUI = new AdminToolUI(e.getPlayer(), Bukkit.getOfflinePlayer(e.getPlayer().getUniqueId()));
 					adminToolUI.open();
 				}).bindWith(consumer);

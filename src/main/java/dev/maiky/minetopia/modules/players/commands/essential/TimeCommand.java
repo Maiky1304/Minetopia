@@ -51,9 +51,7 @@ public class TimeCommand extends BaseCommand {
 		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
 		MinetopiaTime time = user.getTime();
 
-		String string = "§c%s §6dagen, §c%s §6uren, §c%s §6minuten, §c%s §6seconden.";
-
-		player.sendMessage(String.format(string, time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
+		player.sendMessage(Message.PLAYER_INFO_TIME.format(time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
 	}
 
 	@Deprecated
@@ -72,8 +70,8 @@ public class TimeCommand extends BaseCommand {
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 		MinetopiaTime time = user.getTime();
-		String string = "§6Time van §c%s§6: §c%s §6dagen, §c%s §6uren, §c%s §6minuten, §c%s §6seconden.";
-		sender.sendMessage(String.format(string, offlinePlayer.getName(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
+
+		sender.sendMessage(Message.PLAYER_INFO_TIME_OTHER.format(offlinePlayer.getName(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
 	}
 
 }

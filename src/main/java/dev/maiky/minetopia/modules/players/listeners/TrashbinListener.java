@@ -26,6 +26,7 @@
 package dev.maiky.minetopia.modules.players.listeners;
 
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -48,8 +49,8 @@ public class TrashbinListener implements TerminableModule {
 				.filter(e -> e.getPlayer().getGameMode() != GameMode.CREATIVE)
 				.handler(e -> {
 					e.setCancelled(true);
-					e.getPlayer().openInventory(Bukkit.createInventory(null, 27, "§4Prullenbak"));
-					e.getPlayer().sendMessage("§4PAS OP: §cAlles wat je hierin gooit wordt voor ALTIJD verwijderd!");
+					e.getPlayer().openInventory(Bukkit.createInventory(null, 27, Message.PLAYER_TRASHBIN_TITLE.setLimit(32).raw()));
+					e.getPlayer().sendMessage(Message.PLAYER_TRASHBIN_MESSAGEONOPEN.raw());
 				}).bindWith(consumer);
 	}
 

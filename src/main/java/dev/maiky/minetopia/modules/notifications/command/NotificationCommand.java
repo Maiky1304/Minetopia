@@ -58,7 +58,7 @@ public class NotificationCommand extends BaseCommand {
 		Notification notification = new Notification(targetPlayer, builder.substring(0, builder.length()-1), length);
 		queue.queue.add(notification);
 
-		player.sendMessage(Message.COMMON_SUCCESSFULLY_NOTIFYTEST.raw());
+		player.sendMessage(Message.PLAYER_SUCCESSFULLY_NOTIFYTEST.raw());
 	}
 
 }

@@ -51,7 +51,7 @@ public class AdminToolCommand extends BaseCommand {
 	@Description("Krijg een admintool")
 	@CommandPermission("minetopia.moderation.admintool.krijg")
 	public void onGet(Player player) {
-		if (player.getInventory().firstEmpty() == -1) throw new ConditionFailedException("Je hebt geen genoeg inventory ruimte!");
+		if (player.getInventory().firstEmpty() == -1) throw new ConditionFailedException(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 
 		final ItemStack adminTool = ItemStackBuilder.of(Material.NETHER_STAR)
 				.name("&3&lAdmin&b&lTool").build();
@@ -69,7 +69,7 @@ public class AdminToolCommand extends BaseCommand {
 
 		AdminToolUI ui = new AdminToolUI(player, offlinePlayer);
 		ui.open();
-		player.sendMessage("§6Je opent nu het admintool menu van §c" + offlinePlayer.getName() + "§6.");
+		player.sendMessage(Message.PLAYER_ADMINTOOL_OTHER.format(offlinePlayer.getName()));
 	}
 
 }

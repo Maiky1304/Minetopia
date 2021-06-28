@@ -58,7 +58,7 @@ public class MinetopiaCommand extends BaseCommand {
 		Minetopia.getInstance().getMessages().reload();
 		Minetopia.getInstance().getConfiguration().reload();
 		Message.loadAll();
-		sender.sendMessage(Message.COMMON_SUCCESSFULLY_RELOAD.raw());
+		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_RELOAD.raw());
 	}
 
 }
