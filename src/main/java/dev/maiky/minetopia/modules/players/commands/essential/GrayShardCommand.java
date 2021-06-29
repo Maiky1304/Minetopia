@@ -46,12 +46,12 @@ public class GrayShardCommand extends BaseCommand {
 
 	@Default
 	@Subcommand("main")
-	@Syntax("<grayshard/goldshard>")
+	@Conditions("MTUser")
 	@Description("View your own shard balance")
-	public void on(@Conditions("MTUser") Player sender, Shard shard) {
+	public void on(Player sender) {
 		MinetopiaUser user = PlayerManager.getCache().get(sender.getUniqueId());
 		sender.sendMessage(Message.PLAYER_INFO_SHARDSINFOSELF.format(Numbers.convert(Numbers.Type.SHARDS,
-				shard.equals(Shard.GRAYSHARD) ? user.getGrayshards() : user.getGoldshards()), "Gray"));
+				user.getGrayshards()), "Gray"));
 	}
 
 	@Subcommand("add")
@@ -96,7 +96,7 @@ public class GrayShardCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		sender.sendMessage(Message.COMMON_SUCCESSFULLY_SHARDS_REMOVED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gray",
+		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_SHARDS_REMOVED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gray",
 				offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGrayshards())));
 	}
 

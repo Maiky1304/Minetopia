@@ -80,14 +80,13 @@ public class PrefixCommand extends BaseCommand {
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
 		if (user.getPrefixes().contains(output))
-			throw new ConditionFailedException("This player already owns this prefix!");
+			throw new ConditionFailedException(Message.PREFIX_ERROR_ALREADYHASPREFIX.raw());
 
 		user.getPrefixes().add(output);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "&6Success! You have added the prefix &c%s &6to the player &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), output, offlinePlayer.getName()));
+		sender.sendMessage(Message.PREFIX_SUCCESS_ADD.format(output, offlinePlayer.getName()));
 	}
 
 	@Subcommand("remove")
@@ -116,14 +115,13 @@ public class PrefixCommand extends BaseCommand {
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
 		if (!user.getPrefixes().contains(output))
-			throw new ConditionFailedException("This player doesn't own this prefix!");
+			throw new ConditionFailedException(Message.PREFIX_ERROR_DOESNTOWNPREFIX.raw());
 
 		user.getPrefixes().add(output);
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "&6Success! You have removed the prefix &c%s &6from the player &c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), output, offlinePlayer.getName()));
+		sender.sendMessage(Message.PREFIX_SUCCESS_REMOVE.format(output, offlinePlayer.getName()));
 	}
 
 	@Subcommand("list")
@@ -140,16 +138,12 @@ public class PrefixCommand extends BaseCommand {
 		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
-
-		String divider = "§6§m----------------------------------------------------";
-		String holder = " &c- &6%s &c%s";
-
-		sender.sendMessage(divider);
+		sender.sendMessage(Message.PREFIX_INFO_DIVIDER.raw());
 		for (String prefix : user.getPrefixes()) {
-			sender.sendMessage(String.format(Text.colors(holder), (user.getCurrentPrefix().equals(prefix) ?
-					"<-- Current" : prefix)));
+			sender.sendMessage(Message.PREFIX_INFO_ENTRY.format(prefix, (user.getCurrentPrefix().equals(prefix) ?
+					Message.PREFIX_INFO_CURRENT.raw() : "")));
 		}
-		sender.sendMessage(divider);
+		sender.sendMessage(Message.PREFIX_INFO_DIVIDER.raw());
 	}
 
 	@Subcommand("clear")
@@ -168,14 +162,14 @@ public class PrefixCommand extends BaseCommand {
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 
 		user.getPrefixes().clear();
-		user.getPrefixes().add("Burger");
-		user.setCurrentPrefix("Burger");;
+		String defaultPrefix = Minetopia.getInstance().getConfiguration().get().getString("player.default.prefix");
+		user.getPrefixes().add(defaultPrefix);
+		user.setCurrentPrefix(defaultPrefix);;
 
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "&6Success! Cleared all of &c%s &6their prefixes.";
-		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName()));
+		sender.sendMessage(Message.PREFIX_SUCCESS_CLEAR.format(offlinePlayer.getName()));
 	}
 
 }

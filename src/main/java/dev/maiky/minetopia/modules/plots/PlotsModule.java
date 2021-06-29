@@ -5,6 +5,7 @@ import co.aikar.commands.ConditionFailedException;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.plots.commands.PlotCommand;
+import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Location;
@@ -72,7 +73,7 @@ public class PlotsModule implements MinetopiaModule {
 			}
 
 			if (filtered.isEmpty()) {
-				throw new ConditionFailedException("Je bevind je niet op een plot!");
+				throw new ConditionFailedException(Message.PLOTS_ERROR_NOTONPLOT.raw());
 			}
 		});
 

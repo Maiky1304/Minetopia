@@ -7,7 +7,6 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -70,13 +69,16 @@ public class PlotCommand extends BaseCommand {
 
 		StringBuilder ownersBuilder = new StringBuilder();
 		for (UUID uuid : owners.getPlayers()) {
-			ownersBuilder.append(Bukkit.getOfflinePlayer(uuid).getName()).append(", ");
+			ownersBuilder.append(Bukkit.getOfflinePlayer(uuid).getName()).append(Message.PLOTS_INFO_DIVIDER.raw()).append(" ");
 		}
 
 		StringBuilder membersBuilder = new StringBuilder();
 		for (UUID uuid : members.getPlayers()) {
-			membersBuilder.append(Bukkit.getOfflinePlayer(uuid).getName()).append(", ");
+			membersBuilder.append(Bukkit.getOfflinePlayer(uuid).getName()).append(Message.PLOTS_INFO_DIVIDER.raw()).append(" ");
 		}
+
+		String ownersString = owners.getPlayers().size() == 0 ? "Geen" : ownersBuilder.substring(0, ownersBuilder.length()-2);
+		String membersString = members.getPlayers().size() == 0 ? "Geen" : membersBuilder.substring(0, membersBuilder.length()-2);
 
 		if (player.hasPermission("minetopia.moderation.plot")) {
 			StringBuilder flagsBuilder = new StringBuilder();
@@ -85,31 +87,26 @@ public class PlotCommand extends BaseCommand {
 				Optional<?> optional = region.getFlag(flag);
 				if (optional.isPresent()) {
 					Optional<?> optionalO = (Optional<?>) optional.get();
-					flagsBuilder.append(optionalO.get()).append("§6,");
+					flagsBuilder.append(optionalO.get()).append("§6").append(Message.PLOTS_INFO_DIVIDER.raw());
 				} else {
-					flagsBuilder.append("???").append("§6,");
+					flagsBuilder.append(Message.PLOTS_INFO_UNKNOWN.raw()).append("§6").append(Message.PLOTS_INFO_DIVIDER.raw());
 				}
 			}
 
-			String divider = "§6§m----------------------------------------------------";
-			String line0 = "&6Eigenaren: &c%s";
-			String line1 = "&6Leden: &c%s";
-			String line2 = "&6Flags: &c%s";
-			String line3 = "&6ID: &c%s";
+			String flagsString = region.getFlags().size() == 0 ? Message.PLOTS_INFO_EMPTY.raw() : flagsBuilder.substring(0, flagsBuilder.length()-3);
 
-			player.sendMessage(divider);
-			player.sendMessage(String.format(Text.colors(line0), owners.getPlayers().size() == 0 ? "Geen" : ownersBuilder.substring(0, ownersBuilder.length()-2)));
-			player.sendMessage(String.format(Text.colors(line1), members.getPlayers().size() == 0 ? "Geen" : membersBuilder.substring(0, membersBuilder.length()-2)));
-			player.sendMessage(String.format(Text.colors(line2), region.getFlags().size() == 0 ? "Geen" : flagsBuilder.substring(0, flagsBuilder.length()-3)));
-			player.sendMessage(String.format(Text.colors(line3), region.getId()));
-			player.sendMessage(divider);
+			Message.PLOTS_INFO_STAFF.formatAsList(ownersString, membersString, flagsString, region.getId()).forEach(player::sendMessage);
 		} else {
-			String line0 = "&6Eigenaren: &c%s";
-			String line1 = "&6Leden: &c%s";
-
-			player.sendMessage(String.format(Text.colors(line0), owners.getPlayers().size() == 0 ? "Geen" : ownersBuilder.substring(0, ownersBuilder.length()-2)));
-			player.sendMessage(String.format(Text.colors(line1), members.getPlayers().size() == 0 ? "Geen" : membersBuilder.substring(0, membersBuilder.length()-2)));
+			Message.PLOTS_INFO_PLAYER.formatAsList(ownersString, membersString).forEach(player::sendMessage);
 		}
+	}
+
+	private List<IWrappedRegion> filterRegions(Set<IWrappedRegion> set, int n) {
+		List<IWrappedRegion> filtered = new ArrayList<>();
+		for (IWrappedRegion wrappedRegion : set) {
+			if ( wrappedRegion.getPriority() >= n ) filtered.add(wrappedRegion);
+		}
+		return filtered;
 	}
 
 	@Conditions("MTUser|Plot")
@@ -119,10 +116,7 @@ public class PlotCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.plot")
 	public void addOwner(Player player, @Conditions("database") String target) {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
-		List<IWrappedRegion> filtered = new ArrayList<>();
-		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
-		}
+		List<IWrappedRegion> filtered = filterRegions(regions, 0);
 
 		OfflinePlayer offlinePlayer;
 		if (target.length() == 32)
@@ -133,12 +127,12 @@ public class PlotCommand extends BaseCommand {
 		IWrappedDomain domain = region.getOwners();
 
 		if (domain.getPlayers().contains(offlinePlayer.getUniqueId())) {
-			throw new ConditionFailedException("Deze speler is al eigenaar van dit plot!");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_ALREADYOWNER.raw());
 		}
 
 		region.getOwners().addPlayer(offlinePlayer.getUniqueId());
-		String message = "&6Je hebt &c%s &6toegevoegd als eigenaar aan het plot &c%s&6.";
-		player.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), region.getId())));
+
+		player.sendMessage(Message.PLOTS_SUCCESS_ADDOWNER.format(offlinePlayer.getName(), region.getId()));
 	}
 
 	@Conditions("MTUser|Plot")
@@ -148,10 +142,7 @@ public class PlotCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.plot")
 	public void removeOwner(Player player, @Conditions("database") String target) {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
-		List<IWrappedRegion> filtered = new ArrayList<>();
-		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
-		}
+		List<IWrappedRegion> filtered = filterRegions(regions, 0);
 
 		OfflinePlayer offlinePlayer;
 		if (target.length() == 32)
@@ -162,12 +153,12 @@ public class PlotCommand extends BaseCommand {
 		IWrappedDomain domain = region.getOwners();
 
 		if (!domain.getPlayers().contains(offlinePlayer.getUniqueId())) {
-			throw new ConditionFailedException("Deze speler is geen eigenaar van dit plot!");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_NOTOWNER_OTHER.raw());
 		}
 
 		region.getOwners().removePlayer(offlinePlayer.getUniqueId());
-		String message = "&6Je hebt &c%s &6verwijderd als eigenaar van het plot &c%s&6.";
-		player.sendMessage(Text.colors(String.format(message, offlinePlayer.getName(), region.getId())));
+
+		player.sendMessage(Message.PLOTS_SUCCESS_REMOVEOWNER.format(offlinePlayer.getName(), region.getId()));
 	}
 
 	@Conditions("MTUser|Plot")
@@ -190,17 +181,16 @@ public class PlotCommand extends BaseCommand {
 		IWrappedDomain domain = region.getOwners();
 
 		if (!domain.getPlayers().contains(player.getUniqueId()) && !player.hasPermission("minetopia.moderation.plot")) {
-			throw new ConditionFailedException("Jij bent geen eigenaar van dit plot!");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_NOTOWNER_SELF.raw());
 		}
 
 		IWrappedDomain domain2 = region.getMembers();
 		if (domain2.getPlayers().contains(offlinePlayer.getUniqueId())) {
-			throw new ConditionFailedException("Deze speler is al member van dit plot.");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_ALREADYMEMBER.raw());
 		}
 
 		region.getMembers().addPlayer(offlinePlayer.getUniqueId());
-		String message = "&6Je hebt &c%s &6toegevoegd als member aan dit plot.";
-		player.sendMessage(Text.colors(String.format(message, offlinePlayer.getName())));
+		player.sendMessage(Message.PLOTS_SUCCESS_ADDMEMBER.format(offlinePlayer.getName(), region.getId()));
 	}
 
 	@Conditions("MTUser|Plot")
@@ -223,17 +213,17 @@ public class PlotCommand extends BaseCommand {
 		IWrappedDomain domain = region.getOwners();
 
 		if (!domain.getPlayers().contains(player.getUniqueId()) && !player.hasPermission("minetopia.moderation.plot")) {
-			throw new ConditionFailedException("Jij bent geen eigenaar van dit plot!");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_NOTOWNER_SELF.raw());
 		}
 
 		IWrappedDomain domain2 = region.getMembers();
 		if (!domain2.getPlayers().contains(offlinePlayer.getUniqueId())) {
-			throw new ConditionFailedException("Deze speler is geen member van dit plot.");
+			throw new ConditionFailedException(Message.PLOTS_ERROR_NOTMEMBER.raw());
 		}
 
 		region.getMembers().removePlayer(offlinePlayer.getUniqueId());
-		String message = "&6Je hebt &c%s &6verwijderd als member van dit plot.";
-		player.sendMessage(Text.colors(String.format(message, offlinePlayer.getName())));
+
+		player.sendMessage(Message.PLOTS_SUCCESS_REMOVEMEMBER.format(offlinePlayer.getName(), region.getId()));
 	}
 
 	@Conditions("MTUser|Plot")
@@ -251,15 +241,13 @@ public class PlotCommand extends BaseCommand {
 		this.clearDomain(region.getOwners());
 		this.clearDomain(region.getMembers());
 
-		String message = "&6Je hebt het plot &c%s &6volledig gecleared.";
-		player.sendMessage(String.format(Text.colors(message), region.getId()));
+		player.sendMessage(Message.PLOTS_SUCCESS_CLEAR.format(region.getId()));
 	}
 
-	private boolean clearDomain(IWrappedDomain domain) {
+	private void clearDomain(IWrappedDomain domain) {
 		for (UUID u : domain.getPlayers()) {
 			domain.removePlayer(u);
 		}
-		return true;
 	}
 
 }
