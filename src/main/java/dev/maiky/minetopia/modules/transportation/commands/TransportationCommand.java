@@ -5,9 +5,11 @@ import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
+import com.google.gson.Gson;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.transportation.portal.ILocation;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.modules.transportation.portal.PortalData;
 import dev.maiky.minetopia.util.Configuration;
@@ -65,22 +67,21 @@ public class TransportationCommand extends BaseCommand {
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (portal == Portal.BUKKIT && section.contains(name))
-			throw new ConditionFailedException("Er bestaat al een portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_ALREADYEXIST.raw());
 		if (portal == Portal.BUNGEECORD && manager.getPortals().containsKey(name))
-			throw new ConditionFailedException("Er bestaat al een portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_ALREADYEXIST.raw());
 
 		Location location = player.getLocation();
 
 		if (portal == Portal.BUNGEECORD) {
-			PortalData data = new PortalData(location, "unknown");
+			PortalData data = new PortalData(ILocation.from(location), "unknown");
 			manager.insertPortal(name, data);
 		} else {
 			section.set(name + ".location", location);
 			this.configuration.save();
 		}
 
-		String message = "&6Success! Created a portal with the name &c%s &6in the category &c%s &6on your &ccurrent &6location.";
-		player.sendMessage(String.format(Text.colors(message), name, portal.toString()));
+		player.sendMessage(Message.PORTALS_SUCCESS_CREATED.format(name, portal.toString()));
 	}
 
 	@Subcommand("delete")
@@ -91,9 +92,9 @@ public class TransportationCommand extends BaseCommand {
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 		if (portal == Portal.BUNGEECORD && !manager.getPortals().containsKey(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
 		if (portal == Portal.BUKKIT) {
 			section.set(name, null);
@@ -102,8 +103,7 @@ public class TransportationCommand extends BaseCommand {
 			manager.deletePortal(name);
 		}
 
-		String message = "&6Success! Deleted a portal with the name &c%s &6in the category &c%s&6.";
-		player.sendMessage(String.format(Text.colors(message), name, portal.toString()));
+		player.sendMessage(Message.PORTALS_SUCCESS_DELETED.format(name, portal.toString()));
 	}
 
 	@Subcommand("list")
@@ -113,8 +113,8 @@ public class TransportationCommand extends BaseCommand {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(portal.toString());
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
-		String divider = "§6§m----------------------------------------------------";
-		String message = "&c- &6%s (&c%s&6)";
+		String divider = Message.PORTALS_LIST_DIVIDER.raw();
+		String message = Message.PORTALS_LIST_ENTRY.raw();
 
 		player.sendMessage(divider);
 		if (portal == Portal.BUKKIT) {
@@ -128,7 +128,7 @@ public class TransportationCommand extends BaseCommand {
 			HashMap<String, PortalData> portalDataHashMap = manager.getPortals();
 			for (String portalName : portalDataHashMap.keySet()) {
 				PortalData data = portalDataHashMap.get(portalName);
-				Location location = SerializationUtils.deserialize(data.getLocation());
+				Location location = data.getLocation().toBukkit();
 				String loc = String.format("%.1f, %.1f, %.1f, %s (Server: %s)",
 						location.getX(), location.getY(), location.getZ(), location.getWorld().getName(), data.getServer());
 				player.sendMessage(String.format(Text.colors(message), portalName, loc));
@@ -145,19 +145,18 @@ public class TransportationCommand extends BaseCommand {
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 		if (portal == Portal.BUNGEECORD && !manager.getPortals().containsKey(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
 		if (portal == Portal.BUKKIT) {
 			section.set(name + ".location", player.getLocation());
 			this.configuration.save();
 		} else {
-			manager.updatePortal(name, new PortalData(player.getLocation(), manager.getPortalData(name).getServer()));
+			manager.updatePortal(name, new PortalData(ILocation.from(player.getLocation()), manager.getPortalData(name).getServer()));
 		}
 
-		String message = "&6Success! Changed the location of the portal with the name &c%s &6in the category &c%s&6.";
-		player.sendMessage(String.format(Text.colors(message), name, portal.toString()));
+		player.sendMessage(Message.PORTALS_SUCCESS_CHANGEDLOCATION.format(name, portal.toString()));
 	}
 
 	@Subcommand("teleport")
@@ -168,26 +167,24 @@ public class TransportationCommand extends BaseCommand {
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 		if (portal == Portal.BUNGEECORD && !manager.getPortals().containsKey(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
-		Location location;
+		ILocation location;
 		if (portal == Portal.BUKKIT) {
-			location = (Location) section.get(name + ".location");
+			location = ILocation.from((Location) section.get(name + ".location"));
 		} else {
-			location = SerializationUtils.deserialize(manager.getPortalData(name).getLocation());
+			location = manager.getPortalData(name).getLocation();
 		}
 
-		if (player.getWorld().getName().equals(location.getWorld().getName())) {
-			player.teleport(location);
+		if (player.getWorld().getName().equals(location.getWorldName())) {
+			player.teleport(location.toBukkit());
 		} else {
-			player.sendMessage("§cDeze portal is niet in deze server!");
-			return;
+			// TODO: Replicate use of standard way of transporting A to B
 		}
 
-		String message = "&6Success! You have been teleported to the location of the portal with the name &c%s &6in the category &c%s&6.";
-		player.sendMessage(String.format(Text.colors(message), name, portal.toString()));
+		player.sendMessage(Message.PORTALS_SUCCESS_TELEPORT.format(name));
 	}
 
 	@Subcommand("setserver")
@@ -197,12 +194,12 @@ public class TransportationCommand extends BaseCommand {
 		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (!manager.getPortals().containsKey(name))
-			throw new ConditionFailedException("Er bestaat geen portal met deze naam onder deze categorie.");
+			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
-		manager.updatePortal(name, new PortalData(SerializationUtils.deserialize(manager.getPortalData(name).getLocation()), server));
+		PortalData data = new PortalData(ILocation.from(player.getLocation()), server);
+		manager.updatePortal(name, data);
 
-		String message = "&6Success! Changed the server of the portal with the name &c%s &6in the category &c%s&6 to &c%s&6.";
-		player.sendMessage(String.format(Text.colors(message), name, Portal.BUNGEECORD.toString(), server));
+		player.sendMessage(Message.PORTALS_SUCCESS_CHANGEDSERVER.format(name, server));
 	}
 
 }

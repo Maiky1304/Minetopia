@@ -20,36 +20,3 @@ storage:
 discord:
   token: ""
   command-logs: 736639994760003594
-
-leaderboard-server: false
-
-settings:
-  city:
-    title: "minetopia"
-    color: "a"
-    layout:
-      - '%u%윟 %c%%area%'
-      - '%none%'
-      - '%c%Banksaldo:'
-      - '%u%%balance%'
-      - '%none%'
-      - '%c%Level:'
-      - '%u%%level% -> %possiblelevel% (%difference%)'
-      - '%none%'
-      - '%c%GrayShards:'
-      - '%u%%shards%'
-      - '%none%'
-      - 'play.maiky.dev'
-
-  ddgitems:
-    auto-update: true
-    custom-repository: 'none'
-
-  player:
-    default:
-      prefix: "Burger"
-      shards: 0
-      level: 1
-      cityColor: '7'
-      upgrades:
-        points: 1

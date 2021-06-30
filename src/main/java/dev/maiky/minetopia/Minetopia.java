@@ -22,12 +22,15 @@ import dev.maiky.minetopia.modules.notifications.NotificationsModule;
 import dev.maiky.minetopia.modules.players.PlayersModule;
 import dev.maiky.minetopia.modules.plots.PlotsModule;
 import dev.maiky.minetopia.modules.prefixes.PrefixesModule;
+import dev.maiky.minetopia.modules.scripts.ScriptsModule;
 import dev.maiky.minetopia.modules.security.SecurityModule;
 import dev.maiky.minetopia.modules.transportation.TransportationModule;
 import dev.maiky.minetopia.modules.upgrades.UpgradesModule;
 import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
+import me.lucko.helper.Schedulers;
 import me.lucko.helper.Services;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.plugin.ap.Plugin;
@@ -87,6 +90,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	public DiscordModule discordModule;
 	public AddonsModule addonsModule;
 	public BoosterModule boosterModule;
+	public ScriptsModule scriptsModule;
 
 	// Command Manager
 	@Getter
@@ -169,6 +173,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.getMessages().load();
 
 		Message.loadAll();
+		Options.loadAll();
+
+		getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
@@ -193,13 +200,15 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		this.discordModule = new DiscordModule();
 		this.addonsModule = new AddonsModule();
 		this.boosterModule = new BoosterModule();
+		this.scriptsModule = new ScriptsModule();
 
 		// Load all the modules
 		getLogger().info(" §b§lLOADING MODULES >>");
 		this.loadModules(this.dataModule, this.playersModule, this.chatModule, this.upgradesModule, this.itemsModule,
 				this.plotsModule, this.levelsModule, this.districtsModule, this.securityModule, this.colorsModule,
 				this.prefixesModule, this.transportationModule, this.ddgItemsModule, this.bagsModule, this.bankModule,
-				this.discordModule, this.gunsModule, this.notificationsModule, this.addonsModule, this.boosterModule);
+				this.discordModule, this.gunsModule, this.notificationsModule, this.addonsModule, this.boosterModule,
+				this.scriptsModule);
 
 		// Line
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
@@ -229,7 +238,9 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		}
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
-		this.loadedModules.values().forEach(MinetopiaModule::disable);
+		this.loadedModules.values().forEach(mm -> {
+			if (mm.isEnabled()) mm.disable();
+		});
 		this.loadedModules.clear();
 	}
 
@@ -238,6 +249,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	 * @param module the instance of the module
 	 */
 	public void loadModule(MinetopiaModule module) {
+		if (!canBeLoaded(module)) return;
 		this.loadedModules.put(module.getName(), module);
 		module.enable();
 	}
@@ -248,6 +260,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	 */
 	public void loadModules(MinetopiaModule... modules) {
 		for (MinetopiaModule module : modules) {
+			if (!canBeLoaded(module)) continue;
 			this.getLogger().info(Text.colorize(String.format("     %s Module %s has succesfully loaded!", Text.colorize("&a&l+&r"), Text.colorize("&b&l" + module.getName() + "&r"))));
 		}
 		if (modules.length == 0) {
@@ -257,8 +270,32 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
 		for (MinetopiaModule module : modules) {
+			if (!canBeLoaded(module)) continue;
 			this.loadModule(module);
 		}
+	}
+
+	protected boolean canBeLoaded(MinetopiaModule minetopiaModule) {
+		Class<? extends MinetopiaModule> clazz = minetopiaModule.getClass();
+		String packageName = clazz.getPackage().getName();
+		String[] array = packageName.split("\\.");
+
+		String moduleName;
+		try {
+			moduleName = array[4].toUpperCase();
+		} catch (ArrayIndexOutOfBoundsException exception) {
+			return false;
+		}
+
+		Options options;
+		try {
+			options = Options.valueOf(String.format("MODULES_%s", moduleName));
+		} catch (IllegalArgumentException argumentException) {
+			getLogger().warning("Module incorrect ingevoerd in configuratie instellingen!");
+			return false;
+		}
+
+		return options.asBoolean().get();
 	}
 
 	/**

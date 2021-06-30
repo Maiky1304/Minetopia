@@ -30,6 +30,12 @@ import java.util.UUID;
 @Description("Command for the boosters")
 public class BoosterCommand extends BaseCommand {
 
+	private SystemBoosterManager systemBoosterManager;
+
+	public BoosterCommand() {
+		this.systemBoosterManager = SystemBoosterManager.with(DataModule.getInstance().getSqlHelper());
+	}
+
 	@Default
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -137,7 +143,7 @@ public class BoosterCommand extends BaseCommand {
 
 		player.sendMessage(Message.BOOSTERS_ACTIVATED_SELF.format(type.toString().toLowerCase(), percentage));
 
-		SystemBoosterManager.update(player.getName(), type, SystemBoosterManager.get(type) + percentage);
+		systemBoosterManager.update(player.getName(), type, systemBoosterManager.get(type) + percentage);
 		Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(Message.BOOSTERS_ACTIVATED_BROADCAST.format(type.toString().toLowerCase(),
 				player.getName(), percentage)));
 	}

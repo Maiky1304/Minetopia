@@ -8,7 +8,6 @@ import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;

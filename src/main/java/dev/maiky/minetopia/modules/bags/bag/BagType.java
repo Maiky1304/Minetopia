@@ -1,5 +1,6 @@
 package dev.maiky.minetopia.modules.bags.bag;
 
+import dev.maiky.minetopia.util.Options;
 import me.lucko.helper.item.ItemStackBuilder;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
@@ -45,7 +46,7 @@ public enum BagType {
         ItemStack itemStack = ItemStackBuilder.of(this.material)
                 .durability(this.durability)
                 .name(this.displayName)
-                .lore("Officiële BlackMT Koffer").build();
+                .lore(Options.BAGS_DEFAULT_LORE.asString().get()).build();
         net.minecraft.server.v1_12_R1.ItemStack nms = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound tagCompound = nms.getTag() == null ? new NBTTagCompound() : nms.getTag();
         if (this.value != null)

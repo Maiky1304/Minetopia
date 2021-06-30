@@ -33,12 +33,11 @@ import java.util.Objects;
 @CommandPermission("minetopia.moderation.guns")
 public class GunsCommand extends BaseCommand {
 
-	private WeaponManager weaponManager;
-	private GunsModule module;
+	private final WeaponManager weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
+	private final GunsModule module;
 
 	public GunsCommand(GunsModule module) {
 		this.module = module;
-		this.weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
 	}
 
 	@Default

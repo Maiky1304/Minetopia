@@ -7,41 +7,25 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.WeaponManager;
 import dev.maiky.minetopia.modules.guns.commands.GunsCommand;
-import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.listeners.DamageListener;
 import dev.maiky.minetopia.modules.guns.listeners.ItemHeldListener;
 import dev.maiky.minetopia.modules.guns.listeners.TriggerListener;
-import dev.maiky.minetopia.modules.guns.models.firearms.*;
-import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
-import dev.maiky.minetopia.modules.guns.models.interfaces.Spread;
-import dev.maiky.minetopia.modules.guns.models.util.Builder;
-import dev.maiky.minetopia.modules.notifications.util.NotificationUtil;
-
+import dev.maiky.minetopia.util.Configuration;
 import lombok.Getter;
-import me.lucko.helper.Events;
-import me.lucko.helper.Schedulers;
 import me.lucko.helper.cooldown.Cooldown;
 import me.lucko.helper.cooldown.CooldownMap;
+import me.lucko.helper.terminable.Terminable;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
-
-import net.minecraft.server.v1_12_R1.NBTTagCompound;
-
 import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Door: Maiky
@@ -54,6 +38,8 @@ public class GunsModule implements MinetopiaModule {
 	private final CompositeTerminable composite = CompositeTerminable.create();
 
 	private boolean enabled;
+
+	private Configuration configuration;
 
 	@Override
 	public boolean isEnabled() {
@@ -71,6 +57,10 @@ public class GunsModule implements MinetopiaModule {
 		instance = this;
 		this.enabled = true;
 
+		// Configuration
+		this.configuration = new Configuration(Minetopia.getInstance(), "modules/guns.yml");
+		this.configuration.load();
+
 		// Register Guns
 		this.registerGuns();
 
@@ -80,6 +70,8 @@ public class GunsModule implements MinetopiaModule {
 		// Register Commands
 		this.registerCommands();
 	}
+
+	private GunsCommand gunsCommand;
 
 	private void registerCommands() {
 		Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
@@ -104,7 +96,9 @@ public class GunsModule implements MinetopiaModule {
 			if (!Objects.requireNonNull(CraftItemStack.asNMSCopy(mainHand).getTag()).hasKey("mtcustom"))
 				throw failed;
 		});
-		manager.registerCommand(new GunsCommand(this));
+		this.gunsCommand = new GunsCommand(this);
+		manager.registerCommand(gunsCommand);
+		this.composite.bind((Terminable) () -> manager.unregisterCommand(gunsCommand));
 	}
 
 	private void registerEvents() {
@@ -135,9 +129,54 @@ public class GunsModule implements MinetopiaModule {
 	}
 
 	private void registerGuns() {
-		Model[] models = new Model[]{new DesertEagle(), new Glock(), new M16A3(), new M16A4(),
-		new Magnum(), new Walther(), new Shotgun(), new WaltherPP(), new AK47()};
+		Set<String> keys = this.configuration.get().getKeys(false);
+		Model[] models = new Model[keys.size()];
+
+		int i = 0;
+		for (String key : keys) {
+			ConfigurationSection section = this.configuration.get().getConfigurationSection(key);
+			Model model = new Model() {
+				@Override
+				public double bulletVelocity() {
+					return section.getInt("velocity");
+				}
+
+				@Override
+				public double bulletDamage() {
+					return section.getDouble("damage");
+				}
+
+				@Override
+				public long delayBetweenShots() {
+					return section.getInt("delay");
+				}
+
+				@Override
+				public boolean burst() {
+					return section.getBoolean("burst");
+				}
+
+				@Override
+				public String modelName() {
+					return section.getString("mtcustom");
+				}
+
+				@Override
+				public String customName() {
+					return section.getString("name");
+				}
+
+				@Override
+				public int defaultAmmo() {
+					return section.getInt("default-ammo");
+				}
+			};
+
+			models[i] = model;
+			i++;
+		}
 		this.models.addAll(Arrays.asList(models));
+		composite.bind((Terminable) () -> getModels().clear());
 	}
 
 	@Override

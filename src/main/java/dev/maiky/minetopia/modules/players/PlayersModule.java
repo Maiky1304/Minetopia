@@ -12,10 +12,12 @@ import dev.maiky.minetopia.modules.players.listeners.AdminToolListener;
 import dev.maiky.minetopia.modules.players.listeners.JoinListener;
 import dev.maiky.minetopia.modules.players.listeners.QuitListener;
 import dev.maiky.minetopia.modules.players.listeners.TrashbinListener;
-import dev.maiky.minetopia.modules.players.placeholders.NameColorPlaceholder;
+import dev.maiky.minetopia.modules.players.listeners.impl.LoadingListener;
+import dev.maiky.minetopia.modules.players.placeholders.Placeholders;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
 import dev.maiky.minetopia.modules.players.tasks.TimeTask;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
@@ -95,12 +97,9 @@ public class PlayersModule implements MinetopiaModule {
 	private List<String> layout = Arrays.asList("%empty%", "Stel dit in via de config!");
 
 	private void initializeScoreboardVariables() {
-		Minetopia minetopia = Minetopia.getPlugin(Minetopia.class);
-		ConfigurationSection section = minetopia.getConfiguration().get().getConfigurationSection("settings.city");
-
-		this.cityName = section.getString("title");
-		this.cityColor = section.getString("color");
-		this.layout = section.getStringList("layout");
+		this.cityName = Options.SCOREBOARD_TITLE.asString().get();
+		this.cityColor = Options.SCOREBOARD_FALLBACKCOLOR.asString().get();
+		this.layout = Message.COMMON_SCOREBOARD_LINES.formatAsList();
 	}
 
 	@Getter
@@ -119,7 +118,7 @@ public class PlayersModule implements MinetopiaModule {
 	}
 
 	private void initializePlaceholders() {
-		NameColorPlaceholder nameColorPlaceholder = new NameColorPlaceholder();
+		Placeholders nameColorPlaceholder = new Placeholders();
 		nameColorPlaceholder.register();
 	}
 
@@ -230,6 +229,7 @@ public class PlayersModule implements MinetopiaModule {
 		this.composite.bindModule(new QuitListener(playerManager));
 		this.composite.bindModule(new TrashbinListener());
 		this.composite.bindModule(new AdminToolListener());
+		this.composite.bindModule(new LoadingListener());
 	}
 
 	@Override

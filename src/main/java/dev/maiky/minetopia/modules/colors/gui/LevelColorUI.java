@@ -6,7 +6,6 @@ import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;

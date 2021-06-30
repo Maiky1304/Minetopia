@@ -6,20 +6,15 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import dev.maiky.minetopia.modules.security.listeners.DetectorListener;
+import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
-import me.lucko.helper.Events;
-import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +58,7 @@ public class SecurityModule implements MinetopiaModule {
 		BukkitCommandManager manager = minetopia.getCommandManager();
 
 		manager.getCommandConditions().addCondition(Player.class, "notBeingSearched", (context, execContext, value) -> {
-			if ( BodySearchCommand.getBeingSearched().containsKey(value.getUniqueId()) ) throw new ConditionFailedException("Deze speler wordt al gefouilleerd.");
+			if ( BodySearchCommand.getBeingSearched().containsKey(value.getUniqueId()) ) throw new ConditionFailedException(Message.SECURIYT_BODYSEARCH_ERROR_ALREADYFRISKED.raw());
 		});
 		manager.registerCommand(new BodySearchCommand());
 	}
@@ -97,8 +92,8 @@ public class SecurityModule implements MinetopiaModule {
 		for(int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
 			for(int y = location.getBlockY() - radius; y <= location.getBlockY() + radius; y++) {
 				for(int z = location.getBlockZ() - radius; z <= location.getBlockZ() + radius; z++) {
-					if (location.getWorld().getBlockAt(x, y, z).getType() == Material.WOOL
-							&& location.getWorld().getBlockAt(x, y, z).getData() == (byte)15)
+					if (location.getWorld().getBlockAt(x, y, z).getType() == Options.SECURITY_DETECTOR_BLOCK.asMaterial().get()
+							&& location.getWorld().getBlockAt(x, y, z).getData() == Options.SECURITY_DETECTOR_CHECKFOR.asByte().get())
 						blocks.add(location.getWorld().getBlockAt(x, y, z));
 				}
 			}

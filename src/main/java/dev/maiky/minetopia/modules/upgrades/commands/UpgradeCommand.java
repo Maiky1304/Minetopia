@@ -10,8 +10,8 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.ui.UpgradeUI;
+import dev.maiky.minetopia.modules.upgrades.upgrades.Upgrade;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -69,8 +69,8 @@ public class UpgradeCommand extends BaseCommand {
 		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
 				: playerManager.retrieve(offlinePlayer.getUniqueId());
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
-		String message = "§6The player §c%s §6has §c%s §6upgrades.";
-		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName(), upgrades.getPoints()));
+
+		sender.sendMessage(Message.UPGRADES_INFO.format(offlinePlayer.getName(), upgrades.getPoints()));
 	}
 
 	@Subcommand("add")
@@ -92,8 +92,7 @@ public class UpgradeCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "§6Success! Upgrades of §c%s §6were increased by §c%s§6 their balance is now §c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName(), amount, upgrades.getPoints()));
+		sender.sendMessage(Message.UPGRADES_SUCCESS_ADD.format(amount, offlinePlayer.getName(), upgrades.getPoints()));
 	}
 
 	@Subcommand("remove")
@@ -115,8 +114,32 @@ public class UpgradeCommand extends BaseCommand {
 		if (!offlinePlayer.isOnline())
 			playerManager.update(user);
 
-		String message = "§6Success! Upgrades of §c%s §6were decreased by §c%s§6 their balance is now §c%s&6.";
-		sender.sendMessage(String.format(Text.colors(message), offlinePlayer.getName(), amount, upgrades.getPoints()));
+		sender.sendMessage(Message.UPGRADES_SUCCESS_REMOVE.format(amount, offlinePlayer.getName(), upgrades.getPoints()));
 	}
+
+	@Subcommand("list")
+	@Syntax("<player>")
+	@Description("Bekijk alle upgrades van een specifieke speler")
+	@CommandPermission("minetopia.admin.upgrades")
+	@CommandCompletion("@players")
+	public void onList(CommandSender sender, @Conditions("database") String target) {
+		OfflinePlayer offlinePlayer;
+		if (target.length() == 32)
+			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
+		else offlinePlayer = Bukkit.getOfflinePlayer(target);
+
+		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
+		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
+
+		sender.sendMessage(Message.UPGRADES_LIST_DIVIDER.raw());
+		for (Upgrade upgrade : upgrades.getUpgrades().keySet()) {
+			int level = upgrades.getUpgrades().get(upgrade);
+			sender.sendMessage(Message.UPGRADES_LIST_ENTRY.format(upgrade.getLabel(), level));
+		}
+		sender.sendMessage(Message.UPGRADES_LIST_DIVIDER.raw());
+	}
+
 
 }

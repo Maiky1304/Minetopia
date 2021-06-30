@@ -28,6 +28,7 @@ public class SaveTask implements Runnable {
 		BucketPartition<Player> part = bucket.asCycle().next();
 		for (Player player : part) {
 			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			if (user == null) continue;
 			manager.update(user);
 
 			MinetopiaScoreboard scoreboard = PlayerManager.getScoreboard().get(player.getUniqueId());

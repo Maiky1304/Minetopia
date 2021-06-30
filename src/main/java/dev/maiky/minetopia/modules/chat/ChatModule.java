@@ -1,8 +1,8 @@
 package dev.maiky.minetopia.modules.chat;
 
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.chat.listeners.RadioListener;
 import dev.maiky.minetopia.modules.chat.listeners.MainChatListener;
+import dev.maiky.minetopia.modules.chat.listeners.RadioListener;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 

@@ -1,6 +1,5 @@
 package dev.maiky.minetopia.modules.bank.bank;
 
-import dev.maiky.minetopia.modules.bags.bag.BagType;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 

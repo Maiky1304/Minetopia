@@ -4,7 +4,6 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.items.Interaction;
 import dev.maiky.minetopia.modules.items.MinetopiaInteractable;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

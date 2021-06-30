@@ -46,6 +46,7 @@ public class LevelCheckListener implements TerminableModule {
 				.filter(e -> e.getRightClicked().isCustomNameVisible())
 				.filter(e -> e.getRightClicked().getCustomName() != null)
 				.filter(e -> e.getHand() == EquipmentSlot.HAND)
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> Text.strip(e.getRightClicked().getCustomName()).equalsIgnoreCase("LevelCheck"))
 				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> {

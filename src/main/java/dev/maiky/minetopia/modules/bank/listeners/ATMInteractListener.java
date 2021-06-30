@@ -26,6 +26,7 @@
 package dev.maiky.minetopia.modules.bank.listeners;
 
 import dev.maiky.minetopia.modules.bank.ui.BankChooseUI;
+import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -41,6 +42,7 @@ public class ATMInteractListener implements TerminableModule {
 				.filter(PlayerInteractEvent::hasBlock)
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> e.getClickedBlock().getType() == Material.RED_SANDSTONE_STAIRS)
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
 					e.setCancelled(true);
 					new BankChooseUI(e.getPlayer(), null).open();

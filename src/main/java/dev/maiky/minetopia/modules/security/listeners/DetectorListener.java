@@ -25,7 +25,9 @@
 
 package dev.maiky.minetopia.modules.security.listeners;
 
+import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.security.SecurityModule;
+import dev.maiky.minetopia.util.Options;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -48,6 +50,7 @@ public class DetectorListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> e.getAction() == Action.PHYSICAL)
 				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
 				.filter(e -> e.getClickedBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN)
@@ -56,7 +59,7 @@ public class DetectorListener implements TerminableModule {
 					Player p = e.getPlayer();
 
 					Sign sign = (Sign) e.getClickedBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN).getState();
-					if (!sign.getLine(0).equals("[DETECTOR]")) {
+					if (!sign.getLine(0).equals(Options.SECURITY_DETECTOR_SIGNTAG.asString().get())) {
 						return;
 					}
 					int radius = Integer.parseInt(sign.getLine(1));
@@ -96,9 +99,10 @@ public class DetectorListener implements TerminableModule {
 
 					for(Block block : blocks) {
 						for (Player nearbyPlayer : nearbyPlayers) {
-							nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, (carryingIllegalItems ? (byte)14 : (carryingBag ? (byte)4 : 13)));
+							nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, (carryingIllegalItems ? Options.SECURITY_DETECTOR_DETECTION.asByte().get() : (carryingBag ?
+							Options.SECURITY_DETECTOR_BAGTOCHECK.asByte().get() : Options.SECURITY_DETECTOR_GOODTOGO.asByte().get())));
 							Schedulers.sync().runLater(() -> {
-								nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, (byte)15);
+								nearbyPlayer.sendBlockChange(block.getLocation(), Material.WOOL, Options.SECURITY_DETECTOR_CHECKFOR.asByte().get());
 							}, 40).bindWith(consumer);
 						}
 					}

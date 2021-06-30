@@ -7,7 +7,6 @@ import dev.maiky.minetopia.modules.data.managers.BankManager;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
-import javafx.util.Callback;
 import lombok.Getter;
 import lombok.Setter;
 import me.lucko.helper.Events;
@@ -25,7 +24,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 
 /**
  * Door: Maiky

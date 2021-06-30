@@ -31,14 +31,18 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import org.bukkit.command.CommandSender;
 
-@CommandAlias("minetopia")
+@CommandAlias("minetopia|sdb|minetopiasdb|mtcore|minetopiacore|mcore|maikydev")
 public class MinetopiaCommand extends BaseCommand {
 
+	@Default
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
-		Minetopia.showHelp(sender, this, getSubCommands());
+		final Minetopia minetopia = Minetopia.getInstance();
+		sender.sendMessage("§3Deze server maakt gebruik van §b" + minetopia.getDescription().getName() + " §3met de versie §b" + minetopia.getDescription().getVersion() + "§3.");
+		sender.sendMessage("§3De eigenaar van deze license is §b?§3.");
 	}
 
 	@CatchUnknown
@@ -54,10 +58,13 @@ public class MinetopiaCommand extends BaseCommand {
 
 	@Subcommand("reload")
 	@Description("Reload de configuratie")
+	@CommandPermission("minetopia.admin")
 	public void onReload(CommandSender sender) {
 		Minetopia.getInstance().getMessages().reload();
 		Minetopia.getInstance().getConfiguration().reload();
+		Options.loadAll();
 		Message.loadAll();
+		Minetopia.getInstance().reloadModules();
 		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_RELOAD.raw());
 	}
 

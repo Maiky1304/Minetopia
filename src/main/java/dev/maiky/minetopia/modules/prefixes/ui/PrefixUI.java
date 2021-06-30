@@ -1,7 +1,7 @@
 package dev.maiky.minetopia.modules.prefixes.ui;
 
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
-import dev.maiky.minetopia.util.Text;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;
@@ -37,7 +37,7 @@ public class PrefixUI extends Gui {
 	private final List<Item> prefixItems = new ArrayList<>();
 
 	public PrefixUI(Player player, MinetopiaUser user){
-		super(player, calculateSize(user.getPrefixes()) / 9, "§0Kies hier jouw prefix!");
+		super(player, calculateSize(user.getPrefixes()) / 9, Message.PREFIX_GUI_TITLE.raw());
 		this.prepare(user);
 	}
 
@@ -49,8 +49,7 @@ public class PrefixUI extends Gui {
 			if (s.equals(user.getCurrentPrefix()))continue;
 			this.prefixItems.add(ItemStackBuilder.of(Material.PAPER)
 					.name("&7" + s).build(() -> {
-						String message = "&6Je hebt je prefix veranderd naar &c%s&6.";
-						getPlayer().sendMessage(String.format(Text.colors(message), s));
+						getPlayer().sendMessage(Message.PREFIX_GUI_CHANGED.format(s));
 						user.setCurrentPrefix(s);
 						new PrefixUI(getPlayer(), user).open();
 					}));

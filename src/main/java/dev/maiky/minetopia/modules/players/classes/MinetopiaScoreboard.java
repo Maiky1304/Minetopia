@@ -82,7 +82,7 @@ public class MinetopiaScoreboard {
 		replacements.put("%goldshards%", shardsFormat.format(user.getGoldshards()));
 		replacements.put("%balance%", Numbers.convert(Numbers.Type.MONEY, economy.getBalance(player)));
 		replacements.put("%c%", String.format("§%s", DistrictsModule.getLocationCache().get(player.getUniqueId()) == null ?
-				PlayersModule.getInstance().getCityColor() : DistrictsModule.getBlockCache().get(DistrictsModule.getLocationCache().get(player.getUniqueId()))));
+				PlayersModule.getInstance().getCityColor() : DistrictsModule.getBlockCache().get(DistrictsModule.getLocationCache().get(player.getUniqueId())) == null ? PlayersModule.getInstance().getCityColor() : DistrictsModule.getBlockCache().get(DistrictsModule.getLocationCache().get(player.getUniqueId()))));
 		replacements.put("%u%", "");
 
 		int empty = 0;

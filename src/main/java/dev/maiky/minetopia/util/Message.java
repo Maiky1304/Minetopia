@@ -26,15 +26,16 @@
 package dev.maiky.minetopia.util;
 
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.bank.bank.Permission;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.ChatColor;
 
 import java.util.*;
 
 public enum Message {
+
+	COMMON_SCOREBOARD_LINES(Arrays.asList("%u%윟 %c%%area%", "%none%", "%c%Banksaldo:", "%u%%balance%", "%none%", "%c%Level:", "%u%%level% -> %possiblelevel% (%difference%)",
+			"%none%", "%c%GrayShards:", "%u%%grayshards%", "%none%", "play.maiky.dev")),
 
 	COMMON_COMMAND_UNKNOWNSUBCOMMAND("&cUnknown subcommand"),
 	COMMON_COMMAND_SYNTAX("&cGebruik: /{0} {1} {2}", String.class, String.class, String.class),
@@ -117,7 +118,8 @@ public enum Message {
 
 	BANKING_DEBITCARD_USE("&6Banksaldo: &c{0}", String.class),
 
-	BAGS_ERROR_OPEN("&cEr is iets fout gegaan met het ophalen van jouw bag, contacteer een developer."),
+	BAGS_ERROR_OPEN_SELF("&cEr is iets fout gegaan met het ophalen van jouw bag, contacteer een developer."),
+	BAGS_ERROR_OPEN_OTHER("&cEr is iets fout gegaan met het ophalen van deze bag, contacteer een developer."),
 	BAGS_ERROR_NOTINHAND("&cJe hebt geen koffer in je hand!"),
 	BAGS_ERROR_NOTBYID("&cEr is geen koffer met het ID {0}.", Integer.class),
 	BAGS_HISTORY_HEADER("&3Geschiedenis voor de koffer &b{0}&3:", Integer.class),
@@ -187,7 +189,7 @@ public enum Message {
 
 	ITEMS_ERROR_NOPERMISSIONS("&cJij hebt geen permissions om deze &4{0} &cte gebruiken.", String.class),
 	ITEMS_POLICE_ALERT("&c[&4&l112&c] &7{0} &8(&7{1}&8)" + " &fheeft een 112 melding gedaan: &7{2}", String.class, String.class, String.class),
-	ITEMS_POLICE_CHATCOOLDOWN("&cJe moet nog {0} seconden wachten voordat je dit weer kunt doen.", Integer.class),
+	ITEMS_POLICE_CHATCOOLDOWN("&cJe moet nog {0} seconden wachten voordat je dit weer kunt doen.", Long.class),
 	ITEMS_POLICE_CHATSTATUS("&6Politiechat is nu &c{0}&6.", String.class),
 	ITEMS_POLICE_EMERGENCYBUTTON("&cDeze functie is tijdelijk uitgeschakeld, aangezien deze knop een server crash veroorzaakte. Als dit gefixed is komt er een mededeling."),
 	ITEMS_POLICE_EMERGENCYBUTTONMESSAGE("&c[&4&lNoodknop&c] &4{0} &fheeft op de noodknop gedrukt! (&c{1}&f)", String.class, String.class),
@@ -197,7 +199,7 @@ public enum Message {
 	ITEMS_POLICE_CUFF("&6Je bent in de handboeien gezet door &c{0}&6.", String.class),
 	ITEMS_POLICE_CUFFEXEC("&6Je hebt &c{0} &6in de handboeien gezet."),
 	ITEMS_TASER_EMPTY("&cJe taser is leeg, vul hem bij."),
-	ITEMS_TASER_COOLDOWN("&4&lCooldown &8● &cJe moet nog &4{0} &cseconden wachten voordat je weer je taser kunt gebruiken.", String.class),
+	ITEMS_TASER_COOLDOWN("&cJe moet nog &4{0} &cseconden wachten voordat je weer je taser kunt gebruiken.", String.class),
 	ITEMS_TASER_HIT("&6Je hebt &c{0} &6geraakt met een tazer.", String.class),
 	ITEMS_TASER_HITTED("&6Je bent geraakt door &c{0} &6met een tazer.", String.class),
 
@@ -222,14 +224,14 @@ public enum Message {
 	PLAYER_ADMINTOOL_OTHER("&6Je hebt het AdminTool menu van &c{0} &6geopend.", String.class),
 
 	PLAYER_TRASHBIN_TITLE("&4Prullenbak"),
-	PLAYER_TRASHBIN_MESSAGEONOPEN("§4PAS OP: §cAlles wat je hierin gooit wordt voor ALTIJD verwijderd!"),
+	PLAYER_TRASHBIN_MESSAGEONOPEN("&4PAS OP: &cAlles wat je hierin gooit wordt voor ALTIJD verwijderd!"),
 
-	PLOTS_INFO_STAFF(Arrays.asList("§6§m----------------------------------------------------",
+	PLOTS_INFO_STAFF(Arrays.asList("&6&m----------------------------------------------------",
 							 "&6Eigenaren: &c{0}",
 							 "&6Leden: &c{1}",
 							 "&6Flags: &c{2}",
 							 "&6ID: &c{3}",
-							 "§6§m----------------------------------------------------"), String.class, String.class, String.class,
+							 "&6&m----------------------------------------------------"), String.class, String.class, String.class,
 			String.class),
 	PLOTS_INFO_PLAYER(Arrays.asList("&6Eigenaren: &c{0}", "&6Leden: &c{1}"), String.class, String.class),
 	PLOTS_INFO_UNKNOWN("Geen"),
@@ -252,14 +254,71 @@ public enum Message {
 	PREFIX_SUCCESS_ADD("&6Je hebt de prefix &c{0} &6toegevoegd aan de speler &c{1}&6.", String.class, String.class),
 	PREFIX_SUCCESS_REMOVE("&6Je hebt de prefix &c{0} &6verwijderd van de speler &c{1}&6.", String.class, String.class),
 	PREFIX_SUCCESS_CLEAR("&^Je hebt alle prefixes van &c{0} &6verwijderd.", String.class),
-	PREFIX_INFO_DIVIDER("§6§m----------------------------------------------------"),
+	PREFIX_INFO_DIVIDER("&6&m----------------------------------------------------"),
 	PREFIX_INFO_ENTRY(" &c- &6{0} &c{1}", String.class, String.class),
 	PREFIX_INFO_CURRENT("(Huidig)"),
+
+	PREFIX_GUI_TITLE("&0Kies hier jouw prefix!"),
+	PREFIX_GUI_CHANGED("&6Je hebt je prefix veranderd naar &c{0}&6.", String.class),
+
+	SECURITY_BODYSEARCH_ERROR_TOOFARAWAY("&cJe bent te ver weg van &4{0} &com hem/haar te fouilleren.", String.class),
+	SECURITY_BODYSEARCH_ERROR_NOILLEGALITEMS("&cDeze koffer bevat &4geen &cillegale items."),
+	SECURITY_BODYSEARCH_ERROR_ONLYTAKEILLEGAL("&cJe kunt alleen &4illegale &citems innemen."),
+	SECURIYT_BODYSEARCH_ERROR_ALREADYFRISKED("&cDeze speler wordt al gefouilleerd."),
+	SECURITY_BODYSEARCH_SUCCESS_ILLEGALITEMS_HEADER("&cDeze koffer bevat de volgende &4illegale &citems:"),
+	SECURITY_BODYSEARCH_SUCCESS_ILLEGALITEMS_ENTRY(" &8- &7{0}", String.class),
+	SECURITY_BODYSEARCH_SUCCESS_START("&6Je fouilleerd nu &c{0}&6.", String.class),
+	SECURITY_BODYSEARCH_SUCCESS_STOP_POLICE("&6Je bent gestopt met het fouilleren van &c{0}&6.", String.class),
+	SECURITY_BODYSEARCH_SUCCESS_STOP_PLAYER("&6Je wordt niet meer &cgefouilleerd&6."),
+	SECURITY_BODYSEARCH_SUCCESS_START_TITLE("&3Politie"),
+	SECURITY_BODYSEARCH_SUCCESS_START_SUBTITLE("&bJe wordt nu &lgefouilleerd&b."),
+	SECURITY_BODYSEARCH_SUCCESS_STOP_TITLE("&3Politie"),
+	SECURITY_BODYSEARCH_SUCCESS_STOP_SUBTITLE("&bJe wordt niet meer &lgefouilleerd&b."),
+
+	PORTALS_ERROR_ALREADYEXIST("&cEr bestaat al een portal met deze naam onder deze categorie."),
+	PORTALS_ERROR_DOESNTEXIST("&cEr bestaat geen portal met deze naam onder deze categorie."),
+	PORTALS_ERROR_NOTINTHISSERVER("&cDeze portal is niet in deze server!"),
+	PORTALS_ERROR_PORTALTYPE("&cDeze portaltype bestaat niet!"),
+	PORTALS_SUCCESS_USEPORTAL_LOCAL("&6Je wordt geteleporteerd naar &c{1}&6.", String.class),
+	PORTALS_SUCCESS_USEPORTAL_BUNGEE("&6Je wordt verbonden met &c{1}&6.", String.class),
+	PORTALS_SUCCESS_SIGNCREATED("&6Je hebt succesvol deze portal ingesteld op dit bordje!"),
+	PORTALS_SUCCESS_TELEPORT("&6Je bent teleporteerd naar de portal &c{0}&6.", String.class),
+	PORTALS_SUCCESS_CREATED("&6Je hebt een portal aangemaakt met de naam &c{0} &6in de categorie &c{1} &6op je huidige locatie.",
+			String.class, String.class),
+	PORTALS_SUCCESS_DELETED("&6Je hebt de portal met de naam &c{0} &6verwijderd in de categorie &c{1}&6.", String.class, String.class),
+	PORTALS_SUCCESS_CHANGEDLOCATION("&6Je hebt de locatie van de portal met de naam &c{0} &6in de categorie &c{1} &6veranderd.",
+			String.class, String.class),
+	PORTALS_SUCCESS_CHANGEDSERVER("&6Je hebt de server van de portal met de naam &c{0} &6gewijzigd naar &c{1}&6.", String.class, String.class),
+	PORTALS_LIST_DIVIDER("&6&m----------------------------------------------------"),
+	PORTALS_LIST_ENTRY("&c- &6{0} (&c{1}&6)", String.class, String.class),
+
+	UPGRADES_INFO("&6De speler &c{0} &6heeft &c{1} &6upgrade tokens.", String.class, Integer.class),
+	UPGRADES_SUCCESS_ADD("&6Je hebt &c{0} &6upgrade tokens gegeven aan de speler &c{1} &6zijn/haar saldo is nu &c{2}&6.",
+			Integer.class, String.class, Integer.class),
+	UPGRADES_SUCCESS_REMOVE("&6Je hebt &c{1} &6upgrade tokens verwijderd van de speler &c{1} &6zijn/haar saldo is nu &c{2}&6.",
+			Integer.class, String.class, Integer.class),
+	UPGRADES_LIST_DIVIDER("&6&m----------------------------------------------------"),
+	UPGRADES_LIST_ENTRY("&c- &6{0} &7(Lvl. {1})", String.class, Integer.class),
+	UPGRADES_GUI_TITLE("&0Upgrades"),
+	UPGRADES_GUI_LABEL("&6{0}", String.class),
+	UPGRADES_GUI_LEVEL("&3Level {0}", Integer.class),
+	UPGRADES_GUI_UNLOCKED("§aJe hebt deze al unlocked!"),
+	UPGRADES_GUI_LOCKED("&7Klik om deze upgrade te &bkopen&7."),
+	UPGRADES_GUI_ERROR_BUYPREVIOUS("§cKoop eerst de vorige upgrade level om deze te kunnen kopen."),
+	UPGRADES_GUI_ERROR_NOTENOUGHTOKENS("§cJe hebt geen genoeg tokens voor deze aankoop."),
+	UPGRADES_GUI_SUCCESS_BUY("&6Je hebt de upgrade &c{0} &6gekocht met &cLevel {1}&6.", String.class, Integer.class),
+	UPGRADES_GUI_TOKENINFO_LABEL("&3Tokens: &b{0}", Integer.class),
+	UPGRADES_GUI_TOKENINFO_LORE(Arrays.asList("", "&bDeze tokens krijg je automatisch elke 1 dag playtime.")),
+	UPGRADES_ELYTRA_COOLDOWN("§cJe moet nog §4{0} §cseconden wachten voordat je je Elytra Boost weer kunt gebruiken.", Long.class),
+	UPGRADES_ELYTRA_USED("§6Je hebt je Elytra Boost gebruikt van je upgrade, je hebt nu §c15 §6seconden cooldown."),
 
 	CHAT_FORMAT("&3[{0}&3] &8[{1}{2}&8] {3}{4}{5}: {6}", String.class, String.class, String.class, String.class, String.class, String.class, String.class),
 
 	ADDONS_VIEW("Addons ({0}): {1}", Integer.class, String.class),
-	ADDONS_SEPERATOR(",");
+	ADDONS_SEPERATOR(","),
+
+	SCRIPTS_VIEW("Scripts ({0}): {1}", Integer.class, String.class),
+	SCRIPTS_SEPERATOR(",");
 
 	private final @Getter(value = AccessLevel.PRIVATE) String message;
 	private final @Getter(value = AccessLevel.PRIVATE) List<String> messageList;
@@ -320,7 +379,6 @@ public enum Message {
 			for (int j = 0; j < copy.size(); j++) {
 				String line = defaultMessage.get(j);
 				if (line.contains("{" + i + "}")) {
-					System.out.println("[DEBUG] Found {" + i + "} in " + line + " replaced with " + namespaces[i]);
 					line = line.replace("{" + i + "}", String.valueOf(namespaces[i]));
 					defaultMessage.set(j, line);
 					break;

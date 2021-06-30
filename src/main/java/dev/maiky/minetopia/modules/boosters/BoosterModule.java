@@ -6,6 +6,7 @@ import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.boosters.commands.BoosterCommand;
 import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import dev.maiky.minetopia.modules.boosters.tasks.BoostTask;
+import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 
 /**
@@ -57,6 +58,12 @@ public class BoosterModule implements MinetopiaModule {
 	@Override
 	public void disable() {
 		this.enabled = false;
+
+		try {
+			this.composite.close();
+		} catch (CompositeClosingException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

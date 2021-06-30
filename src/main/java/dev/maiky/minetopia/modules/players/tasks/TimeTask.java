@@ -6,6 +6,7 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Numbers;
+import dev.maiky.minetopia.util.Options;
 import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.bucket.Bucket;
 import net.milkbowl.vault.economy.Economy;
@@ -30,6 +31,7 @@ public class TimeTask implements Runnable {
 	public void run() {
 		for (Player player : bucket) {
 			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			if (user == null) continue;
 			MinetopiaTime time = user.getTime();
 
 			boolean shards = false;
@@ -57,8 +59,10 @@ public class TimeTask implements Runnable {
 				hours = 0;
 				days++;
 
-				user.getMinetopiaUpgrades().setPoints(user.getMinetopiaUpgrades().getPoints() + 1);
-				player.sendMessage("§6Je hebt §c1 §6upgrade token ontvangen omdat je §c1 dag§6 playtime erbij hebt!");
+				if (Options.TIME_DAILYUPGRADETOKEN.asBoolean().get()) {
+					user.getMinetopiaUpgrades().setPoints(user.getMinetopiaUpgrades().getPoints() + 1);
+					player.sendMessage("§6Je hebt §c1 §6upgrade token ontvangen omdat je §c1 dag§6 playtime erbij hebt!");
+				}
 			}
 
 			time.setSeconds(seconds);
@@ -66,9 +70,9 @@ public class TimeTask implements Runnable {
 			time.setHours(hours);
 			time.setDays(days);
 
-			if ( loan ) {
+			if ( loan && Options.TIME_LOANENABLED.asBoolean().get() ) {
 				int level = user.getLevel();
-				double payout = level * 2500;
+				double payout = level * Options.TIME_LOANINCREASEPERLVL.asDouble().get();
 				Economy economy = Minetopia.getEconomy();
 				EconomyResponse response = economy.depositPlayer(player, payout);
 				if ( response.transactionSuccess() ) {
@@ -79,9 +83,9 @@ public class TimeTask implements Runnable {
 				}
 			}
 
-			if ( shards ) {
-				double grayOut = 1.0;
-				double goldOut = 0.4;
+			if ( shards && Options.TIME_SHARDPAYOUTENABLED.asBoolean().get() ) {
+				double grayOut = Options.TIME_GRAYSHARDS_PER10MIN.asDouble().get();
+				double goldOut = Options.TIME_GOLDSHARDS_PER10MIN.asDouble().get();
 
 				int boostGray = BoostTask.getTotalGrayShard();
 				int boostGold = BoostTask.getTotalGoldShard();

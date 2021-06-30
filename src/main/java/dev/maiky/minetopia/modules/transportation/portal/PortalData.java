@@ -12,12 +12,12 @@ import org.bukkit.Location;
 public class PortalData {
 
 	@Getter
-	private final String location;
+	private final ILocation location;
 	@Getter
 	private final String server;
 
-	public PortalData(Location location, String server) {
-		this.location = location.toString();
+	public PortalData(ILocation location, String server) {
+		this.location = location;
 		this.server = server;
 	}
 }

@@ -25,6 +25,7 @@
 
 package dev.maiky.minetopia.modules.players.listeners;
 
+import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
@@ -42,6 +43,7 @@ public class TrashbinListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
 				.filter(PlayerInteractEvent::hasBlock)
 				.filter(e -> e.getClickedBlock().getType() == Material.DROPPER)

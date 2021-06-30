@@ -8,7 +8,6 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
-import dev.maiky.minetopia.modules.players.classes.enums.Shard;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import org.bukkit.Bukkit;

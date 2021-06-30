@@ -54,6 +54,14 @@
                             <pattern>org.codemc.worldguardwrapper</pattern>
                             <shadedPattern>dev.maiky.minetopia.libs.worldguardwrapper</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>io.github.classgraph</pattern>
+                            <shadedPattern>dev.maiky.minetopia.libs.classgraph</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>nonapi.io.github.classgraph</pattern>
+                            <shadedPattern>dev.maiky.minetopia.libs.classgraph.nonapi</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -141,6 +149,14 @@
             <artifactId>helper-sql</artifactId>
             <version>${lucko.helper.sql.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- ClassGraph -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.6.9</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Lucko Helper Mongo -->
@@ -245,6 +261,13 @@
             <version>2.0.23-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>me.lucko</groupId>
+            <artifactId>scriptcontroller</artifactId>
+            <version>1.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

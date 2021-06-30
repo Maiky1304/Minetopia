@@ -1,0 +1,40 @@
+glock19:
+  velocity: 380
+  damage: 5.5
+  delay: 1500
+  mtcustom: glock19_fullmodel
+  name: Glock 19
+  default-ammo: 15
+
+magnum44:
+  velocity: 450
+  damage: 8
+  delay: 1500
+  mtcustom: magnum44_fullmodel
+  name: Magnum .44
+  default-ammo: 6
+
+waltherp99:
+  velocity: 408
+  damage: 6.5
+  delay: 1500
+  mtcustom: waltherp99_fullmodel
+  name: Walther P99
+  default-ammo: 10
+
+deserteagle:
+  velocity: 470
+  damage: 6.5
+  delay: 2500
+  mtcustom: deserteagle_fullmodel
+  name: Desert Eagle
+  default-ammo: 9
+
+m16a4:
+  velocity: 900
+  damage: 3
+  delay: 400
+  mtcustom: m16a4_fullmodel
+  name: M16A4
+  default-ammo: 30
+  burst: true # Schiet 3 kogels tegelijk, als je dit UIT zet verhoog dan ook de damage voor beste resultaat.

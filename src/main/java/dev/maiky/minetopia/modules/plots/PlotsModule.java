@@ -6,6 +6,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.plots.commands.PlotCommand;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Location;
@@ -69,7 +70,7 @@ public class PlotsModule implements MinetopiaModule {
 			Set<IWrappedRegion> regions = this.worldGuardWrapper.getRegions(location);
 			List<IWrappedRegion> filtered = new ArrayList<>();
 			for (IWrappedRegion wrappedRegion : regions) {
-				if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
+				if ( wrappedRegion.getPriority() >= Options.PLOTS_MINIMUMPRIORITY.asInt().get() ) filtered.add(wrappedRegion);
 			}
 
 			if (filtered.isEmpty()) {

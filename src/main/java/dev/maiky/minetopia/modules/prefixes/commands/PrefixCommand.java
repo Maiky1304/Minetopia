@@ -11,7 +11,6 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.prefixes.ui.PrefixUI;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;

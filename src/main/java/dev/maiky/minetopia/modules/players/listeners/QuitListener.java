@@ -26,6 +26,8 @@
 package dev.maiky.minetopia.modules.players.listeners;
 
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -45,7 +47,12 @@ public class QuitListener implements TerminableModule {
 		Events.subscribe(PlayerQuitEvent.class)
 				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
-					playerManager.update(PlayerManager.getCache().get(e.getPlayer().getUniqueId()));
+					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
+					user.getMinetopiaData().setInventory(MinetopiaInventory.of(e.getPlayer().getInventory()));
+					user.getMinetopiaData().setHp(e.getPlayer().getHealth());
+					user.getMinetopiaData().setSaturation(e.getPlayer().getFoodLevel());
+
+					playerManager.update(user);
 					PlayerManager.getCache().remove(e.getPlayer().getUniqueId());
 				}).bindWith(consumer);
 		Events.subscribe(PlayerQuitEvent.class)

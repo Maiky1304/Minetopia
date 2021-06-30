@@ -2,6 +2,7 @@ package dev.maiky.minetopia.modules.boosters.tasks;
 
 import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import dev.maiky.minetopia.modules.boosters.manager.SystemBoosterManager;
+import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
 import me.lucko.helper.Schedulers;
@@ -33,28 +34,30 @@ public class BoostTask implements TerminableModule {
 
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
+		SystemBoosterManager systemBoosterManager = SystemBoosterManager.with(DataModule.getInstance().getSqlHelper());
+
 		Schedulers.async().runRepeating(task -> {
-			int totalGrayshards = SystemBoosterManager.get(BoosterType.GRAYSHARD);
-			int totalGoldshards = SystemBoosterManager.get(BoosterType.GOLDSHARD);
+			int totalGrayshards = systemBoosterManager.get(BoosterType.GRAYSHARD);
+			int totalGoldshards = systemBoosterManager.get(BoosterType.GOLDSHARD);
 
 			totalGrayShard = totalGoldshards;
 			totalGoldShard = totalGoldshards;
 
-			String lastGrayshards = SystemBoosterManager.getLastUser(BoosterType.GRAYSHARD);
-			String lastGoldshards = SystemBoosterManager.getLastUser(BoosterType.GOLDSHARD);
+			String lastGrayshards = systemBoosterManager.getLastUser(BoosterType.GRAYSHARD);
+			String lastGoldshards = systemBoosterManager.getLastUser(BoosterType.GOLDSHARD);
 
-			long expiryGrayshards = SystemBoosterManager.getExpiry(BoosterType.GRAYSHARD);
+			long expiryGrayshards = systemBoosterManager.getExpiry(BoosterType.GRAYSHARD);
 			double progressGrayshards = ((double)(expiryGrayshards - System.currentTimeMillis()) / 3600000L);
 
 			if (System.currentTimeMillis() > expiryGrayshards) {
-				SystemBoosterManager.update("-", BoosterType.GRAYSHARD, 0);
+				systemBoosterManager.update("-", BoosterType.GRAYSHARD, 0);
 			}
 
-			long expiryGoldshards = SystemBoosterManager.getExpiry(BoosterType.GOLDSHARD);
+			long expiryGoldshards = systemBoosterManager.getExpiry(BoosterType.GOLDSHARD);
 			double progressGoldshards = ((double)(expiryGoldshards - System.currentTimeMillis()) / 3600000L);
 
 			if (System.currentTimeMillis() > expiryGoldshards) {
-				SystemBoosterManager.update("-", BoosterType.GOLDSHARD, 0);
+				systemBoosterManager.update("-", BoosterType.GOLDSHARD, 0);
 			}
 
 			if (totalGrayshards != 0) {

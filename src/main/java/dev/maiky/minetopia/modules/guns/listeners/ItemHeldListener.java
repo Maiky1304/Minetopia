@@ -77,6 +77,13 @@ public class ItemHeldListener implements TerminableModule {
 					String license = nbtTagCompound.getString("license");
 					Weapon weapon = weaponManager.getWeaponByLicense(license);
 
+					if (weapon == null) {
+						e.getPlayer().sendMessage("§cHet wapen wat je probeerde vast te houden bestaat niet meer!");
+						e.getPlayer().getInventory().setItem(e.getNewSlot(), null);
+						e.getPlayer().updateInventory();
+						return;
+					}
+
 					List<String> gunsInfo = Message.GUNS_INFO.formatAsList(weapon.getDurability(), weapon.getAmmo(), model.defaultAmmo());
 					gunsInfo.forEach(e.getPlayer()::sendMessage);
 				}).bindWith(consumer);

@@ -1,8 +1,15 @@
 package dev.maiky.minetopia.modules.boosters.manager;
 
+import com.google.gson.Gson;
 import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import dev.maiky.minetopia.modules.data.DataModule;
+import dev.maiky.minetopia.modules.data.managers.BagManager;
+import me.lucko.helper.sql.Sql;
 import redis.clients.jedis.Jedis;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Door: Maiky
@@ -12,31 +19,84 @@ import redis.clients.jedis.Jedis;
 
 public class SystemBoosterManager {
 
-	private final static Jedis jedis;
+	private final Sql sql;
+	private final Gson gson;
 
-	static {
-		jedis = DataModule.getInstance().getRedis().getJedis();
+	public static SystemBoosterManager with(Sql sql) {
+		return new SystemBoosterManager(sql);
 	}
 
-	public static void update(String owner, BoosterType type, int percentage) {
-		jedis.set(type.toString(), String.valueOf(percentage));
-		jedis.set("expiry:" + type.toString(), String.valueOf((System.currentTimeMillis() + 3600000L)));
-		jedis.set("last:" + type.toString(), owner);
+	private SystemBoosterManager(Sql sql) {
+		this.sql = sql;
+		this.gson = new Gson();
 	}
 
-	public static int get(BoosterType type) {
-		if (!jedis.exists(type.toString())) return 0;
-		return Integer.parseInt(jedis.get(type.toString()));
+	public void update(String owner, BoosterType type, int percentage) {
+		if (exists(type)) {
+			this.sql.execute("UPDATE `boosters` SET `last`=?,`expiry`=?,`percentage`=? WHERE `type`=?",
+					preparedStatement ->
+					{
+						preparedStatement.setString(1, owner);
+						preparedStatement.setLong(2, System.currentTimeMillis() + 3600000L);
+						preparedStatement.setInt(3, percentage);
+						preparedStatement.setString(4, type.toString());
+					});
+		} else {
+			this.sql.execute("INSERT INTO `boosters`(`type`,`percentage`,`expiry`,`last`) VALUES(?,?,?,?)",
+					preparedStatement ->
+					{
+						preparedStatement.setString(1, type.toString());
+						preparedStatement.setInt(2, percentage);
+						preparedStatement.setLong(3, System.currentTimeMillis() + 3600000L);
+						preparedStatement.setString(4, owner);
+					});
+		}
 	}
 
-	public static long getExpiry(BoosterType type) {
-		if (!jedis.exists("expiry:" + type.toString())) return 0L;
-		return Long.parseLong(jedis.get("expiry:" + type.toString()));
+	public int get(BoosterType type) {
+		if (!exists(type)) return 0;
+		return this.sql.query("SELECT `percentage` FROM `boosters` WHERE `type`=?",
+				preparedStatement -> preparedStatement.setString(1, type.toString()),
+				resultSet ->
+				{
+					if (resultSet.next()) {
+						return resultSet.getInt(1);
+					}
+					return 0;
+				}).orElse(0);
 	}
 
-	public static String getLastUser(BoosterType type) {
-		if (!jedis.exists("last:" + type.toString())) return null;
-		return jedis.get("last:" + type.toString());
+	public long getExpiry(BoosterType type) {
+		if (!exists(type)) return 0L;
+		return this.sql.query("SELECT `expiry` FROM `boosters` WHERE `type`=?",
+				preparedStatement -> preparedStatement.setString(1, type.toString()),
+				resultSet ->
+				{
+					if (resultSet.next()) {
+						return resultSet.getLong(1);
+					}
+
+					return 0L;
+				}).orElse(0L);
+	}
+
+	public String getLastUser(BoosterType type) {
+		if (!exists(type)) return null;
+		return this.sql.query("SELECT `last` FROM `boosters` WHERE `type`=?",
+				preparedStatement -> preparedStatement.setString(1, type.toString()),
+				resultSet ->
+				{
+					if (resultSet.next()) {
+						return resultSet.getString(1);
+					}
+
+					return null;
+				}).orElse(null);
+	}
+
+	private boolean exists(BoosterType type) {
+		return sql.query("SELECT `type` FROM `boosters` WHERE `type`=?",
+				preparedStatement -> preparedStatement.setString(1, type.toString()), ResultSet::next).orElse(false);
 	}
 
 }

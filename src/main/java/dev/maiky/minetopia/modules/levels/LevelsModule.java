@@ -1,17 +1,9 @@
 package dev.maiky.minetopia.modules.levels;
 
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.levels.listeners.LevelCheckListener;
-import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
-import dev.maiky.minetopia.modules.levels.ui.LevelCheckUI;
-import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
-import dev.maiky.minetopia.util.Text;
-import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 /**
  * Door: Maiky

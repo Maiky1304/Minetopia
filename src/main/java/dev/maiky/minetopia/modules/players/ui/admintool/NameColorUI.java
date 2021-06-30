@@ -7,7 +7,6 @@ import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
-import me.lucko.helper.menu.scheme.MenuScheme;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -51,7 +50,7 @@ public class NameColorUI extends Gui {
 		for (int i = 36; i < 45; i++) {
 			setItem(i, ItemStackBuilder.of(Material.STAINED_GLASS_PANE).name(" ").buildItem().build());
 		}
-		setItem(49, ItemStackBuilder.of(Material.FENCE).name("&cTerug naar vorige menu").build(() -> new AdminToolUI(getPlayer(), offlinePlayer).open()));
+		setItem(49, ItemStackBuilder.of(Material.LADDER).name("&cTerug naar vorige menu").build(() -> new AdminToolUI(getPlayer(), offlinePlayer).open()));
 	}
 
 	private ItemStack nbtFormat(ItemStack itemStack, String string) {

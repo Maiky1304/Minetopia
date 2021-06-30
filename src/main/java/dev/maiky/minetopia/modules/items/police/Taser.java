@@ -1,7 +1,6 @@
 package dev.maiky.minetopia.modules.items.police;
 
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Schedulers;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
 import org.bukkit.Color;

@@ -4,11 +4,11 @@ import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.notifications.command.NotificationCommand;
-import dev.maiky.minetopia.modules.notifications.listeners.*;
+import dev.maiky.minetopia.modules.notifications.listeners.JoinListener;
+import dev.maiky.minetopia.modules.notifications.listeners.QuitListener;
 import dev.maiky.minetopia.modules.notifications.listeners.impl.BalanceUpdateListener;
 import dev.maiky.minetopia.modules.notifications.notifications.Notification;
 import dev.maiky.minetopia.modules.notifications.notifications.NotificationQueue;
-import dev.maiky.minetopia.util.Numbers;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.bucket.Bucket;
@@ -17,14 +17,11 @@ import me.lucko.helper.bucket.factory.BucketFactory;
 import me.lucko.helper.bucket.partitioning.PartitioningStrategies;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
-import net.ess3.api.events.UserBalanceUpdateEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 
 /**

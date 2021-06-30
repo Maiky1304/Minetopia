@@ -5,8 +5,6 @@ import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.ddgitems.items.classes.ItemType;
-import dev.maiky.minetopia.modules.ddgitems.ui.ItemsUI;
 import dev.maiky.minetopia.modules.ddgitems.ui.SelectUI;
 import dev.maiky.minetopia.util.Message;
 import org.bukkit.command.CommandSender;

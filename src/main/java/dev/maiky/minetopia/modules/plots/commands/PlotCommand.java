@@ -7,6 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -61,7 +62,7 @@ public class PlotCommand extends BaseCommand {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
 		List<IWrappedRegion> filtered = new ArrayList<>();
 		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
+			if ( wrappedRegion.getPriority() >= Options.PLOTS_MINIMUMPRIORITY.asInt().get() ) filtered.add(wrappedRegion);
 		}
 
 		IWrappedRegion region = filtered.get(0);
@@ -116,7 +117,7 @@ public class PlotCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.plot")
 	public void addOwner(Player player, @Conditions("database") String target) {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
-		List<IWrappedRegion> filtered = filterRegions(regions, 0);
+		List<IWrappedRegion> filtered = filterRegions(regions, Options.PLOTS_MINIMUMPRIORITY.asInt().get());
 
 		OfflinePlayer offlinePlayer;
 		if (target.length() == 32)
@@ -142,7 +143,7 @@ public class PlotCommand extends BaseCommand {
 	@CommandPermission("minetopia.moderation.plot")
 	public void removeOwner(Player player, @Conditions("database") String target) {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
-		List<IWrappedRegion> filtered = filterRegions(regions, 0);
+		List<IWrappedRegion> filtered = filterRegions(regions, Options.PLOTS_MINIMUMPRIORITY.asInt().get());
 
 		OfflinePlayer offlinePlayer;
 		if (target.length() == 32)
@@ -169,7 +170,7 @@ public class PlotCommand extends BaseCommand {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
 		List<IWrappedRegion> filtered = new ArrayList<>();
 		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
+			if ( wrappedRegion.getPriority() >= Options.PLOTS_MINIMUMPRIORITY.asInt().get() ) filtered.add(wrappedRegion);
 		}
 
 		OfflinePlayer offlinePlayer;
@@ -201,7 +202,7 @@ public class PlotCommand extends BaseCommand {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
 		List<IWrappedRegion> filtered = new ArrayList<>();
 		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
+			if ( wrappedRegion.getPriority() >= Options.PLOTS_MINIMUMPRIORITY.asInt().get() ) filtered.add(wrappedRegion);
 		}
 
 		OfflinePlayer offlinePlayer;
@@ -234,7 +235,7 @@ public class PlotCommand extends BaseCommand {
 		Set<IWrappedRegion> regions = wrapper.getRegions(player.getLocation());
 		List<IWrappedRegion> filtered = new ArrayList<>();
 		for (IWrappedRegion wrappedRegion : regions) {
-			if ( wrappedRegion.getPriority() >= 0 ) filtered.add(wrappedRegion);
+			if ( wrappedRegion.getPriority() >= Options.PLOTS_MINIMUMPRIORITY.asInt().get() ) filtered.add(wrappedRegion);
 		}
 
 		IWrappedRegion region = filtered.get(0);

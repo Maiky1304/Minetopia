@@ -25,6 +25,7 @@
 
 package dev.maiky.minetopia.modules.guns.listeners;
 
+import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.data.managers.WeaponManager;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.guns.gun.Weapon;
@@ -72,6 +73,7 @@ public class TriggerListener implements TerminableModule {
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
 				.filter(PlayerInteractEvent::hasItem)
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> e.getItem().getType() == Material.WOOD_HOE)
 				.filter(e -> CraftItemStack.asNMSCopy(e.getItem()).getTag() != null)

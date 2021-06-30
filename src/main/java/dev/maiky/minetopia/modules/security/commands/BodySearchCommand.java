@@ -8,10 +8,10 @@ import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.bags.bag.Bag;
 import dev.maiky.minetopia.modules.bags.bag.BagType;
-import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BagManager;
 import dev.maiky.minetopia.modules.security.SecurityModule;
+import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
@@ -46,11 +46,20 @@ public class BodySearchCommand extends BaseCommand {
 
 	private static final HashMap<UUID, UUID> beingSearched = new HashMap<>();
 
+	@HelpCommand
+	public void onHelp(CommandSender sender) {
+		Minetopia.showHelp(sender, this, getSubCommands());
+	}
+
+	@CatchUnknown
+	public void onUnknown(CommandSender sender) {
+		sender.sendMessage(Message.COMMON_COMMAND_UNKNOWNSUBCOMMAND.raw());
+		this.onHelp(sender);
+	}
+
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
-		issuer.sendMessage("§cGebruik: /" + this.getExecCommandLabel() + " " +
-				cmd.getPrefSubCommand() + " " +
-				cmd.getSyntaxText());
+		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
 	}
 
 	@Default
@@ -61,10 +70,11 @@ public class BodySearchCommand extends BaseCommand {
 		final Player target = offlinePlayer.getPlayer();
 
 		if (player.getLocation().distance(target.getLocation()) >= 4)
-			throw new ConditionFailedException("§cJe bent te ver weg van §4" + offlinePlayer.getName() + " §com hem/haar te fouilleren.");
+			throw new ConditionFailedException(Message.SECURITY_BODYSEARCH_ERROR_TOOFARAWAY.format(offlinePlayer.getName()));
 
-		player.sendMessage("§6Je fouilleerd nu §c" + target.getName() + "§6.");
-		target.sendTitle("§3Politie", "§bJe wordt nu §lgefouilleerd§b door §3" + player.getName() + "§b.",
+		player.sendMessage(Message.SECURITY_BODYSEARCH_SUCCESS_START.format(target.getName()));
+		target.sendTitle(Message.SECURITY_BODYSEARCH_SUCCESS_START_TITLE.raw(), Message.SECURITY_BODYSEARCH_SUCCESS_START_SUBTITLE
+				.format(player.getName()),
 				20, 80, 20);
 
 		beingSearched.put(target.getUniqueId(), player.getUniqueId());
@@ -110,7 +120,7 @@ public class BodySearchCommand extends BaseCommand {
 							BagManager bagManager = BagManager.with(DataModule.getInstance().getSqlHelper());
 							Bag bag = bagManager.getBag(id);
 							if (bag == null) {
-								e.getWhoClicked().sendMessage("§cEr is iets fout gegaan met het ophalen van deze bag, contacteer een developer.");
+								e.getWhoClicked().sendMessage(Message.BAGS_ERROR_OPEN_OTHER.raw());
 								return;
 							}
 
@@ -131,28 +141,28 @@ public class BodySearchCommand extends BaseCommand {
 
 							if (illegalItems.size() == 0) {
 								e.setCancelled(true);
-								e.getWhoClicked().sendMessage("§cDeze koffer bevat §4geen §cillegale items.");
+								e.getWhoClicked().sendMessage(Message.SECURITY_BODYSEARCH_ERROR_NOILLEGALITEMS.raw());
 								return;
 							}
 
-							e.getWhoClicked().sendMessage("§cDeze koffer bevat de volgende §4illegale §citems:");
+							e.getWhoClicked().sendMessage(Message.SECURITY_BODYSEARCH_SUCCESS_ILLEGALITEMS_HEADER.raw());
 							for (String s : illegalItems)
-								e.getWhoClicked().sendMessage(" §8- §7" + s);
+								e.getWhoClicked().sendMessage(Message.SECURITY_BODYSEARCH_SUCCESS_ILLEGALITEMS_ENTRY.format(s));
 							return;
 						}
 					}
 
 					e.setCancelled(true);
-					e.getWhoClicked().sendMessage("§cJe kunt alleen §4illegale §citems innemen.");
+					e.getWhoClicked().sendMessage(Message.SECURITY_BODYSEARCH_ERROR_ONLYTAKEILLEGAL.raw());
 				}).bindWith(terminable);
 		Events.subscribe(InventoryCloseEvent.class)
 				.filter(e -> e.getInventory().equals(inventory))
 				.filter(e -> e.getPlayer().getUniqueId().equals(player.getUniqueId()))
 				.handler(e -> {
 					beingSearched.remove(target.getUniqueId());
-					e.getPlayer().sendMessage("§6Je bent gestopt met het fouilleren van §c" + target.getName() + "§6.");
-					target.sendMessage("§6Je wordt niet meer §cgefouilleerd§6.");
-					target.sendTitle("§3Politie", "§bJe wordt niet meer gefouilleerd.", 20, 80, 20);
+					e.getPlayer().sendMessage(Message.SECURITY_BODYSEARCH_SUCCESS_STOP_POLICE.format(target.getName()));
+					target.sendMessage(Message.SECURITY_BODYSEARCH_SUCCESS_STOP_PLAYER.raw());
+					target.sendTitle(Message.SECURITY_BODYSEARCH_SUCCESS_STOP_TITLE.raw(), Message.SECURITY_BODYSEARCH_SUCCESS_STOP_SUBTITLE.raw(), 20, 80, 20);
 
 					try {
 						terminable.close();

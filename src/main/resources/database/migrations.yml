@@ -7,3 +7,4 @@ banking_savings: "CREATE TABLE IF NOT EXISTS `banking_savings` ( `id` INT(12) NO
 banking_government: "CREATE TABLE IF NOT EXISTS `banking_government` ( `id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;"
 guns: "CREATE TABLE IF NOT EXISTS `weapons` (`id` INT(12) NOT NULL AUTO_INCREMENT , `json` LONGTEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;"
 leaderboards: "CREATE TABLE IF NOT EXISTS `leaderboards` ( `uuid` VARCHAR(96) NOT NULL , `points` BIGINT(255) NOT NULL DEFAULT '0' , UNIQUE (`uuid`)) ENGINE = InnoDB;"
+boosters: "CREATE TABLE IF NOT EXISTS `boosters` ( `type` ENUM('GRAYSHARD','GOLDSHARD') NOT NULL , `percentage` BIGINT NOT NULL , `expiry` BIGINT NOT NULL , `last` VARCHAR(255) NOT NULL , UNIQUE (`type`)) ENGINE = InnoDB;"

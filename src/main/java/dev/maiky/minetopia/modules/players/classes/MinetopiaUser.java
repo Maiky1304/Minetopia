@@ -3,6 +3,9 @@ package dev.maiky.minetopia.modules.players.classes;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.players.PlayersModule;
+import dev.maiky.minetopia.modules.transportation.portal.LocalPortalData;
+import dev.maiky.minetopia.modules.transportation.portal.PortalData;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -61,6 +64,8 @@ public class MinetopiaUser {
 	private int grayshardBoost;
 	@Getter @Setter
 	private int goldshardBoost;
+	private @Getter @Setter LocalPortalData portalData;
+	private @Getter final MinetopiaData minetopiaData;
 
 	public MinetopiaUser(UUID uuid) {
 		this.uuid = uuid;
@@ -72,30 +77,41 @@ public class MinetopiaUser {
 			this.name = offlinePlayer.getName();
 		}
 
-		this.level = PlayersModule.getInstance().getLevel();
+		this.level = Options.PLAYER_DEFAULT_LEVEL.asInt().get();
 		this.time = new MinetopiaTime(0,0,0,0);
-		this.grayshards = PlayersModule.getInstance().getShards();
-		this.cityColor = PlayersModule.getInstance().getCity();
+		this.grayshards = Options.PLAYER_DEFAULT_GRAYSHARDS.asDouble().get();
+		this.goldshards = Options.PLAYER_DEFAULT_GOLDSHARDS.asDouble().get();
+		this.cityColor = Options.PLAYER_DEFAULT_CITYCOLOR.asString().get();
 		this.minetopiaUpgrades = new MinetopiaUpgrades();
 		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
 		this.currentLevelColor = LevelColor.CHATCOLOR_NORMAL_AQUA;
 		this.currentPrefixColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentPrefix = "Burger";
+		this.currentPrefix = Options.PLAYER_DEFAULT_PREFIX.asString().get();
 		this.getPrefixes().add(this.currentPrefix);
+		this.scoreboard = true;
+		this.actionbar = true;
+		this.minetopiaData = new MinetopiaData(offlinePlayer.isOnline() ? MinetopiaInventory.of(offlinePlayer.getPlayer().getInventory()) : MinetopiaInventory.empty(),
+				20, 20, uuid);
 	}
 
 	public MinetopiaUser(UUID uuid, String name) {
 		this.uuid = uuid;
 		this.name = name;
-		this.level = PlayersModule.getInstance().getLevel();
+		this.level = Options.PLAYER_DEFAULT_LEVEL.asInt().get();
 		this.time = new MinetopiaTime(0,0,0,0);
-		this.grayshards = PlayersModule.getInstance().getShards();
-		this.cityColor = PlayersModule.getInstance().getCity();
+		this.grayshards = Options.PLAYER_DEFAULT_GRAYSHARDS.asDouble().get();
+		this.goldshards = Options.PLAYER_DEFAULT_GOLDSHARDS.asDouble().get();
+		this.cityColor = Options.PLAYER_DEFAULT_CITYCOLOR.asString().get();
 		this.minetopiaUpgrades = new MinetopiaUpgrades();
 		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
 		this.currentLevelColor = LevelColor.CHATCOLOR_NORMAL_AQUA;
 		this.currentPrefixColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentPrefix = "Burger";
+		this.currentPrefix = Options.PLAYER_DEFAULT_PREFIX.asString().get();
 		this.getPrefixes().add(this.currentPrefix);
+		this.scoreboard = true;
+		this.actionbar = true;
+		final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+		this.minetopiaData = new MinetopiaData(offlinePlayer.isOnline() ? MinetopiaInventory.of(offlinePlayer.getPlayer().getInventory()) : MinetopiaInventory.empty(),
+				20, 20, uuid);
 	}
 }

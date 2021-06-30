@@ -3,7 +3,6 @@ package dev.maiky.minetopia.modules.ddgitems;
 import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.ddgitems.commands.DDGItemsCommand;
 import dev.maiky.minetopia.modules.ddgitems.items.ItemLoader;
 import dev.maiky.minetopia.modules.ddgitems.items.classes.ItemType;

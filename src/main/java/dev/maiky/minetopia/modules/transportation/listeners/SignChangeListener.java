@@ -29,6 +29,8 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PortalManager;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.util.Configuration;
+import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
 import dev.maiky.minetopia.util.SerializationUtils;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
@@ -56,7 +58,7 @@ public class SignChangeListener implements TerminableModule {
 						type = Portal.valueOf(e.getLine(1).toUpperCase());
 					} catch (IllegalArgumentException exception) {
 						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal type!");
+						e.getPlayer().sendMessage(Message.PORTALS_ERROR_PORTALTYPE.raw());
 						return;
 					}
 
@@ -66,27 +68,27 @@ public class SignChangeListener implements TerminableModule {
 
 					if (type == Portal.BUKKIT && !section.contains(name)) {
 						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal naam type!");
+						e.getPlayer().sendMessage(Message.PORTALS_ERROR_PORTALTYPE.raw());
 						return;
 					}
 
 					if (type == Portal.BUNGEECORD && !manager.getPortals().containsKey(name)) {
 						e.getBlock().breakNaturally();
-						e.getPlayer().sendMessage("§cIncorrecte portal naam type!");
+						e.getPlayer().sendMessage(Message.PORTALS_ERROR_PORTALTYPE.raw());
 						return;
 					}
 
-					Location location = type == Portal.BUNGEECORD ? SerializationUtils.deserialize(manager.getPortalData(name).getLocation()) : (Location) section.get(name + ".location");
+					Location location = type == Portal.BUNGEECORD ? manager.getPortalData(name).getLocation().toBukkit() : (Location) section.get(name + ".location");
 
 					String line = String.format("%.0f;%.0f;%.0f", location.getX(), location.getY(), location.getZ());
 					String line2 = String.format("%.0f;%.0f", location.getYaw(), location.getPitch());
 
-					e.setLine(0, "§f[§2T§aeleporter§f]");
+					e.setLine(0, Options.PORTALS_SIGNTAG.asString().get());
 					e.setLine(1, name);
 					e.setLine(2, line);
 					e.setLine(3, line2);
 
-					e.getPlayer().sendMessage("§6Success! Portal created!");
+					e.getPlayer().sendMessage(Message.PORTALS_SUCCESS_SIGNCREATED.raw());
 				}).bindWith(consumer);
 	}
 

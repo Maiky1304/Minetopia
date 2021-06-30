@@ -2,6 +2,7 @@ package dev.maiky.minetopia.modules.players.commands.essential;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.CommandIssuer;
+import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import com.google.gson.Gson;
@@ -11,10 +12,15 @@ import dev.maiky.minetopia.modules.items.threads.message.Emergency;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
 import dev.maiky.minetopia.util.Message;
+import dev.maiky.minetopia.util.Options;
+import me.lucko.helper.cooldown.Cooldown;
+import me.lucko.helper.cooldown.CooldownMap;
 import me.lucko.helper.redis.Redis;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Door: Maiky
@@ -25,6 +31,12 @@ import org.bukkit.entity.Player;
 @CommandAlias("emergency|112|emergency")
 @CommandPermission("minetopia.common.emergency")
 public class EmergencyCommand extends BaseCommand {
+
+	private final CooldownMap<Player> cooldownMap;
+
+	public EmergencyCommand() {
+		this.cooldownMap = CooldownMap.create(Cooldown.of(Options.POLICE_112COOLDOWN_LENGTH.asInt().get(), TimeUnit.valueOf(Options.POLICE_112COOLDOWN_TYPE.asString().get().toUpperCase())));
+	}
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -47,6 +59,8 @@ public class EmergencyCommand extends BaseCommand {
 	@Syntax("<message>")
 	@Description("Send an emergency notification to all cops.")
 	public void onMain(Player player, String... message) {
+		if (!cooldownMap.test(player)) throw new ConditionFailedException(Message.ITEMS_POLICE_CHATCOOLDOWN.format(cooldownMap.get(player).remainingTime(TimeUnit.SECONDS)));
+
 		if (message.length == 0) {
 			this.showSyntax(getCurrentCommandIssuer(), getDefaultRegisteredCommand());
 			return;

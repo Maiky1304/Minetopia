@@ -4,6 +4,7 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.upgrades.Upgrade;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Slot;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 public class UpgradeUI extends Gui {
 
 	public UpgradeUI(Player player) {
-		super(player, 6, "Upgrades");
+		super(player, 6, Message.UPGRADES_GUI_TITLE.raw());
 	}
 
 	@Override
@@ -79,7 +80,7 @@ public class UpgradeUI extends Gui {
 			String[] strings = ("\n" + upgrade.getTag()).split("\n");
 
 			populator.accept(ItemStackBuilder.of(Material.IRON_PICKAXE)
-					.durability(upgrade.getDurability()).name(String.format("&6%s", upgrade.getLabel()))
+					.durability(upgrade.getDurability()).name(Message.UPGRADES_GUI_LABEL.format(upgrade.getLabel()))
 					.breakable(false).flag(ItemFlag.HIDE_UNBREAKABLE)
 					.lore(strings).buildItem().build());
 		}
@@ -89,27 +90,27 @@ public class UpgradeUI extends Gui {
 			for (int i = 0; i < upgrade.getMax(); i++) {
 				int level = i + 1;
 				ItemStack itemStack = ItemStackBuilder.of(Material.IRON_PICKAXE)
-						.name(String.format("&3Level %s", level))
+						.name(Message.UPGRADES_GUI_LEVEL.format(level))
 						.durability(upgrades.getUpgrades().get(upgrade) >= level ? map2.get(level) : map.get(level))
-						.lore("", upgrades.getUpgrades().get(upgrade) >= level ? "§aJe hebt deze al unlocked!" : "&7Klik om deze upgrade te &bkopen&7.")
+						.lore("", upgrades.getUpgrades().get(upgrade) >= level ? Message.UPGRADES_GUI_UNLOCKED.raw() : Message.UPGRADES_GUI_LOCKED.raw())
 						.breakable(false)
 						.flag(ItemFlag.HIDE_UNBREAKABLE)
 						.build();
 				menuPopulator.accept(ItemStackBuilder.of(itemStack).build(() -> {
 					if (upgrades.getUpgrades().get(upgrade) != (level - 1)) {
 						if (!(upgrades.getUpgrades().get(upgrade) >= level))
-							getPlayer().sendMessage("§cKoop eerst de vorige upgrade level om deze te kunnen kopen.");
+							getPlayer().sendMessage(Message.UPGRADES_GUI_ERROR_BUYPREVIOUS.raw());
 						return;
 					}
 
 					if (upgrades.getPoints() <= 0) {
-						getPlayer().sendMessage("§cJe hebt geen genoeg tokens voor deze aankoop.");
+						getPlayer().sendMessage(Message.UPGRADES_GUI_ERROR_NOTENOUGHTOKENS.raw());
 						return;
 					}
 
 					upgrades.setPoints(upgrades.getPoints() - 1);
 					upgrades.getUpgrades().put(upgrade, level);
-					getPlayer().sendMessage("§3Deze aankoop is voltooid!");
+					getPlayer().sendMessage(Message.UPGRADES_GUI_SUCCESS_BUY.format(upgrade.getLabel(), level));
 				}));
 			}
 		}
@@ -123,7 +124,7 @@ public class UpgradeUI extends Gui {
 				.mask(EMPTY_DEFAULT);
 		MenuPopulator closePop = close.newPopulator(this);
 		while(closePop.hasSpace())
-			closePop.accept(ItemStackBuilder.of(Material.BARRIER).name("&cSluit het menu")
+			closePop.accept(ItemStackBuilder.of(Material.BARRIER).name(Message.COMMON_GUI_CLOSEMENU.raw())
 			.build(this::close));
 
 		MenuScheme viewPoints = new MenuScheme()
@@ -136,8 +137,8 @@ public class UpgradeUI extends Gui {
 		MenuPopulator viewPop = viewPoints.newPopulator(this);
 		while(viewPop.hasSpace())
 			viewPop.accept(ItemStackBuilder.of(Material.SUGAR)
-			.name(String.format("&3Tokens: &b%s", upgrades.getPoints()))
-			.lore("", "&bDeze tokens krijg je automatisch elke 1 dag playtime.").buildItem().build());
+			.name(Message.UPGRADES_GUI_TOKENINFO_LABEL.format(upgrades.getPoints()))
+			.lore(Message.UPGRADES_GUI_TOKENINFO_LORE.formatAsList()).buildItem().build());
 
 		for (int i = 0; i < (6 * 9); i++) {
 			Slot slot = this.getSlot(i);

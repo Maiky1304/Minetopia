@@ -8,6 +8,7 @@ import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -147,7 +148,7 @@ public class ItemsUI extends Gui {
 
 		MenuPopulator close = this.CLOSE.newPopulator(this);
 		while(close.hasSpace())
-			close.accept(ItemStackBuilder.of(Material.BARRIER).name(Message.COMMON_GUI_CLOSEMENU.raw()).build(this::close));
+			close.accept(ItemStackBuilder.of(Material.BARRIER).name(Message.COMMON_GUI_CLOSEMENU.format(ChatColor.RED)).build(this::close));
 
 		MenuPopulator paginator = this.PAGINATION.newPopulator(this);
 		for (int i = 0; i < 2; i ++) {

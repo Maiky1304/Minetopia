@@ -4,12 +4,11 @@ import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.upgrades.upgrades.Upgrade;
 import dev.maiky.minetopia.modules.upgrades.upgrades.handlers.classes.UpgradeFunction;
 import dev.maiky.minetopia.modules.upgrades.upgrades.handlers.classes.UpgradeStructure;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
 import me.lucko.helper.cooldown.Cooldown;
 import me.lucko.helper.cooldown.CooldownMap;
 import me.lucko.helper.terminable.TerminableConsumer;
-import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -34,14 +33,14 @@ public class ElytraBoost implements UpgradeStructure {
 				.filter(e -> e.getPlayer().isGliding())
 				.filter(e -> {
 					if (!cooldowns.test(e.getPlayer())) {
-						e.getPlayer().sendMessage("§cJe moet nog §4" + cooldowns.remainingTime(e.getPlayer(), TimeUnit.SECONDS) + " §cseconden wachten voordat je je Elytra Boost weer kunt gebruiken.");
+						e.getPlayer().sendMessage(Message.UPGRADES_ELYTRA_COOLDOWN.format(cooldowns.remainingTime(e.getPlayer(), TimeUnit.SECONDS)));
 						return false;
 					}
 					return true;
 				})
 				.handler(e -> {
 					e.getPlayer().setVelocity(e.getPlayer().getEyeLocation().getDirection().normalize().multiply(2d));
-					e.getPlayer().sendMessage("§6Je hebt je Elytra Boost gebruikt van je upgrade, je hebt nu §c15 §6seconden cooldown.");
+					e.getPlayer().sendMessage(Message.UPGRADES_ELYTRA_USED.raw());
 				}).bindWith(consumer);
 	}
 

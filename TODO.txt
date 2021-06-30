@@ -1,0 +1,14 @@
+TODO as of 30th of June:
+(Mark with finished + date of completion)
+
+- Inventory Sync + Economy Sync + XP/HP/Saturation
+- Add Fitness System (choose option basic or ddg)
+  Including: Potions, Vitamins
+- Create some more custom classes for script engine
+- Create API for developers
+- Change license system for single addons + return discord owner for plugin information (in /minetopia)
+- Test everything (bug test)
+- Find good obfuscator
+- Make documentation (small build up...)
+- Publish website template bootstrap to minetopiacore.nl / minetopiacore.be / maiky.dev
+- Then alpha/beta release with giveaway in the discord server

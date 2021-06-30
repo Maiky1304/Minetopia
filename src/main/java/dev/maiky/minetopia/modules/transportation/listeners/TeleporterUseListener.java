@@ -29,13 +29,16 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
+import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.transportation.TransportationModule;
+import dev.maiky.minetopia.modules.transportation.portal.ILocation;
 import dev.maiky.minetopia.modules.transportation.portal.LocalPortalData;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.modules.transportation.portal.PortalData;
 import dev.maiky.minetopia.util.Configuration;
-import dev.maiky.minetopia.util.SerializationUtils;
+import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -64,6 +67,7 @@ public class TeleporterUseListener implements TerminableModule {
 				.filter(e -> e.getAction() == Action.PHYSICAL)
 				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
 				.filter(e -> e.getClickedBlock().getRelative(BlockFace.UP).getType().equals(Material.WALL_SIGN))
+				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
 					Sign sign = (Sign) e.getClickedBlock().getRelative(BlockFace.UP).getState();
 					String name = ChatColor.stripColor(sign.getLine(1));
@@ -74,23 +78,31 @@ public class TeleporterUseListener implements TerminableModule {
 					LocalPortalData data;
 					if (!section.contains(name)) {
 						PortalData portalData = manager.getPortalData(name);
-						data = new LocalPortalData(SerializationUtils.deserialize(portalData.getLocation()), portalData.getServer());
+						data = new LocalPortalData(portalData.getLocation(), portalData.getServer());
 					} else {
-						data = new LocalPortalData((Location) section.get(name + ".location"), null);
+						data = new LocalPortalData(ILocation.from((Location) section.get(name + ".location")), null);
 					}
 
 					if (!TransportationModule.getCooldownMap().test(e.getPlayer()))
 						return;
 
 					if (data.getServer() == null) {
-						e.getPlayer().teleport(data.getLocation());
+						e.getPlayer().teleport(data.getLocation().toBukkit());
 					} else {
+						MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
+						user.setPortalData(data);
+
 						ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 						outputStream.writeUTF("Connect");
 						outputStream.writeUTF(data.getServer());
+						e.getPlayer().sendPluginMessage(Minetopia.getInstance(), "BungeeCord", outputStream.toByteArray());
 					}
 
-					e.getPlayer().sendMessage("§6Je wordt nu geteleporteerd naar §c" + name + "§6.");
+					if (data.getServer() != null) {
+						e.getPlayer().sendMessage(Message.PORTALS_SUCCESS_USEPORTAL_BUNGEE.format(name));
+					} else {
+						e.getPlayer().sendMessage(Message.PORTALS_SUCCESS_USEPORTAL_LOCAL.format(name));
+					}
 				}).bindWith(consumer);
 	}
 

@@ -5,6 +5,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.addons.addon.Addon;
 import dev.maiky.minetopia.modules.addons.commands.AddonsCommand;
+import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
@@ -99,7 +100,7 @@ public class AddonsModule implements MinetopiaModule {
 				try {
 					addon.enable();
 				} catch (Exception exception) {
-					Minetopia.getInstance().getLogger().warning("Unable to load addon " + addonName + ": " + exception.toString());
+					Minetopia.getInstance().getLogger().warning("Unable to load addon " + addonName + ": " + exception);
 				}
 				AddonsModule.addons.add(addon);
 				Bukkit.getLogger().info("Succesfully loaded the addon " + addonName);

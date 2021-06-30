@@ -1,7 +1,5 @@
 package dev.maiky.minetopia.modules.ddgitems.items.classes;
 
-import dev.maiky.minetopia.modules.bags.bag.BagType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
