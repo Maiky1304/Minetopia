@@ -1,8 +1,10 @@
 package dev.maiky.minetopia.modules.items;
 
+import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.items.commands.CuffCommand;
 import dev.maiky.minetopia.modules.items.drugs.Cocaine;
 import dev.maiky.minetopia.modules.items.drugs.Weed;
 import dev.maiky.minetopia.modules.items.other.Cooldown;
@@ -79,6 +81,14 @@ public class ItemsModule implements MinetopiaModule {
 
 		// Threads
 		this.registerThreads();
+
+		// Commands
+		this.registerCommands();
+	}
+
+	private void registerCommands() {
+		BukkitCommandManager manager = Minetopia.getInstance().getCommandManager();
+		manager.registerCommand(new CuffCommand());
 	}
 
 	private void registerThreads() {

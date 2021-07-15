@@ -25,7 +25,7 @@
 
 package dev.maiky.minetopia.modules.players.listeners;
 
-import co.aikar.commands.ConditionFailedException;
+import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
@@ -37,12 +37,12 @@ import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ConcurrentModificationException;
 import java.util.concurrent.TimeUnit;
 
 public class JoinListener implements TerminableModule {
@@ -97,6 +97,10 @@ public class JoinListener implements TerminableModule {
 						MinetopiaInventory.restore(player, user.getMinetopiaData().getInventory());
 						player.setHealth(user.getMinetopiaData().getHp());
 						player.setFoodLevel(user.getMinetopiaData().getSaturation());
+
+						Economy economy = Minetopia.getEconomy();
+						economy.withdrawPlayer(player, economy.getBalance(player));
+						economy.depositPlayer(player, user.getMinetopiaData().getBalance());
 
 						MinetopiaScoreboard minetopiaScoreboard = new MinetopiaScoreboard(player);
 						minetopiaScoreboard.initialize();

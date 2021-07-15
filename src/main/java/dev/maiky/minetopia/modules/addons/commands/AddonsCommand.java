@@ -54,7 +54,7 @@ public class AddonsCommand extends BaseCommand {
 			builder.append(color).append(addon.getName()).append(ChatColor.RESET).append(Message.ADDONS_SEPERATOR.raw()).append(" ");
 		}
 
-		String raw = builder.substring(0, builder.length()-2);
+		String raw = addonList.size() == 0 ? "" : builder.substring(0, builder.length()-2);
 		sender.sendMessage(Message.ADDONS_VIEW.format(addonList.size(), raw));
 	}
 

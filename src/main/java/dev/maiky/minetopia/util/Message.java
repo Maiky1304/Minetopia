@@ -197,7 +197,7 @@ public enum Message {
 	ITEMS_POLICE_UNCUFF("&6Je handboeien zijn losgemaakt door &c{0}&6.", String.class),
 	ITEMS_POLICE_UNCUFFEXEC("&6Je hebt de handboeien van &c{0} &6losgemaakt.", String.class),
 	ITEMS_POLICE_CUFF("&6Je bent in de handboeien gezet door &c{0}&6.", String.class),
-	ITEMS_POLICE_CUFFEXEC("&6Je hebt &c{0} &6in de handboeien gezet."),
+	ITEMS_POLICE_CUFFEXEC("&6Je hebt &c{0} &6in de handboeien gezet.", String.class),
 	ITEMS_TASER_EMPTY("&cJe taser is leeg, vul hem bij."),
 	ITEMS_TASER_COOLDOWN("&cJe moet nog &4{0} &cseconden wachten voordat je weer je taser kunt gebruiken.", String.class),
 	ITEMS_TASER_HIT("&6Je hebt &c{0} &6geraakt met een tazer.", String.class),
@@ -243,6 +243,11 @@ public enum Message {
 	PLOTS_ERROR_NOTMEMBER("&cDeze speler is geen member van dit plot."),
 	PLOTS_ERROR_NOTOWNER_OTHER("&cDeze speler is geen eigenaar van dit plot."),
 	PLOTS_ERROR_NOTOWNER_SELF("&cJij bent geen eigenaar van dit plot."),
+	PLOTS_ERROR_NOACTIVESELECTION("&cJe hebt geen actieve selectie!"),
+	PLOTS_ERROR_TWOPOINTS("Je moet 2 punten selecteren!"),
+	PLOTS_ERROR_ALREADYEXISTS("Er bestaat al een plot met het ID {0}", String.class),
+	PLOTS_ERROR_GENERIC("Er is iets fout gegaan tijdens het maken van dit plot!"),
+	PLOTS_SUCCESS_CREATED("&6Je hebt succesvol een plot gemaakt met het id &c{0}&6.", String.class),
 	PLOTS_SUCCESS_ADDOWNER("&6Je hebt &c{0} &6toegevoegd als eigenaar aan het plot &c{1}&6.", String.class, String.class),
 	PLOTS_SUCCESS_REMOVEOWNER("&6Je hebt &c{0} &6verwijderd als eigenaar van het plot &c{1}&6.", String.class, String.class),
 	PLOTS_SUCCESS_ADDMEMBER("&6Je hebt &c{0} &6toegevoegd als lid aan het plot &c{1}&6.", String.class, String.class),
@@ -368,7 +373,7 @@ public enum Message {
 			verify(namespaces);
 		} catch (InvalidMessageKeyException exception) {
 			exception.printStackTrace();
-			return Collections.singletonList("&c" + super.toString().replaceAll("_", "."));
+			return Collections.singletonList("§c" + super.toString().replaceAll("_", "."));
 		}
 
 		List<String> defaultMessage = new ArrayList<>( this.getMessageList() );
@@ -394,7 +399,7 @@ public enum Message {
 			verify(namespaces);
 		} catch (InvalidMessageKeyException exception) {
 			exception.printStackTrace();
-			return "&c" + super.toString().replaceAll("_", ".").toLowerCase();
+			return "§c" + super.toString().replaceAll("_", ".").toLowerCase();
 		}
 
 		String defaultMessage = this.getMessage();

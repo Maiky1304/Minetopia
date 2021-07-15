@@ -5,17 +5,22 @@ import co.aikar.commands.ConditionFailedException;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.plots.commands.PlotCommand;
+import dev.maiky.minetopia.modules.plots.commands.PlotWandCommand;
+import dev.maiky.minetopia.modules.plots.listener.PlotWandListener;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
+import me.lucko.helper.Events;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -50,6 +55,13 @@ public class PlotsModule implements MinetopiaModule {
 
 		// Commands
 		this.registerCommands();
+
+		// Events
+		this.registerEvents();
+	}
+
+	private void registerEvents() {
+		this.composite.bindModule(new PlotWandListener());
 	}
 
 	@Getter
@@ -79,6 +91,7 @@ public class PlotsModule implements MinetopiaModule {
 		});
 
 		bukkitCommandManager.registerCommand(new PlotCommand(this.worldGuardWrapper));
+		bukkitCommandManager.registerCommand(new PlotWandCommand());
 	}
 
 	@Override

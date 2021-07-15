@@ -14,6 +14,7 @@ public class MinetopiaData {
     private @Getter @Setter MinetopiaInventory inventory;
     private @Getter @Setter double hp;
     private @Getter @Setter int saturation;
+    private @Getter @Setter double balance;
     private final @Getter UUID uuid;
 
     public MinetopiaData(MinetopiaInventory inventory, int hp, int saturation, UUID uuid) {

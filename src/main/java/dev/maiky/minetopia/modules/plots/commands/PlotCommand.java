@@ -6,9 +6,12 @@ import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
+import dev.maiky.minetopia.modules.plots.classes.Selection;
+import dev.maiky.minetopia.modules.plots.listener.PlotWandListener;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Options;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,6 +19,8 @@ import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.selection.ICuboidSelection;
+import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.Optional;
 import java.util.*;
@@ -52,6 +57,62 @@ public class PlotCommand extends BaseCommand {
 	@Override
 	public void showSyntax(CommandIssuer issuer, RegisteredCommand<?> cmd) {
 		issuer.sendMessage(Message.COMMON_COMMAND_SYNTAX.format(getExecCommandLabel(), cmd.getPrefSubCommand(), cmd.getSyntaxText()));
+	}
+
+	@Subcommand("tp")
+	@Syntax("<plotid>")
+	@CommandPermission("minetopia.common.plot.tp")
+	@Description("Teleporteer naar een plot")
+	public void onTeleport(Player player, String id) {
+
+	}
+
+	@Subcommand("create")
+	@Syntax("<plotid> [^:true/false]")
+	@CommandPermission("minetopia.common.plot.create")
+	@Description("Maak een plot aan op basis van je selectie met /plotwand")
+	public void onCreate(Player player, String id, @Default(value = "false") boolean expandVert) {
+		if (!PlotWandListener.getHashMap().containsKey(player))
+			throw new ConditionFailedException(Message.PLOTS_ERROR_NOACTIVESELECTION.raw());
+
+		Selection selection = PlotWandListener.getHashMap().get(player);
+		if (selection.getPos1() == null || selection.getPos2() == null)
+			throw new ConditionFailedException(Message.PLOTS_ERROR_TWOPOINTS.raw());
+
+		Location pos1 = selection.getPos1().toBukkit();
+		Location pos2 = selection.getPos2().toBukkit();
+
+		if (expandVert) {
+			pos1.setY(0);
+			pos2.setY(pos2.getWorld().getMaxHeight());
+		}
+
+		WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
+		if (wrapper.getRegion(pos1.getWorld(), id).isPresent())
+			throw new ConditionFailedException(Message.PLOTS_ERROR_ALREADYEXISTS.format(id));
+		Optional<IWrappedRegion> optional = wrapper.addRegion(id, new ICuboidSelection() {
+			@Override
+			public Location getMinimumPoint() {
+				return pos1;
+			}
+
+			@Override
+			public Location getMaximumPoint() {
+				return pos2;
+			}
+		});
+		if (!optional.isPresent())
+			throw new ConditionFailedException(Message.PLOTS_ERROR_GENERIC.raw());
+
+		IWrappedRegion region = optional.get();
+		List<String> commands = Arrays.asList("rg flag " + region.getId() + " -w " + pos1.getWorld().getName() + " interact -g NON_MEMBERS DENY",
+				"rg flag " + region.getId() + " -w " + pos1.getWorld().getName() + " chest-access -g NON_MEMBERS DENY",
+				"rg flag " + region.getId() + " -w " + pos1.getWorld().getName() + " USE -g MEMBERS allow",
+				"rg flag " + region.getId() + " -w " + pos1.getWorld().getName() + " INTERACT -g MEMBERS allow",
+				"rg flag " + region.getId() + " -w " + pos1.getWorld().getName() + " PVP allow");
+		commands.forEach(cmd -> Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd));
+
+		player.sendMessage(Message.PLOTS_SUCCESS_CREATED.format(id));
 	}
 
 	@Conditions("MTUser|Plot")

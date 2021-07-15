@@ -34,6 +34,7 @@ import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -59,13 +60,15 @@ public class MainChatListener implements TerminableModule {
 							e.getRecipients().add(p);
 					}
 
+					String message = ChatColor.stripColor(Text.colors(e.getMessage()));
+
 					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
 					e.setFormat(Message.CHAT_FORMAT.format(Text.colors("&" + user.getCurrentLevelColor().getColor()
 									+ (user.getCurrentLevelColor().font ? FontSet.process("Level " +  user.getLevel()) : "Level " +  user.getLevel())),
 							Text.colors("&" + user.getCurrentPrefixColor().getColor()),
 							user.getCurrentPrefixColor().font ? FontSet.process(user.getCurrentPrefix()) : user.getCurrentPrefix(), String.format("§%s", user.getCityColor()),
 							e.getPlayer().getName(), Text.colors("&" + user.getCurrentChatColor().getColor()), user.getCurrentChatColor()
-									.font ? FontSet.process(e.getMessage()) : e.getMessage()));
+									.font ? FontSet.process(message) : message));
 				}).bindWith(consumer);
 	}
 

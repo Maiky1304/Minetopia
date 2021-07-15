@@ -46,7 +46,7 @@ public enum BagType {
         ItemStack itemStack = ItemStackBuilder.of(this.material)
                 .durability(this.durability)
                 .name(this.displayName)
-                .lore(Options.BAGS_DEFAULT_LORE.asString().get()).build();
+                .lore(Arrays.asList(Options.BAGS_DEFAULT_LORE.asString().get(), "ID: " + id)).build();
         net.minecraft.server.v1_12_R1.ItemStack nms = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound tagCompound = nms.getTag() == null ? new NBTTagCompound() : nms.getTag();
         if (this.value != null)

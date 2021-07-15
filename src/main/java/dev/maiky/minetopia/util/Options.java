@@ -57,6 +57,7 @@ public enum Options {
 	PLOTS_MINIMUMPRIORITY(0),
 
 	BAGS_DEFAULT_LORE("Officiële Minetopia Koffer"),
+	BAGS_STACK(false),
 
 	PORTALS_SIGNTAG("&f[&2T&aeleporter&f]"),
 

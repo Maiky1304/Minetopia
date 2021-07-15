@@ -114,7 +114,7 @@ public class ScriptsModule implements MinetopiaModule {
                 .build();
 
         // get script directory
-        Path scriptDirectory = Paths.get("plugins/Minetopia/scripts");
+        Path scriptDirectory = Paths.get("plugins/" + Minetopia.getInstance().getDescription().getName() + "/scripts");
         if (!Files.isDirectory(scriptDirectory)) {
             Minetopia.getInstance().saveResource("scripts/init.js", false);
             Minetopia.getInstance().saveResource("scripts/commands/discord.js", false);

@@ -1,8 +1,10 @@
 package dev.maiky.minetopia.modules.bags.ui;
 
 import dev.maiky.minetopia.modules.bags.bag.Bag;
+import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.util.Options;
 import dev.maiky.minetopia.util.SerializationUtils;
 import lombok.Getter;
 import me.lucko.helper.Events;
@@ -12,6 +14,7 @@ import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.scheme.MenuPopulator;
 import me.lucko.helper.menu.scheme.MenuScheme;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -84,6 +87,18 @@ public class KofferUI extends Gui {
 				return;
 			}
 
+			final List<Material> materialList = new ArrayList<>();
+			for (BagType value : BagType.values()) materialList.add(value.material);
+			if (materialList.contains(e.getCurrentItem().getType()) && !Options.BAGS_STACK.asBoolean().get()) {
+				net.minecraft.server.v1_12_R1.ItemStack nms = CraftItemStack.asNMSCopy(e.getCurrentItem());
+				if (nms.getTag() != null) {
+					if (nms.getTag().hasKey("id")) {
+						player.sendMessage("§cJe kunt geen koffer in je koffer doen!");
+						return;
+					}
+				}
+			}
+
 			List<ItemStack> itemStackList = new ArrayList<>();
 			for (ItemStack it : this.itemStacks) {
 				if (it == null) continue;
@@ -149,6 +164,14 @@ public class KofferUI extends Gui {
 				}));
 			} catch (ArrayIndexOutOfBoundsException indexOutOfBoundsException) {
 				populator.accept(ItemStackBuilder.of(Material.AIR).buildItem().build());
+			}
+		}
+
+		int rows = this.manager.getBag(this.id).getRows();
+		if (rows < 5) {
+			int fill = (rows * 9);
+			for(int j = fill; j < 54; j++) {
+				setItem(j, ItemStackBuilder.of(Material.BARRIER).name(" ").buildItem().build());
 			}
 		}
 

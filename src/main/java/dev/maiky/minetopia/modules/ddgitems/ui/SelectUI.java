@@ -43,7 +43,7 @@ public class SelectUI extends Gui {
 	public void redraw() {
 		for (ItemType type : ItemType.values()) {
 			Item item = ItemStackBuilder.of(Material.BOOK)
-					.name(type.toString().toLowerCase()).build(() -> new ItemsUI(getPlayer(), type, 0).open());
+					.name(type.getLabel()).build(() -> new ItemsUI(getPlayer(), type, 0).open());
 			addItem(item);
 		}
 	}

@@ -2,6 +2,7 @@ package dev.maiky.minetopia;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.BukkitCommandManager;
+import co.aikar.commands.MessageType;
 import co.aikar.commands.RegisteredCommand;
 import com.google.common.collect.SetMultimap;
 import dev.maiky.minetopia.license.Verification;
@@ -38,14 +39,19 @@ import me.lucko.helper.plugin.ap.PluginDependency;
 import me.lucko.helper.profiles.ProfileRepository;
 import me.lucko.helper.text3.Text;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Optional;
 
 @Plugin(
-		name = "Minetopia",
+		name = "Minetopia-Beta",
 		version = "1.0.0",
 		authors = {"Maiky1304"},
 		depends = { @PluginDependency(value = "helper", soft = true),
@@ -105,6 +111,17 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	private static Economy economy;
 
 	@Override
+	protected void load() {
+		WorldGuardWrapper wrapper = WorldGuardWrapper.getInstance();
+
+		Optional<IWrappedFlag<String>> description = wrapper.registerFlag("mtcore-description", String.class, "-");
+		Optional<IWrappedFlag<Integer>> levels = wrapper.registerFlag("mtcore-levels", Integer.class, 1);
+
+		description.ifPresent(stringIWrappedFlag -> getLogger().info("[Flags] Succesvol de flag " + stringIWrappedFlag.getName() + " geladen!"));
+		levels.ifPresent(integerIWrappedFlag -> getLogger().info("[Flags] Succesvol de flag " + integerIWrappedFlag.getName() + " geladen!"));
+	}
+
+	@Override
 	protected void enable() {
 		// Instance
 		instance = this;
@@ -151,6 +168,8 @@ public final class Minetopia extends ExtendedJavaPlugin {
 
 		// Initialize the command manager
 		this.commandManager = new BukkitCommandManager(this);
+		this.commandManager.getLocales().setDefaultLocale(Locale.forLanguageTag("nl"));
+		this.commandManager.setFormat(MessageType.ERROR, ChatColor.RED, ChatColor.DARK_RED);
 
 		// Load the configurations
 		this.getConfiguration().load();

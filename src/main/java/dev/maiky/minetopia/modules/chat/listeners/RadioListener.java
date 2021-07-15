@@ -30,10 +30,12 @@ import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
+import dev.maiky.minetopia.util.Text;
 import me.lucko.helper.Events;
 import me.lucko.helper.redis.Redis;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +51,7 @@ public class RadioListener implements TerminableModule {
 					e.setCancelled(true);
 
 					Gson gson = new Gson();
-					RadioMessage radioMessage = new RadioMessage(e.getPlayer().getName(), e.getMessage(), Type.MESSAGE);
+					RadioMessage radioMessage = new RadioMessage(e.getPlayer().getName(), ChatColor.stripColor(Text.colors(e.getMessage())), Type.MESSAGE);
 					String json = gson.toJson(radioMessage);
 
 					Redis redis = DataModule.getInstance().getRedis();

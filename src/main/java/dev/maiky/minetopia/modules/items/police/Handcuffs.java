@@ -94,7 +94,6 @@ public class Handcuffs implements MinetopiaInteractable {
 					entity.removeMetadata("cuffedBy", minetopia);
 
 					entity.sendMessage(Message.ITEMS_POLICE_UNCUFF.format(player.getName()));
-
 					player.sendMessage(Message.ITEMS_POLICE_UNCUFFEXEC.format(entity.getName()));
 				} else {
 					entity.removePotionEffect(SLOW_DIGGING);
@@ -110,7 +109,6 @@ public class Handcuffs implements MinetopiaInteractable {
 					entity.setMetadata("cuffedBy", new FixedMetadataValue(minetopia, player.getUniqueId().toString()));
 
 					entity.sendMessage(Message.ITEMS_POLICE_CUFF.format(player.getName()));
-
 					player.sendMessage(Message.ITEMS_POLICE_CUFFEXEC.format(entity.getName()));
 
 					BukkitRunnable runnable = new BukkitRunnable() {

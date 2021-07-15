@@ -5,6 +5,9 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
+import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.commands.essential.*;
 import dev.maiky.minetopia.modules.players.commands.staff.AdminToolCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
@@ -27,6 +30,7 @@ import me.lucko.helper.bucket.partitioning.PartitioningStrategies;
 import me.lucko.helper.profiles.ProfileRepository;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -235,6 +239,24 @@ public class PlayersModule implements MinetopiaModule {
 	@Override
 	public void disable() {
 		this.enabled = false;
+
+		// Emergency Save
+		Minetopia.getInstance().getLogger().info("Bezig met het opslaan van " + Bukkit.getServer().getOnlinePlayers().size() + " wegens restart...");
+		PlayerManager manager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
+		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			if (user == null) continue;
+			user.getMinetopiaData().setInventory(MinetopiaInventory.of(player.getInventory()));
+			user.getMinetopiaData().setHp(player.getHealth());
+			user.getMinetopiaData().setSaturation(player.getFoodLevel());
+			user.getMinetopiaData().setBalance(Minetopia.getEconomy().getBalance(player));
+			manager.update(user);
+
+			MinetopiaScoreboard scoreboard = PlayerManager.getScoreboard().get(player.getUniqueId());
+			scoreboard.update();
+		}
+		Minetopia.getInstance().getLogger().info("Succesvol " + Bukkit.getServer().getOnlinePlayers().size() + " spelers opgeslagen!");
+
 		try {
 			this.composite.close();
 		} catch (CompositeClosingException e) {

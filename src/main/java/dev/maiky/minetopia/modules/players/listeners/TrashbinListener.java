@@ -34,6 +34,7 @@ import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ public class TrashbinListener implements TerminableModule {
 
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
-		Events.subscribe(PlayerInteractEvent.class)
+		Events.subscribe(PlayerInteractEvent.class, EventPriority.HIGHEST)
 				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> !BodySearchCommand.getBeingSearched().containsKey(e.getPlayer().getUniqueId()))
 				.filter(PlayerInteractEvent::hasBlock)

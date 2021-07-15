@@ -25,6 +25,7 @@
 
 package dev.maiky.minetopia.modules.players.listeners;
 
+import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.managers.PlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
@@ -51,6 +52,7 @@ public class QuitListener implements TerminableModule {
 					user.getMinetopiaData().setInventory(MinetopiaInventory.of(e.getPlayer().getInventory()));
 					user.getMinetopiaData().setHp(e.getPlayer().getHealth());
 					user.getMinetopiaData().setSaturation(e.getPlayer().getFoodLevel());
+					user.getMinetopiaData().setBalance(Minetopia.getEconomy().getBalance(e.getPlayer()));
 
 					playerManager.update(user);
 					PlayerManager.getCache().remove(e.getPlayer().getUniqueId());
