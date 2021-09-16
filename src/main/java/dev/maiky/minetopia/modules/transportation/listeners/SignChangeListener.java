@@ -26,12 +26,12 @@
 package dev.maiky.minetopia.modules.transportation.listeners;
 
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPortalManager;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Options;
-import dev.maiky.minetopia.util.SerializationUtils;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
@@ -39,6 +39,8 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.block.SignChangeEvent;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public class SignChangeListener implements TerminableModule {
 
@@ -62,7 +64,7 @@ public class SignChangeListener implements TerminableModule {
 						return;
 					}
 
-					PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+					MongoPortalManager manager = DataModule.getInstance().getPortalManager();
 					ConfigurationSection section = this.configuration.get().getConfigurationSection(type.toString());
 					String name = e.getLine(2);
 
@@ -78,7 +80,7 @@ public class SignChangeListener implements TerminableModule {
 						return;
 					}
 
-					Location location = type == Portal.BUNGEECORD ? manager.getPortalData(name).getLocation().toBukkit() : (Location) section.get(name + ".location");
+					Location location = type == Portal.BUNGEECORD ? Objects.requireNonNull(manager.find(d -> d.name.equals(name)).findFirst().orElse(null)).getLocation().toBukkit() : (Location) section.get(name + ".location");
 
 					String line = String.format("%.0f;%.0f;%.0f", location.getX(), location.getY(), location.getZ());
 					String line2 = String.format("%.0f;%.0f", location.getYaw(), location.getPitch());

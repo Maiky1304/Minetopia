@@ -5,7 +5,7 @@ import co.aikar.commands.ConditionFailedException;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.WeaponManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoWeaponManager;
 import dev.maiky.minetopia.modules.guns.commands.GunsCommand;
 import dev.maiky.minetopia.modules.guns.listeners.DamageListener;
 import dev.maiky.minetopia.modules.guns.listeners.ItemHeldListener;
@@ -102,7 +102,7 @@ public class GunsModule implements MinetopiaModule {
 	}
 
 	private void registerEvents() {
-		WeaponManager weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
+		MongoWeaponManager weaponManager = DataModule.getInstance().getWeaponManager();
 
 		List<Player> reloading = new ArrayList<>();
 		HashMap<Model, CooldownMap<String>> cooldowns = new HashMap<>();

@@ -20,7 +20,6 @@ import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
-import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.Optional;
 import java.util.*;

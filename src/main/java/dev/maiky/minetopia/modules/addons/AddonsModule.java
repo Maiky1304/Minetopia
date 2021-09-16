@@ -5,7 +5,6 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.addons.addon.Addon;
 import dev.maiky.minetopia.modules.addons.commands.AddonsCommand;
-import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import me.lucko.helper.terminable.composite.CompositeClosingException;
 import me.lucko.helper.terminable.composite.CompositeTerminable;

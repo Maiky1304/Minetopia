@@ -7,7 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.WeaponManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoWeaponManager;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
@@ -33,7 +33,7 @@ import java.util.Objects;
 @CommandPermission("minetopia.moderation.guns")
 public class GunsCommand extends BaseCommand {
 
-	private final WeaponManager weaponManager = WeaponManager.with(DataModule.getInstance().getSqlHelper());
+	private final MongoWeaponManager weaponManager = DataModule.getInstance().getWeaponManager();
 	private final GunsModule module;
 
 	public GunsCommand(GunsModule module) {
@@ -96,10 +96,11 @@ public class GunsCommand extends BaseCommand {
 		NBTTagCompound nbtTagCompound = Objects.requireNonNull(CraftItemStack.asNMSCopy(mainHand).getTag());
 
 		String license = nbtTagCompound.getString("license");
-		Weapon weapon = weaponManager.getWeaponByLicense(license);
 
+		Weapon weapon = weaponManager.getWeaponByLicense(license);
 		weapon.setDurability(durability);
-		weaponManager.updateWeapon(weapon);
+
+		weaponManager.save(weapon);
 
 		player.sendMessage(Message.GUNS_SETDURABILITY.format(license, durability));
 	}
@@ -117,7 +118,7 @@ public class GunsCommand extends BaseCommand {
 
 		Weapon weapon = this.weaponManager.createWeapon(model);
 		weapon.setDurability(durability);
-		this.weaponManager.updateWeapon(weapon);
+		this.weaponManager.save(weapon);
 
 		ItemStack itemStack = Builder.with(model).
 				setLicense(weapon.getLicense()).buildItem();

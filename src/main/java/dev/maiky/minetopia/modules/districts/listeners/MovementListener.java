@@ -25,7 +25,7 @@
 
 package dev.maiky.minetopia.modules.districts.listeners;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.districts.DistrictsModule;
 import dev.maiky.minetopia.modules.players.PlayersModule;
 import dev.maiky.minetopia.util.Text;
@@ -45,7 +45,7 @@ public class MovementListener implements TerminableModule {
 					String current = DistrictsModule.getCurrentLocation(e.getPlayer());
 					if (!current.equals(DistrictsModule.getLocationCache().get(e.getPlayer().getUniqueId()))) {
 						DistrictsModule.getLocationCache().put(e.getPlayer().getUniqueId(), current);
-						PlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).initialize();
+						MongoPlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).initialize();
 						String color = DistrictsModule.getLocationCache().get(e.getPlayer().getUniqueId()) == null ? PlayersModule.getInstance().getCityColor()
 								: DistrictsModule.getBlockCache().get(DistrictsModule.getLocationCache().get(e.getPlayer().getUniqueId()));
 						e.getPlayer().sendTitle(Text.colors("&"

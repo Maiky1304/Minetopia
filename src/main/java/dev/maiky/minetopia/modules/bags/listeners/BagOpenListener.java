@@ -29,8 +29,8 @@ import dev.maiky.minetopia.modules.bags.bag.Bag;
 import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BagManager;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBagManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.security.commands.BodySearchCommand;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
@@ -64,7 +64,7 @@ public class BagOpenListener implements TerminableModule {
 				.filter(PlayerInteractEvent::hasItem)
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> materialList.contains(e.getItem().getType()))
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> {
 					ItemStack nms = CraftItemStack.asNMSCopy(e.getItem());
 					if (nms.getTag() == null)
@@ -78,20 +78,20 @@ public class BagOpenListener implements TerminableModule {
 			NBTTagCompound tagCompound = nms.getTag();
 
 			assert tagCompound != null;
-			int id = tagCompound.getInt("id");
+			String id = tagCompound.getString("id");
 
-			BagManager bagManager = BagManager.with(DataModule.getInstance().getSqlHelper());
-			Bag bag = bagManager.getBag(id);
+			MongoBagManager bagManager = DataModule.getInstance().getBagManager();
+			Bag bag = bagManager.find(b -> b.getId().toString().equals(id)).findFirst().orElse(null);
 			if (bag == null) {
 				e.getPlayer().sendMessage(Message.BAGS_ERROR_OPEN_SELF.raw());
 				return;
 			}
 
 			bag.getHistory().put(e.getPlayer().getName(), new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-			bagManager.saveBag(bag);
+			bagManager.save(bag);
 
 			org.bukkit.inventory.ItemStack[] itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
-			KofferUI kofferUI = new KofferUI(e.getPlayer(), bag.getId(), itemStacks, 0);
+			KofferUI kofferUI = new KofferUI(e.getPlayer(), bag.getBagId(), itemStacks, 0);
 			kofferUI.open();
 
 			e.getPlayer().sendMessage(Message.BAGS_OPEN.raw());

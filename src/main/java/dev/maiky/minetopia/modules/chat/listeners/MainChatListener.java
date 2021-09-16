@@ -26,7 +26,7 @@
 package dev.maiky.minetopia.modules.chat.listeners;
 
 import dev.maiky.minetopia.modules.colors.fonts.FontSet;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
@@ -46,8 +46,8 @@ public class MainChatListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(AsyncPlayerChatEvent.class, EventPriority.HIGH)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
-				.filter(e -> !PlayerManager.getCache().get(e.getPlayer().getUniqueId()).isPoliceChat())
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> !MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId()).isPoliceChat())
 				.filter(e -> !e.isCancelled())
 				.handler(e -> {
 					e.setMessage(e.getMessage().replaceAll("%", "%%"));
@@ -55,6 +55,7 @@ public class MainChatListener implements TerminableModule {
 					e.getRecipients().clear();
 					for (Player p : Bukkit.getOnlinePlayers()) {
 						Location pLoc = p.getLocation();
+						if (!pLoc.getWorld().getName().equals(e.getPlayer().getPlayer().getWorld().getName())) continue;
 						double distance = pLoc.distance(e.getPlayer().getLocation());
 						if (distance <= 16)
 							e.getRecipients().add(p);
@@ -62,7 +63,7 @@ public class MainChatListener implements TerminableModule {
 
 					String message = ChatColor.stripColor(Text.colors(e.getMessage()));
 
-					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
+					MinetopiaUser user = MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId());
 					e.setFormat(Message.CHAT_FORMAT.format(Text.colors("&" + user.getCurrentLevelColor().getColor()
 									+ (user.getCurrentLevelColor().font ? FontSet.process("Level " +  user.getLevel()) : "Level " +  user.getLevel())),
 							Text.colors("&" + user.getCurrentPrefixColor().getColor()),

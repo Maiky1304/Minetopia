@@ -19,17 +19,17 @@ import java.util.Iterator;
 public class CreateUI extends Gui {
 
 	private final MenuScheme scheme = new MenuScheme()
-			.mask("111111111");
+			.mask("111111111").mask("111111111");
 
 	public CreateUI(Player player) {
-		super(player, 1, "§3Koffers");
+		super(player, 2, "§3Koffers");
 	}
 
 	@Override
 	public void redraw() {
 		Iterator<BagType> bagTypeIterator = BagType.createIterator();
 		MenuPopulator populator = this.scheme.newPopulator(this);
-		while(populator.hasSpace()) {
+		while(bagTypeIterator.hasNext() && populator.hasSpace()) {
 			BagType type = bagTypeIterator.next();
 			populator.accept(ItemStackBuilder.of(type.create(-1))
 					.build(() -> new RowsSelection(getPlayer(), type).open()));

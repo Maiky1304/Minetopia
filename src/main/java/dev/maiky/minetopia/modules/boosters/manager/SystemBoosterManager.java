@@ -2,14 +2,9 @@ package dev.maiky.minetopia.modules.boosters.manager;
 
 import com.google.gson.Gson;
 import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
-import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BagManager;
 import me.lucko.helper.sql.Sql;
-import redis.clients.jedis.Jedis;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Door: Maiky

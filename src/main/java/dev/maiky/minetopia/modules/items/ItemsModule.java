@@ -3,7 +3,7 @@ package dev.maiky.minetopia.modules.items;
 import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.items.commands.CuffCommand;
 import dev.maiky.minetopia.modules.items.drugs.Cocaine;
 import dev.maiky.minetopia.modules.items.drugs.Weed;
@@ -237,12 +237,12 @@ public class ItemsModule implements MinetopiaModule {
 					Player entity = (Player) e.getEntity();
 					Player damager = (Player) e.getDamager();
 
-					if (!PlayerManager.getCache().containsKey(damager.getUniqueId())) {
+					if (!MongoPlayerManager.getCache().containsKey(damager.getUniqueId())) {
 						e.setCancelled(true);
 						return;
 					}
 
-					MinetopiaUser user = PlayerManager.getCache().get(damager.getUniqueId());
+					MinetopiaUser user = MongoPlayerManager.getCache().get(damager.getUniqueId());
 
 					String deny = Message.COMMON_ERROR_PVP.raw();
 

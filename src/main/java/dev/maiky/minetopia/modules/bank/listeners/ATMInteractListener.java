@@ -25,11 +25,13 @@
 
 package dev.maiky.minetopia.modules.bank.listeners;
 
+import dev.maiky.minetopia.api.banking.BankOpenEvent;
 import dev.maiky.minetopia.modules.bank.ui.BankChooseUI;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.module.TerminableModule;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
@@ -42,10 +44,13 @@ public class ATMInteractListener implements TerminableModule {
 				.filter(PlayerInteractEvent::hasBlock)
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> e.getClickedBlock().getType() == Material.RED_SANDSTONE_STAIRS)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
 					e.setCancelled(true);
-					new BankChooseUI(e.getPlayer(), null).open();
+
+					BankOpenEvent bankOpenEvent = new BankOpenEvent(e.getPlayer(), e.getClickedBlock(), BankOpenEvent.Menu.MAIN);
+					Bukkit.getPluginManager().callEvent(bankOpenEvent);
+					if (!bankOpenEvent.isCancelled()) new BankChooseUI(e.getPlayer(), null).open();
 				})
 				.bindWith(consumer);
 	}

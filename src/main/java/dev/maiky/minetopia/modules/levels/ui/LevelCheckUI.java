@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.levels.ui;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
@@ -23,7 +23,7 @@ public class LevelCheckUI extends Gui {
 
 	public LevelCheckUI(Player player, Entity rightClicked) {
 		super(player, 3, rightClicked.getCustomName());
-		this.user = PlayerManager.getCache().get(player.getUniqueId());
+		this.user = MongoPlayerManager.getCache().get(player.getUniqueId());
 	}
 
 	private final MenuScheme ACCEPT = new MenuScheme()

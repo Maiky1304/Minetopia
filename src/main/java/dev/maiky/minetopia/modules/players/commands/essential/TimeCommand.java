@@ -6,7 +6,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
@@ -26,6 +26,8 @@ import java.util.UUID;
 @CommandAlias("time|tijd|speeltijd")
 @CommandPermission("minetopia.common.time")
 public class TimeCommand extends BaseCommand {
+
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -48,7 +50,7 @@ public class TimeCommand extends BaseCommand {
 	@Description("View your own online time")
 	@Conditions("MTUser")
 	public void onTime(Player player) {
-		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 		MinetopiaTime time = user.getTime();
 
 		player.sendMessage(Message.PLAYER_INFO_TIME.format(time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));
@@ -66,9 +68,9 @@ public class TimeCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(player));
 		else offlinePlayer = Bukkit.getOfflinePlayer(player);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
+		assert user != null;
 		MinetopiaTime time = user.getTime();
 
 		sender.sendMessage(Message.PLAYER_INFO_TIME_OTHER.format(offlinePlayer.getName(), time.getDays(), time.getHours(), time.getMinutes(), time.getSeconds()));

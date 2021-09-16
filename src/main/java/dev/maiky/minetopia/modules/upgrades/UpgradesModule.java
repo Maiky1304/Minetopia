@@ -2,7 +2,7 @@ package dev.maiky.minetopia.modules.upgrades;
 
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.commands.UpgradeCommand;
@@ -89,7 +89,7 @@ public class UpgradesModule implements MinetopiaModule {
 		Schedulers.sync().runRepeating(() -> {
 			BucketPartition<Player> part = bucket.asCycle().next();
 			for (Player player : part) {
-				MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+				MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 				MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 				for (Upgrade upgrade : upgrades.getUpgrades().keySet()) {
 					if (upgrades.getUpgrades().get(upgrade) == 0) continue;

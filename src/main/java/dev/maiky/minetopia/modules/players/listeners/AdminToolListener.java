@@ -25,7 +25,7 @@
 
 package dev.maiky.minetopia.modules.players.listeners;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
 import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.Events;
@@ -54,7 +54,7 @@ public class AdminToolListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractAtEntityEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
 				.filter(e -> e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NETHER_STAR)
 				.filter(e -> cooldownMap.test(e.getPlayer()))
@@ -64,7 +64,7 @@ public class AdminToolListener implements TerminableModule {
 					adminToolUI.open();
 				}).bindWith(consumer);
 		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(PlayerInteractEvent::hasItem)
 				.filter(e -> e.getHand().equals(EquipmentSlot.HAND))
 				.filter(e -> e.getItem().getType() == Material.NETHER_STAR)

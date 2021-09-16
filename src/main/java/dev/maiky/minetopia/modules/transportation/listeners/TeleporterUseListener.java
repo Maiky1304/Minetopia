@@ -29,8 +29,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
-import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPortalManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.transportation.TransportationModule;
 import dev.maiky.minetopia.modules.transportation.portal.ILocation;
@@ -67,17 +67,18 @@ public class TeleporterUseListener implements TerminableModule {
 				.filter(e -> e.getAction() == Action.PHYSICAL)
 				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
 				.filter(e -> e.getClickedBlock().getRelative(BlockFace.UP).getType().equals(Material.WALL_SIGN))
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
 					Sign sign = (Sign) e.getClickedBlock().getRelative(BlockFace.UP).getState();
 					String name = ChatColor.stripColor(sign.getLine(1));
 
-					PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+					MongoPortalManager manager = DataModule.getInstance().getPortalManager();
 					ConfigurationSection section = this.configuration.get().getConfigurationSection(Portal.BUKKIT.toString());
 
 					LocalPortalData data;
 					if (!section.contains(name)) {
-						PortalData portalData = manager.getPortalData(name);
+						PortalData portalData = manager.find(p -> p.name.equals(name)).findFirst().orElse(null);
+						assert portalData != null;
 						data = new LocalPortalData(portalData.getLocation(), portalData.getServer());
 					} else {
 						data = new LocalPortalData(ILocation.from((Location) section.get(name + ".location")), null);
@@ -89,7 +90,7 @@ public class TeleporterUseListener implements TerminableModule {
 					if (data.getServer() == null) {
 						e.getPlayer().teleport(data.getLocation().toBukkit());
 					} else {
-						MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
+						MinetopiaUser user = MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId());
 						user.setPortalData(data);
 
 						ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();

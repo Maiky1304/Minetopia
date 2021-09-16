@@ -5,7 +5,6 @@ import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.MessageType;
 import co.aikar.commands.RegisteredCommand;
 import com.google.common.collect.SetMultimap;
-import dev.maiky.minetopia.license.Verification;
 import dev.maiky.minetopia.modules.addons.AddonsModule;
 import dev.maiky.minetopia.modules.bags.BagsModule;
 import dev.maiky.minetopia.modules.bank.BankModule;
@@ -31,7 +30,6 @@ import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
-import me.lucko.helper.Schedulers;
 import me.lucko.helper.Services;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.plugin.ap.Plugin;
@@ -45,7 +43,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
@@ -60,7 +57,8 @@ import java.util.Optional;
 				@PluginDependency(value = "Citizens", soft = true),
 				@PluginDependency(value = "Vault", soft = true),
 				@PluginDependency(value = "Essentials", soft = true),
-				@PluginDependency(value = "Citizens", soft = true)}
+				@PluginDependency(value = "Citizens", soft = true),
+				@PluginDependency(value = "CokeMT-Core")}
 )
 public final class Minetopia extends ExtendedJavaPlugin {
 
@@ -174,20 +172,6 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		// Load the configurations
 		this.getConfiguration().load();
 
-		// Verification
-		try {
-			Verification verification = new Verification(this, this.getConfiguration().get().getString("license"));
-
-			if (verification.failed()) {
-				getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
-				return;
-			}
-		} catch (IOException exception) {
-			getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
-			this.setEnabled(false);
-			return;
-		}
-
 		this.getMigrations().load();
 		this.getMessages().load();
 
@@ -268,7 +252,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	 * @param module the instance of the module
 	 */
 	public void loadModule(MinetopiaModule module) {
-		if (!canBeLoaded(module)) return;
+		if (canBeLoaded(module)) return;
 		this.loadedModules.put(module.getName(), module);
 		module.enable();
 	}
@@ -279,7 +263,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 	 */
 	public void loadModules(MinetopiaModule... modules) {
 		for (MinetopiaModule module : modules) {
-			if (!canBeLoaded(module)) continue;
+			if (canBeLoaded(module)) continue;
 			this.getLogger().info(Text.colorize(String.format("     %s Module %s has succesfully loaded!", Text.colorize("&a&l+&r"), Text.colorize("&b&l" + module.getName() + "&r"))));
 		}
 		if (modules.length == 0) {
@@ -289,12 +273,12 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		getLogger().info(Text.colorize("&3----------------------------------------------------------------------"));
 
 		for (MinetopiaModule module : modules) {
-			if (!canBeLoaded(module)) continue;
+			if (canBeLoaded(module)) continue;
 			this.loadModule(module);
 		}
 	}
 
-	protected boolean canBeLoaded(MinetopiaModule minetopiaModule) {
+	private boolean canBeLoaded(MinetopiaModule minetopiaModule) {
 		Class<? extends MinetopiaModule> clazz = minetopiaModule.getClass();
 		String packageName = clazz.getPackage().getName();
 		String[] array = packageName.split("\\.");
@@ -303,7 +287,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 		try {
 			moduleName = array[4].toUpperCase();
 		} catch (ArrayIndexOutOfBoundsException exception) {
-			return false;
+			return true;
 		}
 
 		Options options;
@@ -311,7 +295,7 @@ public final class Minetopia extends ExtendedJavaPlugin {
 			options = Options.valueOf(String.format("MODULES_%s", moduleName));
 		} catch (IllegalArgumentException argumentException) {
 			getLogger().warning("Module incorrect ingevoerd in configuratie instellingen!");
-			return false;
+			return true;
 		}
 
 		return options.asBoolean().get();

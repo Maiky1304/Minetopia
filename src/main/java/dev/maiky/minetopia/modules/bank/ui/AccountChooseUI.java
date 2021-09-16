@@ -3,7 +3,7 @@ package dev.maiky.minetopia.modules.bank.ui;
 import dev.maiky.minetopia.modules.bank.bank.Account;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBankManager;
 import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Door: Maiky
@@ -33,9 +34,10 @@ public class AccountChooseUI extends Gui {
 
 		if (bank == Bank.PERSONAL) return;
 
-		BankManager manager = BankManager.with(DataModule.getInstance().getSqlHelper());
-		accountList.addAll(this.target == null ? manager.filterAndGet(bank, player.getUniqueId())
-				: manager.filterAndGet(bank, this.target.getUniqueId()));
+		MongoBankManager manager = DataModule.getInstance().getBankManager();
+		accountList.addAll(this.target == null ? manager.find(account -> account.getBank().equals(bank) &&
+				account.getPermissions().containsKey(player.getUniqueId())).collect(Collectors.toList())
+				: manager.find(account -> account.getBank().equals(bank) && account.getPermissions().containsKey(this.target.getUniqueId())).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class AccountChooseUI extends Gui {
 		} else {
 			for (Account account : this.accountList) {
 				super.addItem(ItemStackBuilder.of(account.getBank().icon)
-				.name(account.getCustomName()).lore("", "§5(ID: " + account.getId() + ")").build(() -> account(account)));
+				.name(account.getCustomName()).lore("", "§5(ID: " + account.getAccountId() + ")").build(() -> account(account)));
 			}
 		}
 	}

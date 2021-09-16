@@ -2,7 +2,7 @@ package dev.maiky.minetopia.modules.players.tasks;
 
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.boosters.tasks.BoostTask;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Numbers;
@@ -30,7 +30,7 @@ public class TimeTask implements Runnable {
 	@Override
 	public void run() {
 		for (Player player : bucket) {
-			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 			if (user == null) continue;
 			MinetopiaTime time = user.getTime();
 

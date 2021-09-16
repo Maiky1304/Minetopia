@@ -11,7 +11,7 @@ import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.bags.ui.CreateUI;
 import dev.maiky.minetopia.modules.bags.ui.KofferUI;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBagManager;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
 import org.bukkit.Material;
@@ -35,11 +35,11 @@ import java.util.List;
 @CommandPermission("minetopia.admin.bag")
 public class BagCommand extends BaseCommand {
 
-	private final BagManager manager;
+	private final MongoBagManager manager;
 	private final List<Material> materialList = new ArrayList<>();
 
 	public BagCommand() {
-		this.manager = BagManager.with(DataModule.getInstance().getSqlHelper());
+		this.manager = DataModule.getInstance().getBagManager();
 
 		for (BagType value : BagType.values()) materialList.add(value.material);
 	}
@@ -88,15 +88,16 @@ public class BagCommand extends BaseCommand {
 			if (!nms.getTag().hasKey("id"))
 				throw new ConditionFailedException(Message.BAGS_ERROR_NOTINHAND.raw());
 
-			bag = this.manager.getBag(nms.getTag().getInt("id"));
+			bag = this.manager.find(b -> b.getId().toString().equals(nms.getTag().getString("id")))
+					.findFirst().orElse(null);
 		} else {
-			bag = this.manager.getBag(id);
+			bag = this.manager.find(b -> b.getBagId() == id).findFirst().orElse(null);
 		}
 
 		if (bag == null)
 			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 
-		player.sendMessage(Message.BAGS_HISTORY_HEADER.format(bag.getId()));
+		player.sendMessage(Message.BAGS_HISTORY_HEADER.format(bag.getBagId()));
 		for (String string : bag.getHistory().keySet()) {
 			player.sendMessage(Message.BAGS_HISTORY_LINE.format(string, bag.getHistory().get(string)));
 		}
@@ -116,25 +117,25 @@ public class BagCommand extends BaseCommand {
 		}
 
 		Bag bag = this.manager.createBag(type, rows);
-		ItemStack item = bag.getType().create(bag.getId());
+		ItemStack item = bag.getType().create(bag.getBagId());
 
 		player.getInventory().addItem(item);
-		player.sendMessage(Message.BAGS_CREATED.format(bag.getId()));
+		player.sendMessage(Message.BAGS_CREATED.format(bag.getBagId()));
 	}
 
 	@Subcommand("openbag")
 	@Syntax("<id>")
 	@Description("Open a bag by id")
 	public void openBag(Player player, int id) {
-		Bag bag = this.manager.getBag(id);
+		Bag bag = this.manager.find(b -> b.getBagId() == id).findFirst().orElse(null);
 		if (bag == null)
 			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 		ItemStack[] itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
 
 		bag.getHistory().put("[Lookup] " + player.getName(), new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-		this.manager.saveBag(bag);
+		this.manager.save(bag);
 
-		KofferUI kofferUI = new KofferUI(player, bag.getId(), itemStacks, 0);
+		KofferUI kofferUI = new KofferUI(player, bag.getBagId(), itemStacks, 0);
 		kofferUI.open();
 	}
 
@@ -146,11 +147,11 @@ public class BagCommand extends BaseCommand {
 			throw new ConditionFailedException(Message.COMMON_ERROR_SELF_NOINVSPACE.raw());
 		}
 
-		Bag bag = this.manager.getBag(id);
+		Bag bag = this.manager.find(b -> b.getBagId() == id).findFirst().orElse(null);
 		if (bag == null)
 			throw new ConditionFailedException(Message.BAGS_ERROR_NOTBYID.format(id));
 
-		ItemStack itemStack = bag.getType().create(bag.getId());
+		ItemStack itemStack = bag.getType().create(bag.getBagId());
 		player.getInventory().addItem(itemStack);
 	}
 

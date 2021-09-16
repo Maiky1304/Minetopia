@@ -4,9 +4,7 @@ import dev.maiky.minetopia.Minetopia;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 

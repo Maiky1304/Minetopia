@@ -3,7 +3,8 @@ package dev.maiky.minetopia.modules.transportation;
 import co.aikar.commands.BukkitCommandManager;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
-import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.data.DataModule;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPortalManager;
 import dev.maiky.minetopia.modules.transportation.commands.TransportationCommand;
 import dev.maiky.minetopia.modules.transportation.listeners.SignChangeListener;
 import dev.maiky.minetopia.modules.transportation.listeners.TeleporterUseListener;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class TransportationModule implements MinetopiaModule {
 
 	@Getter
-	private final PortalManager portalManager;
+	private final MongoPortalManager portalManager;
 
 	private final CompositeTerminable composite = CompositeTerminable.create();
 	private boolean enabled = false;
@@ -38,7 +39,7 @@ public class TransportationModule implements MinetopiaModule {
 		this.configuration = new Configuration(Minetopia.getPlugin(Minetopia.class), "modules/transportation.yml");
 		this.configuration.load();
 
-		this.portalManager = PortalManager.with(Minetopia.getPlugin(Minetopia.class).dataModule.getSqlHelper());
+		this.portalManager = DataModule.getInstance().getPortalManager();
 	}
 
 	@Override

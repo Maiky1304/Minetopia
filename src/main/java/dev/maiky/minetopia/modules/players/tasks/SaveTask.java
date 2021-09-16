@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.players.tasks;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.lucko.helper.bucket.Bucket;
@@ -15,10 +15,10 @@ import org.bukkit.entity.Player;
 
 public class SaveTask implements Runnable {
 
-	private Bucket<Player> bucket;
-	private PlayerManager manager;
+	private final Bucket<Player> bucket;
+	private final MongoPlayerManager manager;
 
-	public SaveTask(Bucket<Player> bucket, PlayerManager manager) {
+	public SaveTask(Bucket<Player> bucket, MongoPlayerManager manager) {
 		this.bucket = bucket;
 		this.manager = manager;
 	}
@@ -27,11 +27,11 @@ public class SaveTask implements Runnable {
 	public void run() {
 		BucketPartition<Player> part = bucket.asCycle().next();
 		for (Player player : part) {
-			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 			if (user == null) continue;
-			manager.update(user);
+			manager.save(user);
 
-			MinetopiaScoreboard scoreboard = PlayerManager.getScoreboard().get(player.getUniqueId());
+			MinetopiaScoreboard scoreboard = MongoPlayerManager.getScoreboard().get(player.getUniqueId());
 			scoreboard.update();
 		}
 	}

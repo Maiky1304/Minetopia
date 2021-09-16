@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.upgrades.upgrades.handlers;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.upgrades.upgrades.Upgrade;
 import dev.maiky.minetopia.modules.upgrades.upgrades.handlers.classes.UpgradeFunction;
 import dev.maiky.minetopia.modules.upgrades.upgrades.handlers.classes.UpgradeStructure;
@@ -26,9 +26,9 @@ public class ElytraBoost implements UpgradeStructure {
 
 	public ElytraBoost(TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
-				.filter(e -> PlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().containsKey(Upgrade.ELYTRA))
-				.filter(e -> PlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().get(Upgrade.ELYTRA) == 1)
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().containsKey(Upgrade.ELYTRA))
+				.filter(e -> MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId()).getMinetopiaUpgrades().getUpgrades().get(Upgrade.ELYTRA) == 1)
 				.filter(e -> e.getAction().toString().startsWith("LEFT_CLICK"))
 				.filter(e -> e.getPlayer().isGliding())
 				.filter(e -> {

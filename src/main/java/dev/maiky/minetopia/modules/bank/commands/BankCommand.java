@@ -12,7 +12,7 @@ import dev.maiky.minetopia.modules.bank.bank.Console;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
 import dev.maiky.minetopia.modules.bank.manager.PinManager;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBankManager;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Door: Maiky
@@ -41,10 +42,10 @@ import java.util.UUID;
 public class BankCommand extends BaseCommand {
 
 	private final PinManager pinManager;
-	private final BankManager manager;
+	private final MongoBankManager manager;
 
 	public BankCommand(PinManager pinManager) {
-		manager = BankManager.with(DataModule.getInstance().getSqlHelper());
+		manager = DataModule.getInstance().getBankManager();
 		this.pinManager = pinManager;
 	}
 
@@ -84,7 +85,8 @@ public class BankCommand extends BaseCommand {
 	@Syntax("<soort> <id>")
 	@CommandCompletion("@bankTypes @nothing")
 	public void onSetup(Player player, @Conditions("noPrivate") Bank bank, int id) {
-		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString(), id));
+		if (this.manager.find(account -> account.getAccountId() == id && account.getBank().equals(bank))
+				.findFirst().orElse(null) == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString(), id));
 
 		Block targetBlock = player.getTargetBlock(null, 15);
 		if (targetBlock.getType() != Material.PURPUR_STAIRS) throw new ConditionFailedException(Message.BANKING_ERROR_PINCONSOLE_LOOKING.raw());
@@ -102,7 +104,7 @@ public class BankCommand extends BaseCommand {
 	@CommandCompletion("@bankTypes")
 	public void createAccount(Player player, @Conditions("noPrivate") Bank bank) {
 		Account account = this.manager.createAccount(bank);
-		player.sendMessage(Message.BANKING_ACCOUNT_SUCCESS.format(account.getId(), account.getBank().toString()));
+		player.sendMessage(Message.BANKING_ACCOUNT_SUCCESS.format(account.getAccountId(), account.getBank().toString()));
 	}
 
 	@Subcommand("delete")
@@ -111,10 +113,12 @@ public class BankCommand extends BaseCommand {
 	@Syntax("<soort> <id>")
 	@CommandCompletion("@bankTypes @nothing")
 	public void deleteAccount(Player player, @Conditions("noPrivate") Bank bank, int id) {
-		if (this.manager.getAccount(bank, id) == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT
+		Account account = this.manager.find(a -> a.getAccountId() == id && a.getBank().equals(bank))
+				.findFirst().orElse(null);
+		if (account == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT
 				.format(bank.toString().toLowerCase(), id));
 
-		this.manager.deleteAccount(bank, id);
+		this.manager.delete(account);
 		player.sendMessage(Message.BANKING_ACCOUNT_DELETED.format(id, bank.toString().toLowerCase()));
 	}
 
@@ -124,7 +128,7 @@ public class BankCommand extends BaseCommand {
 	@CommandCompletion("@bankTypes @nothing @players @bankPermissions")
 	@CommandPermission("minetopia.moderation.banking.permissions.grant")
 	public void createOverride(Player player, @Conditions("noPrivate") Bank bank, int id, OfflinePlayer target, Permission permission) {
-		Account account = this.manager.getAccount(bank, id);
+		Account account = this.manager.find(a -> a.getAccountId() == id && a.getBank().equals(bank)).findFirst().orElse(null);
 		if (account == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
 				id));
 
@@ -152,7 +156,7 @@ public class BankCommand extends BaseCommand {
 		}
 
 		account.getPermissions().put(target.getUniqueId(), overrides);
-		manager.saveAccount(account);
+		account.save();
 
 		player.sendMessage(Message.BANKING_OVERRIDES_SUCCESS.format(permission.toString().toLowerCase(), target.getName(), id,
 				bank.toString().toLowerCase()));
@@ -164,7 +168,7 @@ public class BankCommand extends BaseCommand {
 	@CommandCompletion("@bankTypes @nothing @players @bankPermissions")
 	@CommandPermission("minetopia.moderation.banking.permissions.revoke")
 	public void revokeOverride(Player player, @Conditions("noPrivate") Bank bank, int id, OfflinePlayer offlinePlayer, Permission permission) {
-		Account account = this.manager.getAccount(bank, id);
+		Account account = this.manager.find(a -> a.getAccountId() == id && a.getBank().equals(bank)).findFirst().orElse(null);
 		if ( account == null ) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
 				id));
 
@@ -190,7 +194,7 @@ public class BankCommand extends BaseCommand {
 
 		if (overrides.isEmpty()) account.getPermissions().remove(offlinePlayer.getUniqueId());
 		else account.getPermissions().put(offlinePlayer.getUniqueId(), overrides);
-		manager.saveAccount(account);
+		account.save();
 
 		player.sendMessage(Message.BANKING_OVERRIDES_DELETED.format(permission.toString().toLowerCase(), offlinePlayer.getName(), id, bank.toString()
 		.toLowerCase()));
@@ -204,7 +208,7 @@ public class BankCommand extends BaseCommand {
 	public void listAccounts(Player player, @Conditions("noPrivate") Bank bank, @Default("1") int page) {
 		int perPage = 10;
 
-		List<Account> accounts = this.manager.allAccounts(bank);
+		List<Account> accounts = this.manager.find(account -> account.getBank().equals(bank)).collect(Collectors.toList());
 		int pages = accounts.size() / perPage;
 
 		if (page > (pages + 1)) throw new ConditionFailedException(Message.BANKING_LIST_PAGENOTFOUND.raw());
@@ -218,7 +222,7 @@ public class BankCommand extends BaseCommand {
 			for (int j = index; j < max; j++) {
 				try {
 					Account account = accounts.get(j);
-					TextComponent component = new TextComponent(" §c- §6" + account.getId() + " ");
+					TextComponent component = new TextComponent(" §c- §6" + account.getAccountId() + " ");
 					TextComponent component1 = new TextComponent("§c(Permissions§c)");
 					TextComponent component2 = new TextComponent(" §6(§a" + Numbers.convert(Numbers.Type.MONEY, account.getBalance()) + "§6) §6(§a" + account.getCustomName() + "§6)" +
 							" §6(§a" + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(account.getCreatedOn())) + "§6)");
@@ -250,7 +254,7 @@ public class BankCommand extends BaseCommand {
 			return;
 		}
 
-		Account account = this.manager.getAccount(bank, id);
+		Account account = this.manager.find(a -> a.getAccountId() == id && a.getBank().equals(bank)).findFirst().orElse(null);
 		if (account == null) throw new ConditionFailedException(Message.BANKING_ERROR_NOBANKACCOUNT.format(bank.toString().toLowerCase(),
 				id));
 
@@ -260,7 +264,7 @@ public class BankCommand extends BaseCommand {
 		String nameProcessed = builder.substring(0, builder.length()-1);
 
 		account.setCustomName(nameProcessed);
-		this.manager.saveAccount(account);
+		this.manager.save(account);
 		player.sendMessage(Message.BANKING_ACCOUNT_RENAMED.format(nameProcessed));
 	}
 

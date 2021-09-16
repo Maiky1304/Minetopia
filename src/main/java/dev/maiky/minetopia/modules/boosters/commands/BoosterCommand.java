@@ -9,7 +9,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.boosters.enums.BoosterType;
 import dev.maiky.minetopia.modules.boosters.manager.SystemBoosterManager;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import org.bukkit.Bukkit;
@@ -30,7 +30,8 @@ import java.util.UUID;
 @Description("Command for the boosters")
 public class BoosterCommand extends BaseCommand {
 
-	private SystemBoosterManager systemBoosterManager;
+	private final SystemBoosterManager systemBoosterManager;
+	private final MongoPlayerManager manager = DataModule.getInstance().getPlayerManager();
 
 	public BoosterCommand() {
 		this.systemBoosterManager = SystemBoosterManager.with(DataModule.getInstance().getSqlHelper());
@@ -64,13 +65,13 @@ public class BoosterCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		MinetopiaUser user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId());
 		if (type == BoosterType.GRAYSHARD )
 			user.setGrayshardBoost(user.getGrayshardBoost() + percentage);
 		else user.setGoldshardBoost(user.getGoldshardBoost() + percentage);
 
 		if (!offlinePlayer.isOnline())
-			PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
+			manager.save(user);
 
 		player.sendMessage(Message.BOOSTERS_ADD.format(type.toString().toLowerCase(), offlinePlayer.getName(),
 				percentage));
@@ -87,13 +88,13 @@ public class BoosterCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		MinetopiaUser user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId());
 		if (type == BoosterType.GRAYSHARD )
 			user.setGrayshardBoost(user.getGrayshardBoost() - percentage);
 		else user.setGoldshardBoost(user.getGoldshardBoost() - percentage);
 
 		if (!offlinePlayer.isOnline())
-			PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
+			manager.save(user);
 
 		player.sendMessage(Message.BOOSTERS_REMOVE.format(type.toString().toLowerCase(), offlinePlayer.getName(), percentage));
 	}
@@ -117,7 +118,7 @@ public class BoosterCommand extends BaseCommand {
 			}
 		}
 
-		MinetopiaUser user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId());
 		int total = type == BoosterType.GRAYSHARD ? user.getGrayshardBoost() : user.getGoldshardBoost();
 
 		player.sendMessage(Message.BOOSTERS_INFO.format(offlinePlayer.getName(), total, type.toString().toLowerCase()));
@@ -131,7 +132,7 @@ public class BoosterCommand extends BaseCommand {
 	public void onActivate(Player player, BoosterType type, int percentage) {
 		if (percentage <= 0) throw new ConditionFailedException(Message.COMMON_ERROR_USEATLEAST.format(1));
 
-		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 
 		if (type == BoosterType.GRAYSHARD) {
 			if (user.getGrayshardBoost() < percentage) throw new ConditionFailedException(Message.BOOSTERS_ERROR_NOTENOUGHGRAYSHARD.raw());

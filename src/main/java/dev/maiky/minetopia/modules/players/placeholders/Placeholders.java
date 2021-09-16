@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.players.placeholders;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -32,9 +32,9 @@ public class Placeholders extends PlaceholderExpansion {
 
 	@Override
 	public String onRequest(OfflinePlayer player, @NotNull String params) {
-		if (!PlayerManager.getCache().containsKey(player.getUniqueId())) return "???";
+		if (!MongoPlayerManager.getCache().containsKey(player.getUniqueId())) return "???";
 
-		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 		if (params.equals("naamkleur")) {
 			return "§" + user.getCityColor();
 		} else if (params.equals("level")) {

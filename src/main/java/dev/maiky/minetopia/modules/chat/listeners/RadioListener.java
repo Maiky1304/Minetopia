@@ -27,7 +27,7 @@ package dev.maiky.minetopia.modules.chat.listeners;
 
 import com.google.gson.Gson;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.items.threads.message.RadioMessage;
 import dev.maiky.minetopia.modules.items.threads.message.Type;
 import dev.maiky.minetopia.util.Text;
@@ -45,8 +45,8 @@ public class RadioListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(AsyncPlayerChatEvent.class, EventPriority.HIGH)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
-				.filter(e -> PlayerManager.getCache().get(e.getPlayer().getUniqueId()).isPoliceChat())
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId()).isPoliceChat())
 				.handler(e -> {
 					e.setCancelled(true);
 

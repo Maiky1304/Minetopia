@@ -1,7 +1,7 @@
 package dev.maiky.minetopia.modules.players.classes;
 
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.districts.DistrictsModule;
 import dev.maiky.minetopia.modules.levels.manager.LevelCheck;
 import dev.maiky.minetopia.modules.players.PlayersModule;
@@ -66,7 +66,7 @@ public class MinetopiaScoreboard {
 	}
 
 	public HashMap<Integer, String> placeholders(Player player, HashMap<Integer, String> list) {
-		MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 		DecimalFormat shardsFormat = new DecimalFormat("0.0");
 		Economy economy = Minetopia.getEconomy();
 		LevelCheck check = new LevelCheck(user);

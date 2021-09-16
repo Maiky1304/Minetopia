@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.function.Predicate;
+
 /**
  * Door: Maiky
  * Info: Minetopia - 24 May 2021
@@ -49,6 +51,12 @@ public class Items {
 		nmsStack.setTag(compound);
 		itemStack = CraftItemStack.asCraftMirror(nmsStack);
 		return itemStack;
+	}
+
+	public static boolean hasNBT(ItemStack itemStack, Predicate<NBTTagCompound> predicate) {
+		net.minecraft.server.v1_12_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(itemStack);
+		NBTTagCompound compound = nmsStack.getTag() == null ? new NBTTagCompound() : nmsStack.getTag();
+		return predicate.test(compound);
 	}
 
 }

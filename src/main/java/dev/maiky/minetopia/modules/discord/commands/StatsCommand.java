@@ -1,7 +1,7 @@
 package dev.maiky.minetopia.modules.discord.commands;
 
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaTime;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.lucko.helper.Services;
@@ -62,8 +62,13 @@ public class StatsCommand extends ListenerAdapter {
 
 			Profile dbUser = profile.get();
 			OfflinePlayer of = Bukkit.getOfflinePlayer(dbUser.getUniqueId());
-			PlayerManager manager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-			MinetopiaUser user = manager.retrieve(dbUser.getUniqueId());
+			MongoPlayerManager manager = DataModule.getInstance().getPlayerManager();
+			MinetopiaUser user = manager.find(u -> u.getUuid().equals(dbUser.getUniqueId()))
+					.findFirst().orElse(null);
+			if (user == null) {
+				hook.sendMessageEmbeds(error("Er bestaat geen user met de naam **" + minecraftName + "**!")).queue();
+				return;
+			}
 			MinetopiaTime time = user.getTime();
 
 			double p = 4000d;

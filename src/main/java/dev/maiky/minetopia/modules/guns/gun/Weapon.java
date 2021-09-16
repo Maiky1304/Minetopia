@@ -1,9 +1,9 @@
 package dev.maiky.minetopia.modules.guns.gun;
 
-import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
-import dev.maiky.minetopia.util.Text;
 import lombok.Getter;
 import lombok.Setter;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Property;
 
 /**
  * Door: Maiky
@@ -11,25 +11,27 @@ import lombok.Setter;
  * Package: dev.maiky.minetopia.modules.guns.gun
  */
 
+@Entity(value = "weapons", noClassnameStored = true)
 public class Weapon {
 
 	@Getter
-	private final String license;
+	public String license;
+
 	@Getter @Setter
-	private int ammo;
+	public int ammo;
+
 	@Getter @Setter
-	private int durability;
+	public int durability;
+
 	@Getter
-	private final String modelName;
+	@Property("model_name")
+	public String modelName;
 
 	@Getter @Setter
-	private int rowId;
+	@Property("row_id")
+	public int rowId;
 
-	public Weapon(Model model) {
-		this.license = Text.randomString(12).toUpperCase();
-		this.ammo = model.defaultAmmo();
-		this.durability = model.defaultAmmo() * 3;
-		this.modelName = model.modelName();
+	public Weapon() {
 	}
 
 }

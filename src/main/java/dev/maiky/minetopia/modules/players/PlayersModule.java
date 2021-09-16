@@ -4,17 +4,14 @@ import co.aikar.commands.ConditionFailedException;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaScoreboard;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.commands.essential.*;
 import dev.maiky.minetopia.modules.players.commands.staff.AdminToolCommand;
 import dev.maiky.minetopia.modules.players.commands.staff.ModCommand;
-import dev.maiky.minetopia.modules.players.listeners.AdminToolListener;
-import dev.maiky.minetopia.modules.players.listeners.JoinListener;
-import dev.maiky.minetopia.modules.players.listeners.QuitListener;
-import dev.maiky.minetopia.modules.players.listeners.TrashbinListener;
+import dev.maiky.minetopia.modules.players.listeners.*;
 import dev.maiky.minetopia.modules.players.listeners.impl.LoadingListener;
 import dev.maiky.minetopia.modules.players.placeholders.Placeholders;
 import dev.maiky.minetopia.modules.players.tasks.SaveTask;
@@ -135,7 +132,7 @@ public class PlayersModule implements MinetopiaModule {
 			Player player = context.getIssuer().getPlayer();
 			UUID uuid = player.getUniqueId();
 
-			if (!PlayerManager.getCache().containsKey(uuid)) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYERDATANOTLOADED.raw());
+			if (!MongoPlayerManager.getCache().containsKey(uuid)) throw new ConditionFailedException(Message.COMMON_ERROR_PLAYERDATANOTLOADED.raw());
 		});
 
 		minetopia.getCommandManager().getCommandConditions().addCondition(Integer.class, "limits", (c, exec, value) -> {
@@ -220,20 +217,20 @@ public class PlayersModule implements MinetopiaModule {
 		Events.subscribe(PlayerJoinEvent.class).handler(e -> bucket.add(e.getPlayer())).bindWith(composite);
 		Events.subscribe(PlayerQuitEvent.class).handler(e -> bucket.remove(e.getPlayer())).bindWith(composite);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-
-		Schedulers.sync().runRepeating(new SaveTask(bucket, playerManager), 20L, 20L).bindWith(composite);
+		Schedulers.sync().runRepeating(new SaveTask(bucket, DataModule.getInstance().getPlayerManager()), 20L, 20L).bindWith(composite);
 		Schedulers.async().runRepeating(new TimeTask(bucket), 0L, 20L).bindWith(composite);
 	}
 
 	private void registerEvents() {
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
+		MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 		this.composite.bindModule(new JoinListener(playerManager));
 		this.composite.bindModule(new QuitListener(playerManager));
 		this.composite.bindModule(new TrashbinListener());
 		this.composite.bindModule(new AdminToolListener());
 		this.composite.bindModule(new LoadingListener());
+		this.composite.bindModule(new MakeSlotsUnusableListener());
+		this.composite.bindModule(new WalletUseListener());
 	}
 
 	@Override
@@ -242,17 +239,17 @@ public class PlayersModule implements MinetopiaModule {
 
 		// Emergency Save
 		Minetopia.getInstance().getLogger().info("Bezig met het opslaan van " + Bukkit.getServer().getOnlinePlayers().size() + " wegens restart...");
-		PlayerManager manager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
+		MongoPlayerManager manager = DataModule.getInstance().getPlayerManager();
 		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			MinetopiaUser user = PlayerManager.getCache().get(player.getUniqueId());
+			MinetopiaUser user = MongoPlayerManager.getCache().get(player.getUniqueId());
 			if (user == null) continue;
 			user.getMinetopiaData().setInventory(MinetopiaInventory.of(player.getInventory()));
 			user.getMinetopiaData().setHp(player.getHealth());
 			user.getMinetopiaData().setSaturation(player.getFoodLevel());
 			user.getMinetopiaData().setBalance(Minetopia.getEconomy().getBalance(player));
-			manager.update(user);
+			manager.save(user);
 
-			MinetopiaScoreboard scoreboard = PlayerManager.getScoreboard().get(player.getUniqueId());
+			MinetopiaScoreboard scoreboard = MongoPlayerManager.getScoreboard().get(player.getUniqueId());
 			scoreboard.update();
 		}
 		Minetopia.getInstance().getLogger().info("Succesvol " + Bukkit.getServer().getOnlinePlayers().size() + " spelers opgeslagen!");

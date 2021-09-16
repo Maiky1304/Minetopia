@@ -25,7 +25,7 @@
 
 package dev.maiky.minetopia.modules.guns.listeners;
 
-import dev.maiky.minetopia.modules.data.managers.WeaponManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoWeaponManager;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Model;
@@ -44,9 +44,9 @@ import java.util.Objects;
 
 public class ItemHeldListener implements TerminableModule {
 
-	private final WeaponManager weaponManager;
+	private final MongoWeaponManager weaponManager;
 
-	public ItemHeldListener(WeaponManager weaponManager) {
+	public ItemHeldListener(MongoWeaponManager weaponManager) {
 		this.weaponManager = weaponManager;
 	}
 

@@ -6,7 +6,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
@@ -26,6 +26,8 @@ import java.util.UUID;
 @CommandAlias("goldshards|goldshard")
 @CommandPermission("minetopia.common.shard")
 public class GoldShardCommand extends BaseCommand {
+	
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -48,7 +50,7 @@ public class GoldShardCommand extends BaseCommand {
 	@Description("View your own shard balance")
 	@Conditions("MTUser")
 	public void on(Player sender) {
-		MinetopiaUser user = PlayerManager.getCache().get(sender.getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(sender.getUniqueId());
 		sender.sendMessage(Message.PLAYER_INFO_SHARDSINFOSELF.format(Numbers.convert(Numbers.Type.SHARDS,
 				user.getGoldshards()), "Gold"));
 	}
@@ -64,12 +66,12 @@ public class GoldShardCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		user.setGoldshards(user.getGoldshards() + amount);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_SHARDS_ADDED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gold",
 				offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards())));
@@ -86,14 +88,14 @@ public class GoldShardCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		user.setGoldshards(user.getGoldshards() - amount);
 		if (user.getGoldshards() < 0)
 			user.setGoldshards(0);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.PLAYER_SUCCESSFULLY_SHARDS_REMOVED.format(Numbers.convert(Numbers.Type.SHARDS, amount), "Gold",
 				offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards())));
@@ -110,9 +112,9 @@ public class GoldShardCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		sender.sendMessage(Message.PLAYER_INFO_SHARDSINFO.format(offlinePlayer.getName(), Numbers.convert(Numbers.Type.SHARDS, user.getGoldshards()), "Gold"));
 	}
 }

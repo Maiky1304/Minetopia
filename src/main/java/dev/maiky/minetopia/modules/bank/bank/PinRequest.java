@@ -3,7 +3,7 @@ package dev.maiky.minetopia.modules.bank.bank;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.bank.BankModule;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBankManager;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import dev.maiky.minetopia.util.Text;
@@ -110,10 +110,10 @@ public class PinRequest {
 
 						EconomyResponse response = economy.withdrawPlayer(to, amount);
 						if (response.transactionSuccess()) {
-							BankManager bankManager = BankManager.with(DataModule.getInstance().getSqlHelper());
+							MongoBankManager bankManager = DataModule.getInstance().getBankManager();
 							Account shopAccount = bankManager.getAccount(this.console.getAccountType(), this.console.getAccountNumber());
 							shopAccount.deposit(this.amount);
-							bankManager.saveAccount(shopAccount);
+							bankManager.save(shopAccount);
 
 							this.endRequest(Reason.SUCCESS);
 							return;

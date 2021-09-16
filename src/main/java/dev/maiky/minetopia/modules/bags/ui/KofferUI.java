@@ -3,7 +3,7 @@ package dev.maiky.minetopia.modules.bags.ui;
 import dev.maiky.minetopia.modules.bags.bag.Bag;
 import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBagManager;
 import dev.maiky.minetopia.util.Options;
 import dev.maiky.minetopia.util.SerializationUtils;
 import lombok.Getter;
@@ -31,13 +31,16 @@ import java.util.List;
 public class KofferUI extends Gui {
 
 	@Getter
-	private int id, page;
+	private int id;
+
+	@Getter
+	private int page;
 
 	@Getter
 	private ItemStack[] itemStacks;
 
 	@Getter
-	private BagManager manager;
+	private MongoBagManager manager;
 
 	private final MenuScheme ITEMS = new MenuScheme()
 			.mask("111111111")
@@ -68,13 +71,19 @@ public class KofferUI extends Gui {
 		this.id = id;
 		this.page = page;
 		this.itemStacks = itemStacks;
-		this.manager = BagManager.with(DataModule.getInstance().getSqlHelper());
+		this.manager = DataModule.getInstance().getBagManager();
 
 		Schedulers.builder()
 				.async()
 				.afterAndEvery(10)
 				.run(() -> {
-					this.itemStacks = SerializationUtils.itemStackArrayFromBase64(this.manager.getBag(this.id).getBase64Contents());
+					Bag bag = this.manager.find(b -> b.getBagId() == this.id)
+							.findFirst().orElse(null);
+					if (bag == null) {
+						close();
+						return;
+					}
+					this.itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
 					this.redraw();
 				})
 				.bindWith(this);
@@ -82,7 +91,14 @@ public class KofferUI extends Gui {
 		.filter(e -> e.getInventory().equals(getHandle()))
 		.filter(e -> e.getRawSlot() >= getHandle().getSize())
 		.handler(e -> {
-			if (itemStacks.length >= (this.manager.getBag(this.id).getRows() * 9)) {
+			Bag bag = this.manager.find(b -> b.getBagId() == this.id)
+					.findFirst().orElse(null);
+			if (bag == null) {
+				close();
+				return;
+			}
+
+			if (itemStacks.length >= (bag.getRows() * 9)) {
 				player.sendMessage("§cJe koffer is vol!");
 				return;
 			}
@@ -114,9 +130,8 @@ public class KofferUI extends Gui {
 				this.itemStacks[j] = itemStackList.get(j);
 			}
 
-			Bag bag = this.manager.getBag(this.id);
 			bag.setBase64Contents(SerializationUtils.itemStackArrayToBase64(this.itemStacks));
-			this.manager.saveBag(bag);
+			this.manager.save(bag);
 
 			KofferUI ui = new KofferUI(getPlayer(), this.id, this.itemStacks, this.page);
 			ui.open();
@@ -153,9 +168,13 @@ public class KofferUI extends Gui {
 						this.itemStacks[j] = itemStackList.get(j);
 					}
 
-					Bag bag = this.manager.getBag(this.id);
+					Bag bag = this.manager.find(b -> b.getBagId() == id).findFirst().orElse(null);
+					if (bag == null) {
+						close();
+						return;
+					}
 					bag.setBase64Contents(SerializationUtils.itemStackArrayToBase64(this.itemStacks));
-					this.manager.saveBag(bag);
+					this.manager.save(bag);
 
 					getPlayer().getInventory().addItem(itemStack);
 
@@ -167,7 +186,13 @@ public class KofferUI extends Gui {
 			}
 		}
 
-		int rows = this.manager.getBag(this.id).getRows();
+		Bag bag = this.manager.find(b -> b.getBagId() == this.id).findFirst().orElse(null);
+		if (bag == null) {
+			close();
+			return;
+		}
+
+		int rows = bag.getRows();
 		if (rows < 5) {
 			int fill = (rows * 9);
 			for(int j = fill; j < 54; j++) {

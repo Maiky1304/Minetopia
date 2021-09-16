@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.upgrades.ui;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.upgrades.Upgrade;
@@ -31,7 +31,7 @@ public class UpgradeUI extends Gui {
 
 	@Override
 	public void redraw() {
-		MinetopiaUser user = PlayerManager.getCache().get(this.getPlayer().getUniqueId());
+		MinetopiaUser user = MongoPlayerManager.getCache().get(this.getPlayer().getUniqueId());
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 
 		HashMap<Integer, Integer> map = hash();

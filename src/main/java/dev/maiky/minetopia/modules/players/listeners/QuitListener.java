@@ -26,7 +26,7 @@
 package dev.maiky.minetopia.modules.players.listeners;
 
 import dev.maiky.minetopia.Minetopia;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaInventory;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import me.lucko.helper.Events;
@@ -37,31 +37,31 @@ import org.jetbrains.annotations.NotNull;
 
 public class QuitListener implements TerminableModule {
 
-	private final PlayerManager playerManager;
+	private final MongoPlayerManager playerManager;
 
-	public QuitListener(PlayerManager playerManager) {
+	public QuitListener(MongoPlayerManager playerManager) {
 		this.playerManager = playerManager;
 	}
 
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerQuitEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
-					MinetopiaUser user = PlayerManager.getCache().get(e.getPlayer().getUniqueId());
+					MinetopiaUser user = MongoPlayerManager.getCache().get(e.getPlayer().getUniqueId());
 					user.getMinetopiaData().setInventory(MinetopiaInventory.of(e.getPlayer().getInventory()));
 					user.getMinetopiaData().setHp(e.getPlayer().getHealth());
 					user.getMinetopiaData().setSaturation(e.getPlayer().getFoodLevel());
 					user.getMinetopiaData().setBalance(Minetopia.getEconomy().getBalance(e.getPlayer()));
 
-					playerManager.update(user);
-					PlayerManager.getCache().remove(e.getPlayer().getUniqueId());
+					playerManager.save(user);
+					MongoPlayerManager.getCache().remove(e.getPlayer().getUniqueId());
 				}).bindWith(consumer);
 		Events.subscribe(PlayerQuitEvent.class)
-				.filter(e -> PlayerManager.getScoreboard().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getScoreboard().containsKey(e.getPlayer().getUniqueId()))
 				.handler(e -> {
-					PlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).getPlayerBoard().delete();
-					PlayerManager.getScoreboard().remove(e.getPlayer().getUniqueId());
+					MongoPlayerManager.getScoreboard().get(e.getPlayer().getUniqueId()).getPlayerBoard().delete();
+					MongoPlayerManager.getScoreboard().remove(e.getPlayer().getUniqueId());
 				}).bindWith(consumer);
 	}
 

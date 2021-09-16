@@ -25,7 +25,7 @@
 
 package dev.maiky.minetopia.modules.security.listeners;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.security.SecurityModule;
 import dev.maiky.minetopia.util.Options;
 import me.lucko.helper.Events;
@@ -50,7 +50,7 @@ public class DetectorListener implements TerminableModule {
 	@Override
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> e.getAction() == Action.PHYSICAL)
 				.filter(e -> e.getClickedBlock().getType().toString().endsWith("PLATE"))
 				.filter(e -> e.getClickedBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN)

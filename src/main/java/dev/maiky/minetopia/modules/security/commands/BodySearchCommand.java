@@ -9,7 +9,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.bags.bag.Bag;
 import dev.maiky.minetopia.modules.bags.bag.BagType;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BagManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBagManager;
 import dev.maiky.minetopia.modules.security.SecurityModule;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.SerializationUtils;
@@ -117,15 +117,15 @@ public class BodySearchCommand extends BaseCommand {
 							assert tagCompound != null;
 							int id = tagCompound.getInt("id");
 
-							BagManager bagManager = BagManager.with(DataModule.getInstance().getSqlHelper());
-							Bag bag = bagManager.getBag(id);
+							MongoBagManager bagManager = DataModule.getInstance().getBagManager();
+							Bag bag = bagManager.find(b -> b.getBagId() == id).findFirst().orElse(null);
 							if (bag == null) {
 								e.getWhoClicked().sendMessage(Message.BAGS_ERROR_OPEN_OTHER.raw());
 								return;
 							}
 
 							bag.getHistory().put(e.getWhoClicked().getName(), new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-							bagManager.saveBag(bag);
+							bagManager.save(bag);
 
 							org.bukkit.inventory.ItemStack[] itemStacks = SerializationUtils.itemStackArrayFromBase64(bag.getBase64Contents());
 							List<String> illegalItems = new ArrayList<>();

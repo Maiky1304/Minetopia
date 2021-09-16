@@ -2,6 +2,11 @@ package dev.maiky.minetopia.modules.bags.bag;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.IndexOptions;
+import org.mongodb.morphia.annotations.Indexed;
 
 import java.util.HashMap;
 
@@ -11,23 +16,29 @@ import java.util.HashMap;
  * Package: dev.maiky.minetopia.modules.bags.bag
  */
 
+@Entity(value = "bags", noClassnameStored = true)
 public class Bag {
 
-	@Getter @Setter
-	private String base64Contents;
-	@Getter @Setter
-	private int id = -1;
 	@Getter
-	private final HashMap<String, String> history = new HashMap<>();
-	@Getter
-	private final int rows;
-	@Getter
-	private final BagType type;
+	@Id
+	public ObjectId id;
 
-	public Bag(String base64Contents, int rows, BagType type) {
-		this.base64Contents = base64Contents;
-		this.rows = rows;
-		this.type = type;
-	}
+	@Getter @Setter
+	@Indexed(options = @IndexOptions(unique = true))
+	public int bagId;
+
+	@Getter @Setter
+	public String base64Contents;
+
+	@Getter
+	public final HashMap<String, String> history = new HashMap<>();
+
+	@Getter @Setter
+	public int rows;
+
+	@Getter @Setter
+	public BagType type;
+
+	public Bag() {}
 
 }

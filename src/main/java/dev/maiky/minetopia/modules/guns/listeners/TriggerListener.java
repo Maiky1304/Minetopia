@@ -25,8 +25,8 @@
 
 package dev.maiky.minetopia.modules.guns.listeners;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
-import dev.maiky.minetopia.modules.data.managers.WeaponManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoWeaponManager;
 import dev.maiky.minetopia.modules.guns.GunsModule;
 import dev.maiky.minetopia.modules.guns.gun.Weapon;
 import dev.maiky.minetopia.modules.guns.models.interfaces.Burst;
@@ -59,11 +59,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TriggerListener implements TerminableModule {
 
-	private final WeaponManager weaponManager;
+	private final MongoWeaponManager weaponManager;
 	private final List<Player> reloading;
 	private final HashMap<Model, CooldownMap<String>> cooldowns;
 
-	public TriggerListener(WeaponManager weaponManager, List<Player> reloading, HashMap<Model, CooldownMap<String>> cooldowns) {
+	public TriggerListener(MongoWeaponManager weaponManager, List<Player> reloading, HashMap<Model, CooldownMap<String>> cooldowns) {
 		this.weaponManager = weaponManager;
 		this.reloading = reloading;
 		this.cooldowns = cooldowns;
@@ -73,7 +73,7 @@ public class TriggerListener implements TerminableModule {
 	public void setup(@NotNull TerminableConsumer consumer) {
 		Events.subscribe(PlayerInteractEvent.class)
 				.filter(PlayerInteractEvent::hasItem)
-				.filter(e -> PlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
+				.filter(e -> MongoPlayerManager.getCache().containsKey(e.getPlayer().getUniqueId()))
 				.filter(e -> e.getAction().toString().startsWith("RIGHT_CLICK"))
 				.filter(e -> e.getItem().getType() == Material.WOOD_HOE)
 				.filter(e -> CraftItemStack.asNMSCopy(e.getItem()).getTag() != null)
@@ -126,7 +126,7 @@ public class TriggerListener implements TerminableModule {
 								task.stop();
 								reloading.remove(player);
 								weapon.setAmmo(model.defaultAmmo());
-								weaponManager.updateWeapon(weapon);
+								weaponManager.save(weapon);
 								player.sendMessage(Message.GUNS_RELOADING_MESSAGE.raw());
 								NotificationUtil.sendNotification(player, Message.GUNS_NOTIFICATIONS_RELOADED.raw(), 1);
 								return;
@@ -151,7 +151,7 @@ public class TriggerListener implements TerminableModule {
 						weapon.setAmmo(weapon.getAmmo() - 1);
 					}
 					weapon.setDurability(weapon.getDurability() - 1);
-					weaponManager.updateWeapon(weapon);
+					weaponManager.save(weapon);
 
 					NotificationUtil.sendNotification(player, Message.GUNS_NOTIFICATIONS_AMMO.format(weapon.getAmmo(),
 							model.defaultAmmo()), 1);

@@ -5,16 +5,14 @@ import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.ConditionFailedException;
 import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
-import com.google.gson.Gson;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PortalManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPortalManager;
 import dev.maiky.minetopia.modules.transportation.portal.ILocation;
 import dev.maiky.minetopia.modules.transportation.portal.Portal;
 import dev.maiky.minetopia.modules.transportation.portal.PortalData;
 import dev.maiky.minetopia.util.Configuration;
 import dev.maiky.minetopia.util.Message;
-import dev.maiky.minetopia.util.SerializationUtils;
 import dev.maiky.minetopia.util.Text;
 import lombok.Getter;
 import org.bukkit.Location;
@@ -23,6 +21,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Door: Maiky
@@ -37,9 +36,11 @@ public class TransportationCommand extends BaseCommand {
 
 	@Getter
 	private final Configuration configuration;
+	private final MongoPortalManager manager;
 
 	public TransportationCommand(Configuration configuration) {
 		this.configuration = configuration;
+		this.manager = DataModule.getInstance().getPortalManager();
 	}
 
 	@Default
@@ -64,7 +65,6 @@ public class TransportationCommand extends BaseCommand {
 	@Description("Create a portal")
 	public void onCreate(Player player, Portal portal, String name) {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(portal.toString());
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		if (portal == Portal.BUKKIT && section.contains(name))
 			throw new ConditionFailedException(Message.PORTALS_ERROR_ALREADYEXIST.raw());
@@ -74,8 +74,7 @@ public class TransportationCommand extends BaseCommand {
 		Location location = player.getLocation();
 
 		if (portal == Portal.BUNGEECORD) {
-			PortalData data = new PortalData(ILocation.from(location), "unknown");
-			manager.insertPortal(name, data);
+			manager.createPortal(name, location, "unknown");
 		} else {
 			section.set(name + ".location", location);
 			this.configuration.save();
@@ -89,18 +88,18 @@ public class TransportationCommand extends BaseCommand {
 	@Description("Delete a portal")
 	public void onDelete(Player player, Portal portal, String name) {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(portal.toString());
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+		PortalData data = manager.find(d -> d.name.equals(name)).findFirst().orElse(null);
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
-		if (portal == Portal.BUNGEECORD && !manager.getPortals().containsKey(name))
+		if (portal == Portal.BUNGEECORD && data == null)
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
 		if (portal == Portal.BUKKIT) {
 			section.set(name, null);
 			this.configuration.save();
 		} else {
-			manager.deletePortal(name);
+			manager.delete(data);
 		}
 
 		player.sendMessage(Message.PORTALS_SUCCESS_DELETED.format(name, portal.toString()));
@@ -111,7 +110,6 @@ public class TransportationCommand extends BaseCommand {
 	@Description("See all the portals")
 	public void onList(Player player, Portal portal) {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(portal.toString());
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
 
 		String divider = Message.PORTALS_LIST_DIVIDER.raw();
 		String message = Message.PORTALS_LIST_ENTRY.raw();
@@ -142,18 +140,20 @@ public class TransportationCommand extends BaseCommand {
 	@Description("Change the location of a portal")
 	public void onSetLocation(Player player, Portal portal, String name) {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(Portal.BUKKIT.toString());
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+
+		PortalData data = manager.find(d -> d.name.equals(name)).findFirst().orElse(null);
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
-		if (portal == Portal.BUNGEECORD && !manager.getPortals().containsKey(name))
+		if (portal == Portal.BUNGEECORD && data == null)
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
 		if (portal == Portal.BUKKIT) {
 			section.set(name + ".location", player.getLocation());
 			this.configuration.save();
 		} else {
-			manager.updatePortal(name, new PortalData(ILocation.from(player.getLocation()), manager.getPortalData(name).getServer()));
+			Objects.requireNonNull(data).setLocation(ILocation.from(player.getLocation()));
+			manager.save(data);
 		}
 
 		player.sendMessage(Message.PORTALS_SUCCESS_CHANGEDLOCATION.format(name, portal.toString()));
@@ -164,7 +164,7 @@ public class TransportationCommand extends BaseCommand {
 	@Description("Teleport to the location of a portal")
 	public void onTeleport(Player player, Portal portal, String name) {
 		ConfigurationSection section = this.configuration.get().getConfigurationSection(Portal.BUKKIT.toString());
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+		PortalData data = manager.find(d -> d.name.equals(name)).findFirst().orElse(null);
 
 		if (portal == Portal.BUKKIT && !section.contains(name))
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
@@ -175,7 +175,8 @@ public class TransportationCommand extends BaseCommand {
 		if (portal == Portal.BUKKIT) {
 			location = ILocation.from((Location) section.get(name + ".location"));
 		} else {
-			location = manager.getPortalData(name).getLocation();
+			assert data != null;
+			location = data.getLocation();
 		}
 
 		if (player.getWorld().getName().equals(location.getWorldName())) {
@@ -191,13 +192,13 @@ public class TransportationCommand extends BaseCommand {
 	@Syntax("<name> <server>")
 	@Description("Change the location of a portal")
 	public void onSetLocation(Player player, String name, String server) {
-		PortalManager manager = PortalManager.with(DataModule.getInstance().getSqlHelper());
+		PortalData data = manager.find(d -> d.name.equals(name)).findFirst().orElse(null);
 
-		if (!manager.getPortals().containsKey(name))
+		if (data == null)
 			throw new ConditionFailedException(Message.PORTALS_ERROR_DOESNTEXIST.raw());
 
-		PortalData data = new PortalData(ILocation.from(player.getLocation()), server);
-		manager.updatePortal(name, data);
+		data.setServer(server);
+		manager.save(data);
 
 		player.sendMessage(Message.PORTALS_SUCCESS_CHANGEDSERVER.format(name, server));
 	}

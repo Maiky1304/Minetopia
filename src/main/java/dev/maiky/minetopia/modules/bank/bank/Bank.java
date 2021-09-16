@@ -16,19 +16,21 @@ import java.util.List;
 
 public enum Bank {
 
-	BUSINESS("Zakelijke", ChatColor.AQUA, Material.DIAMOND_BLOCK),
-	PERSONAL("Persoonlijke", ChatColor.GOLD, Material.GOLD_BLOCK),
-	SAVINGS("Spaar", ChatColor.RED, Material.REDSTONE_BLOCK),
-	GOVERNMENT("Overheids", ChatColor.GREEN, Material.EMERALD_BLOCK);
+	BUSINESS("Zakelijke", ChatColor.AQUA, Material.IRON_INGOT, "bedrijfsrekening"),
+	PERSONAL("Persoonlijke", ChatColor.GOLD, Material.IRON_INGOT, "priverekening"),
+	SAVINGS("Spaar", ChatColor.RED, Material.IRON_INGOT, "spaarrekening"),
+	GOVERNMENT("Overheids", ChatColor.GREEN, Material.IRON_INGOT, "staatsrekening");
 
-	public String label;
-	public Material icon;
-	public ChatColor color;
+	public final String label;
+	public final Material icon;
+	public final ChatColor color;
+	public final String nbtTag;
 
-	Bank(String label, ChatColor color, Material icon) {
+	Bank(String label, ChatColor color, Material icon, String nbtTag) {
 		this.label = label;
-		this.color = color;
 		this.icon = icon;
+		this.color = color;
+		this.nbtTag = nbtTag;
 	}
 
 	public static List<String> list() {

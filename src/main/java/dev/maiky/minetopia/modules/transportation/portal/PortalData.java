@@ -1,7 +1,12 @@
 package dev.maiky.minetopia.modules.transportation.portal;
 
 import lombok.Getter;
-import org.bukkit.Location;
+import lombok.Setter;
+import me.lucko.helper.mongo.external.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Property;
 
 /**
  * Door: Maiky
@@ -9,15 +14,24 @@ import org.bukkit.Location;
  * Package: dev.maiky.minetopia.modules.transportation.portal
  */
 
+@Entity(value = "portals", noClassnameStored = true)
 public class PortalData {
 
-	@Getter
-	private final ILocation location;
-	@Getter
-	private final String server;
+	@Getter @Setter
+	@Id
+	public ObjectId id;
 
-	public PortalData(ILocation location, String server) {
-		this.location = location;
-		this.server = server;
-	}
+	@Getter @Setter
+	public String name;
+
+	@Getter @Setter
+	@Embedded @Property("bukkit_location")
+	public ILocation location;
+
+	@Getter @Setter
+	@Property("target_server")
+	public String server;
+
+	public PortalData() {}
+
 }

@@ -6,7 +6,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUpgrades;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.upgrades.ui.UpgradeUI;
@@ -28,6 +28,8 @@ import java.util.UUID;
 @CommandAlias("upgrade|upgrades")
 @CommandPermission("minetopia.common.upgrades")
 public class UpgradeCommand extends BaseCommand {
+
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -65,9 +67,9 @@ public class UpgradeCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 
 		sender.sendMessage(Message.UPGRADES_INFO.format(offlinePlayer.getName(), upgrades.getPoints()));
@@ -84,13 +86,13 @@ public class UpgradeCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 		upgrades.setPoints(upgrades.getPoints() + amount);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.UPGRADES_SUCCESS_ADD.format(amount, offlinePlayer.getName(), upgrades.getPoints()));
 	}
@@ -106,13 +108,13 @@ public class UpgradeCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 		upgrades.setPoints(upgrades.getPoints() - amount);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.UPGRADES_SUCCESS_REMOVE.format(amount, offlinePlayer.getName(), upgrades.getPoints()));
 	}
@@ -128,9 +130,10 @@ public class UpgradeCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
+		assert user != null;
 		MinetopiaUpgrades upgrades = user.getMinetopiaUpgrades();
 
 		sender.sendMessage(Message.UPGRADES_LIST_DIVIDER.raw());

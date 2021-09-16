@@ -1,9 +1,11 @@
 package dev.maiky.minetopia.modules.bank.bank;
 
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBankManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,26 +17,35 @@ import java.util.UUID;
  * Package: dev.maiky.minetopia.modules.bank.bank
  */
 
+@Entity(value = "bank_accounts", noClassnameStored = true)
 public class Account {
 
-	@Getter @Setter
-	private int id;
-	@Getter
-	private final HashMap<UUID, List<Permission>> permissions = new HashMap<>();
-	@Getter @Setter
-	private String customName = "???";
-	@Getter
-	private final long createdOn;
-	@Getter
-	private final Bank bank;
-	@Getter
-	private double balance = 0;
+	@Id
+	public ObjectId id;
 
-	public Account(Bank bank, int id) {
-		this.id = id;
-		this.bank = bank;
-		this.createdOn = System.currentTimeMillis();
-	}
+	@Getter @Setter
+	@Property("account_id")
+	@Indexed(options = @IndexOptions(unique = true))
+	public int accountId;
+
+	@Getter
+	public final HashMap<UUID, List<Permission>> permissions = new HashMap<>();
+
+	@Getter @Setter
+	@Property("display_name")
+	public String customName = "???";
+
+	@Getter @Setter
+	@Property("creation_date")
+	public long createdOn;
+
+	@Getter @Setter
+	public Bank bank;
+
+	@Getter
+	public double balance = 0;
+
+	public Account() {}
 
 	public void deposit(double d) {
 		this.balance += d;
@@ -49,8 +60,9 @@ public class Account {
 		return true;
 	}
 
-	private void save() {
-		BankManager.with(DataModule.getInstance().getSqlHelper()).saveAccount(this);
+	public void save() {
+		MongoBankManager mongoBankManager = DataModule.getInstance().getBankManager();
+		mongoBankManager.save(this);
 	}
 
 }

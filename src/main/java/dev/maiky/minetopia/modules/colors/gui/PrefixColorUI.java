@@ -2,7 +2,7 @@ package dev.maiky.minetopia.modules.colors.gui;
 
 import dev.maiky.minetopia.modules.colors.fonts.FontSet;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import me.lucko.helper.item.ItemStackBuilder;
@@ -75,7 +75,7 @@ public class PrefixColorUI extends Gui {
 	public PrefixColorUI(Player player, int page) {
 		super(player, 6, Message.COLORS_GUI_PREFIXCOLOR_TITLE.setLimit(18).raw());
 		this.page = page;
-		this.user = PlayerManager.getCache().get(player.getUniqueId());
+		this.user = MongoPlayerManager.getCache().get(player.getUniqueId());
 
 		this.prepare();
 	}

@@ -28,7 +28,9 @@ package dev.maiky.minetopia.modules.transportation.portal;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.mongodb.morphia.annotations.Embedded;
 
+@Embedded
 public class ILocation {
 
 	public static ILocation from(Location location) {

@@ -7,7 +7,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.prefixes.ui.PrefixUI;
 import dev.maiky.minetopia.util.Message;
@@ -27,6 +27,8 @@ import java.util.UUID;
 @CommandAlias("prefix")
 @CommandPermission("minetopia.common.prefix")
 public class PrefixCommand extends BaseCommand {
+	
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -49,7 +51,7 @@ public class PrefixCommand extends BaseCommand {
 	@Subcommand("main")
 	@Description("Open the prefix menu")
 	public void onMain(Player player) {
-		PrefixUI prefixUI = new PrefixUI(player, PlayerManager.getCache().get(player.getUniqueId()));
+		PrefixUI prefixUI = new PrefixUI(player, MongoPlayerManager.getCache().get(player.getUniqueId()));
 		prefixUI.open();
 	}
 
@@ -74,16 +76,16 @@ public class PrefixCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		if (user.getPrefixes().contains(output))
 			throw new ConditionFailedException(Message.PREFIX_ERROR_ALREADYHASPREFIX.raw());
 
 		user.getPrefixes().add(output);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.PREFIX_SUCCESS_ADD.format(output, offlinePlayer.getName()));
 	}
@@ -109,16 +111,16 @@ public class PrefixCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		if (!user.getPrefixes().contains(output))
 			throw new ConditionFailedException(Message.PREFIX_ERROR_DOESNTOWNPREFIX.raw());
 
 		user.getPrefixes().add(output);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.PREFIX_SUCCESS_REMOVE.format(output, offlinePlayer.getName()));
 	}
@@ -134,9 +136,9 @@ public class PrefixCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 		sender.sendMessage(Message.PREFIX_INFO_DIVIDER.raw());
 		for (String prefix : user.getPrefixes()) {
 			sender.sendMessage(Message.PREFIX_INFO_ENTRY.format(prefix, (user.getCurrentPrefix().equals(prefix) ?
@@ -156,9 +158,9 @@ public class PrefixCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		user.getPrefixes().clear();
 		String defaultPrefix = Minetopia.getInstance().getConfiguration().get().getString("player.default.prefix");
@@ -166,7 +168,7 @@ public class PrefixCommand extends BaseCommand {
 		user.setCurrentPrefix(defaultPrefix);;
 
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.PREFIX_SUCCESS_CLEAR.format(offlinePlayer.getName()));
 	}

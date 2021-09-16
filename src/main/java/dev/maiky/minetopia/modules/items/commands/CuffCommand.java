@@ -19,7 +19,6 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 import static org.bukkit.potion.PotionEffectType.*;
-import static org.bukkit.potion.PotionEffectType.REGENERATION;
 
 /**
  * This project is owned by Maiky Perlee - © 2021

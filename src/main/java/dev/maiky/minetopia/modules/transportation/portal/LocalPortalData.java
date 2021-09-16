@@ -1,7 +1,6 @@
 package dev.maiky.minetopia.modules.transportation.portal;
 
 import lombok.Getter;
-import org.bukkit.Location;
 
 /**
  * Door: Maiky

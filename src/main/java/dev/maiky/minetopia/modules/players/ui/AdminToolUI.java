@@ -3,7 +3,7 @@ package dev.maiky.minetopia.modules.players.ui;
 import dev.maiky.minetopia.modules.bank.ui.BankChooseUI;
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.ui.admintool.NameColorUI;
 import me.lucko.helper.Events;
@@ -95,13 +95,15 @@ public class AdminToolUI extends Gui {
 								}
 								MinetopiaUser user;
 								if (offlinePlayer.isOnline()) {
-									user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
+									user = MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId());
 								} else {
-									user = PlayerManager.with(DataModule.getInstance().getSqlHelper()).retrieve(offlinePlayer.getUniqueId());
+									user = DataModule.getInstance().getPlayerManager().find(u -> u.getUuid().equals(offlinePlayer.getUniqueId()))
+											.findFirst().orElse(null);
 								}
+								assert user != null;
 								user.setLevel(level);
 								if (!offlinePlayer.isOnline())
-									PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
+									DataModule.getInstance().getPlayerManager().save(user);
 								getPlayer().sendMessage("§6Je hebt het level van §c" + offlinePlayer.getName() + " §6veranderd naar §cLevel " + level + "§6.");
 								this.open();
 							}).bindWith(this);

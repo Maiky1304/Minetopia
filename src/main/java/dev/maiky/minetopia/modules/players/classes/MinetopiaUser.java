@@ -2,14 +2,11 @@ package dev.maiky.minetopia.modules.players.classes;
 
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.colors.packs.LevelColor;
-import dev.maiky.minetopia.modules.players.PlayersModule;
 import dev.maiky.minetopia.modules.transportation.portal.LocalPortalData;
-import dev.maiky.minetopia.modules.transportation.portal.PortalData;
-import dev.maiky.minetopia.util.Options;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,96 +19,108 @@ import java.util.UUID;
  * Package: dev.maiky.minetopia.modules.players.classes
  */
 
+@Entity(value = "users", noClassnameStored = true)
 public class MinetopiaUser {
 
-	@Getter
-	private final UUID uuid;
-	@Getter
-	private final String name;
-	@Getter @Setter
-	private int level;
-	@Getter
-	private final MinetopiaTime time;
-	@Getter @Setter
-	private double grayshards, goldshards;
-	@Getter @Setter
-	private String cityColor;
-	@Getter @Setter
-	private MinetopiaUpgrades minetopiaUpgrades;
-	@Getter @Setter
-	private int levelPoints;
-	@Getter @Setter
-	private boolean policeChat;
-	@Getter @Setter
-	private String currentPrefix;
-	@Getter
-	private final List<String> prefixes = new ArrayList<>();
-	@Getter @Setter
-	private ChatColor currentChatColor;
-	@Getter
-	private final HashMap<ChatColor, String> chatColors = new HashMap<>();
-	@Getter @Setter
-	private LevelColor currentLevelColor;
-	@Getter
-	private final HashMap<LevelColor, String> levelColors = new HashMap<>();
-	@Getter @Setter
-	private ChatColor currentPrefixColor;
-	@Getter
-	private final HashMap<ChatColor, String> prefixColors = new HashMap<>();
-	@Getter
-	private boolean scoreboard, actionbar;
-	@Getter @Setter
-	private int grayshardBoost;
-	@Getter @Setter
-	private int goldshardBoost;
-	private @Getter @Setter LocalPortalData portalData;
-	private @Getter final MinetopiaData minetopiaData;
+	@Id
+	public ObjectId id;
 
-	public MinetopiaUser(UUID uuid) {
-		this.uuid = uuid;
+	@Indexed(options = @IndexOptions(unique = true))
+	@Getter @Setter
+	public UUID uuid;
 
-		final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-		if (!offlinePlayer.isOnline()) {
-			this.name = "???";
-		} else {
-			this.name = offlinePlayer.getName();
-		}
+	@Getter @Setter
+	public String name;
 
-		this.level = Options.PLAYER_DEFAULT_LEVEL.asInt().get();
-		this.time = new MinetopiaTime(0,0,0,0);
-		this.grayshards = Options.PLAYER_DEFAULT_GRAYSHARDS.asDouble().get();
-		this.goldshards = Options.PLAYER_DEFAULT_GOLDSHARDS.asDouble().get();
-		this.cityColor = Options.PLAYER_DEFAULT_CITYCOLOR.asString().get();
-		this.minetopiaUpgrades = new MinetopiaUpgrades();
-		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentLevelColor = LevelColor.CHATCOLOR_NORMAL_AQUA;
-		this.currentPrefixColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentPrefix = Options.PLAYER_DEFAULT_PREFIX.asString().get();
-		this.getPrefixes().add(this.currentPrefix);
-		this.scoreboard = true;
-		this.actionbar = true;
-		this.minetopiaData = new MinetopiaData(offlinePlayer.isOnline() ? MinetopiaInventory.of(offlinePlayer.getPlayer().getInventory()) : MinetopiaInventory.empty(),
-				20, 20, uuid);
+	@Getter @Setter
+	public int level;
+
+	@Getter @Setter
+	public MinetopiaTime time;
+
+	@Getter @Setter
+	public double grayshards;
+
+	@Getter @Setter
+	public double goldshards;
+
+	@Getter @Setter
+	@Property("city_color")
+	public String cityColor;
+
+	@Getter @Setter
+	@Property("upgrades")
+	public MinetopiaUpgrades minetopiaUpgrades;
+
+	@Getter @Setter
+	@Property("level_points")
+	public int levelPoints;
+
+	@Getter @Setter
+	@Property("police_chat_enabled")
+	public boolean policeChat;
+
+	@Getter @Setter
+	@Property("current_prefix")
+	public String currentPrefix;
+
+	@Getter
+	public final List<String> prefixes = new ArrayList<>();
+
+	@Getter @Setter
+	@Property("current_chatcolor")
+	public ChatColor currentChatColor;
+
+	@Getter
+	@Property("chatcolors")
+	public final HashMap<ChatColor, String> chatColors = new HashMap<>();
+
+	@Getter @Setter
+	@Property("current_levelcolor")
+	public LevelColor currentLevelColor;
+
+	@Getter
+	@Property("levelcolors")
+	public final HashMap<LevelColor, String> levelColors = new HashMap<>();
+
+	@Getter @Setter
+	@Property("current_prefixcolor")
+	public ChatColor currentPrefixColor;
+
+	@Getter
+	@Property("prefixcolors")
+	public final HashMap<ChatColor, String> prefixColors = new HashMap<>();
+	@Getter @Setter
+	public boolean scoreboard;
+
+	@Getter @Setter
+	public boolean actionbar;
+
+	@Getter @Setter
+	@Property("grayshard_boost")
+	public int grayshardBoost;
+
+	@Getter @Setter
+	@Property("goldshard_boost")
+	public int goldshardBoost;
+
+	@Getter @Setter
+	@Property("portal_data")
+	public LocalPortalData portalData;
+
+	@Getter @Setter
+	@Property("minetopia_data")
+	public MinetopiaData minetopiaData;
+
+	@Getter @Setter
+	@Property("cash_old") @Transient
+	public double cash = 0;
+
+	@Getter @Setter
+	@Property("dirty_money")
+	public double blackMoney = 0;
+
+	public MinetopiaUser() {
 	}
 
-	public MinetopiaUser(UUID uuid, String name) {
-		this.uuid = uuid;
-		this.name = name;
-		this.level = Options.PLAYER_DEFAULT_LEVEL.asInt().get();
-		this.time = new MinetopiaTime(0,0,0,0);
-		this.grayshards = Options.PLAYER_DEFAULT_GRAYSHARDS.asDouble().get();
-		this.goldshards = Options.PLAYER_DEFAULT_GOLDSHARDS.asDouble().get();
-		this.cityColor = Options.PLAYER_DEFAULT_CITYCOLOR.asString().get();
-		this.minetopiaUpgrades = new MinetopiaUpgrades();
-		this.currentChatColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentLevelColor = LevelColor.CHATCOLOR_NORMAL_AQUA;
-		this.currentPrefixColor = ChatColor.CHATCOLOR_NORMAL_GRAY;
-		this.currentPrefix = Options.PLAYER_DEFAULT_PREFIX.asString().get();
-		this.getPrefixes().add(this.currentPrefix);
-		this.scoreboard = true;
-		this.actionbar = true;
-		final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-		this.minetopiaData = new MinetopiaData(offlinePlayer.isOnline() ? MinetopiaInventory.of(offlinePlayer.getPlayer().getInventory()) : MinetopiaInventory.empty(),
-				20, 20, uuid);
-	}
 }

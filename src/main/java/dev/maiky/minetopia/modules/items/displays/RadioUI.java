@@ -1,6 +1,6 @@
 package dev.maiky.minetopia.modules.items.displays;
 
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Skull;
@@ -31,7 +31,7 @@ public class RadioUI extends Gui {
 
 	public RadioUI(Player player) {
 		super(player, 3, "&3Portofoon");
-		this.user = PlayerManager.getCache().get(player.getUniqueId());
+		this.user = MongoPlayerManager.getCache().get(player.getUniqueId());
 	}
 
 	private final MenuScheme EMERGENCY = new MenuScheme()

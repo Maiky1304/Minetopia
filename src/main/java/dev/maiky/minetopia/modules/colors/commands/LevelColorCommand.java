@@ -9,7 +9,7 @@ import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.colors.gui.LevelColorUI;
 import dev.maiky.minetopia.modules.colors.packs.LevelColor;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import lombok.Getter;
@@ -32,6 +32,8 @@ import java.util.UUID;
 @CommandAlias("levelcolor|levelkleur|levelkleuren|levelcolors")
 @CommandPermission("minetopia.common.levelcolor")
 public class LevelColorCommand extends BaseCommand {
+	
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@HelpCommand
 	public void onHelp(CommandSender sender) {
@@ -69,9 +71,9 @@ public class LevelColorCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		if (user.getLevelColors().containsKey(color)) {
 			throw new ConditionFailedException(Message.COLORS_ERROR_ALREADYOWNED.raw());
@@ -88,7 +90,7 @@ public class LevelColorCommand extends BaseCommand {
 
 		user.getLevelColors().put(color, expiry == null ? "-" : String.valueOf(expiry.getTime()));
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		if (string == null)
 			sender.sendMessage(Message.COLORS_ADD_PERMANENT.format(color.itemName, offlinePlayer.getName()));
@@ -106,9 +108,9 @@ public class LevelColorCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		if (!user.getLevelColors().containsKey(color)) {
 			throw new ConditionFailedException(Message.COLORS_ERROR_NOTOWNED.raw());
@@ -116,7 +118,7 @@ public class LevelColorCommand extends BaseCommand {
 
 		user.getLevelColors().remove(color);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		sender.sendMessage(Message.COLORS_REMOVE.format(color.itemName, offlinePlayer.getName()));
 	}
@@ -131,9 +133,9 @@ public class LevelColorCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
 
 		sender.sendMessage(Message.COLORS_LIST_HEADERFOOTER.raw());
 		for (LevelColor color : user.getLevelColors().keySet()) {

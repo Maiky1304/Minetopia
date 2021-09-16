@@ -5,7 +5,7 @@ import dev.maiky.minetopia.modules.bank.bank.Account;
 import dev.maiky.minetopia.modules.bank.bank.Bank;
 import dev.maiky.minetopia.modules.bank.bank.Permission;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.BankManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoBankManager;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Numbers;
 import lombok.Setter;
@@ -47,7 +47,7 @@ public class BalanceManageUI extends Gui {
 
 	private final LinkedHashMap<Material, Double> MAPPING = new LinkedHashMap<>();
 
-	private final BankManager manager;
+	private final MongoBankManager manager;
 
 	private final OfflinePlayer target;
 
@@ -56,7 +56,7 @@ public class BalanceManageUI extends Gui {
 				: Numbers.convert(Numbers.Type.MONEY, Minetopia.getEconomy().getBalance(target))
 				: Numbers.convert(Numbers.Type.MONEY, account.getBalance()))));
 		this.account = account;
-		this.manager = BankManager.with(DataModule.getInstance().getSqlHelper());
+		this.manager = DataModule.getInstance().getBankManager();
 		this.target = target;
 
 		MAPPING.put(Material.GHAST_TEAR, 5000d);
@@ -169,7 +169,7 @@ public class BalanceManageUI extends Gui {
 			k++;
 		}
 
-		double balance = this.account == null ? target == null ? economy.getBalance(getPlayer()) : economy.getBalance(target) : manager.getAccount(this.account.getBank(), this.account.getId()).getBalance();
+		double balance = this.account == null ? target == null ? economy.getBalance(getPlayer()) : economy.getBalance(target) : manager.getAccount(this.account.getBank(), this.account.getAccountId()).getBalance();
 		double addedToMenu = 0;
 
 		while(balance >= 5000) {
@@ -286,7 +286,7 @@ public class BalanceManageUI extends Gui {
 				event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, amount),
 						Bank.PERSONAL.label.toLowerCase()));
 			} else {
-				if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < amount) {
+				if (manager.getAccount(this.account.getBank(), this.account.getAccountId()).getBalance() < amount) {
 					getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 					return;
 				}
@@ -296,7 +296,7 @@ public class BalanceManageUI extends Gui {
 					return;
 				}
 
-				if (manager.getAccount(this.account.getBank(), this.account.getId()).withdraw(amount)) {
+				if (manager.getAccount(this.account.getBank(), this.account.getAccountId()).withdraw(amount)) {
 
 					getPlayer().getInventory().addItem(getCash(amount, 1));
 
@@ -305,7 +305,7 @@ public class BalanceManageUI extends Gui {
 				}
 			}
 
-			new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
+			new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getAccountId()), this.target).open();
 		} else if (type == ClickType.RIGHT && mass) {
 			getPlayer().closeInventory();
 			getPlayer().sendMessage(Message.BANKING_GUI_BALANCE_QUESTION_AMOUNT.raw());
@@ -326,7 +326,7 @@ public class BalanceManageUI extends Gui {
 						try {
 							items = Integer.parseInt(message);
 						} catch (NumberFormatException exception) {
-							new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
+							new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getAccountId()), this.target).open();
 							getPlayer().sendMessage(Message.COMMON_ERROR_NOTANUMBER.raw());
 							return;
 						}
@@ -351,7 +351,7 @@ public class BalanceManageUI extends Gui {
 								getPlayer().getInventory().addItem(getCash(amount, items));
 							}
 						} else {
-							if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < (amount * items)) {
+							if (manager.getAccount(this.account.getBank(), this.account.getAccountId()).getBalance() < (amount * items)) {
 								new BalanceManageUI(getPlayer(), account, this.target).open();
 								getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 								return;
@@ -362,12 +362,12 @@ public class BalanceManageUI extends Gui {
 								return;
 							}
 
-							if (manager.getAccount(this.account.getBank(), this.account.getId()).withdraw(amount * items)) {
+							if (manager.getAccount(this.account.getBank(), this.account.getAccountId()).withdraw(amount * items)) {
 								getPlayer().getInventory().addItem(getCash(amount, items));
 							}
 						}
 
-						new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
+						new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getAccountId()), this.target).open();
 					});
 		}
 	}
@@ -405,7 +405,7 @@ public class BalanceManageUI extends Gui {
 			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_DEPOSIT.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
 					Bank.PERSONAL.label.toLowerCase()));
 		} else {
-			manager.getAccount(this.account.getBank(), this.account.getId()).deposit(MAPPING.get(material) * itemsToGive);
+			manager.getAccount(this.account.getBank(), this.account.getAccountId()).deposit(MAPPING.get(material) * itemsToGive);
 
 			if (itemsToGive == 1) {
 				if (event.getCurrentItem().getAmount() == 1) {
@@ -421,7 +421,7 @@ public class BalanceManageUI extends Gui {
 					account.getBank().label.toLowerCase()));
 		}
 
-		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
+		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getAccountId()), this.target).open();
 	}
 
 	public void withdrawBig(InventoryClickEvent event, Material material, int items) {
@@ -452,7 +452,7 @@ public class BalanceManageUI extends Gui {
 			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
 					Bank.PERSONAL.label.toLowerCase()));
 		} else {
-			if (manager.getAccount(this.account.getBank(), this.account.getId()).getBalance() < MAPPING.get(material) * itemsToGive) {
+			if (manager.getAccount(this.account.getBank(), this.account.getAccountId()).getBalance() < MAPPING.get(material) * itemsToGive) {
 				getPlayer().sendMessage(Message.COMMON_ERROR_NOTENOUGHMONEY.raw());
 				return;
 			}
@@ -462,20 +462,20 @@ public class BalanceManageUI extends Gui {
 				return;
 			}
 
-			manager.getAccount(this.account.getBank(), this.account.getId()).withdraw(MAPPING.get(material) * itemsToGive);
+			manager.getAccount(this.account.getBank(), this.account.getAccountId()).withdraw(MAPPING.get(material) * itemsToGive);
 			getPlayer().getInventory().addItem(getCash(MAPPING.get(material), itemsToGive));
 			event.getWhoClicked().sendMessage(Message.BANKING_GUI_BALANCE_SUCCESS_WITHDRAW.format(Numbers.convert(Numbers.Type.MONEY, MAPPING.get(material) * itemsToGive),
 					this.account.getBank().label.toLowerCase()));
 		}
 
-		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getId()), this.target).open();
+		new BalanceManageUI(getPlayer(), account == null ? null : manager.getAccount(this.account.getBank(), this.account.getAccountId()), this.target).open();
 	}
 
 	private boolean hasPermission(Permission permission) {
 		if (this.overrideRule) return true;
 		if (this.account == null) return getPlayer().hasPermission("minetopia.common.privatebankaccount");
 
-		List<Permission> list = this.manager.getAccount(this.account.getBank(), this.account.getId()).getPermissions()
+		List<Permission> list = this.manager.getAccount(this.account.getBank(), this.account.getAccountId()).getPermissions()
 				.get(getPlayer().getUniqueId());
 		if (list.contains(Permission.ALL)) return true;
 		return list.contains(permission);

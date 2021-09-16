@@ -1,16 +1,16 @@
 package dev.maiky.minetopia.modules.data;
 
 import co.aikar.commands.BukkitCommandManager;
+import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.MinetopiaModule;
 import dev.maiky.minetopia.modules.data.commands.ModuleCommand;
 import dev.maiky.minetopia.modules.data.enums.StorageType;
+import dev.maiky.minetopia.modules.data.managers.mongo.*;
 import dev.maiky.minetopia.util.Configuration;
 import lombok.Getter;
 import me.lucko.helper.Services;
-import me.lucko.helper.mongo.Mongo;
-import me.lucko.helper.mongo.MongoDatabaseCredentials;
-import me.lucko.helper.mongo.MongoProvider;
 import me.lucko.helper.redis.Redis;
 import me.lucko.helper.redis.RedisCredentials;
 import me.lucko.helper.redis.RedisProvider;
@@ -41,8 +41,14 @@ public class DataModule implements MinetopiaModule {
 	private final Configuration dataConfiguration;
 
 	private Sql sqlHelper;
-	private Mongo mongoHelper;
+	private MongoClient mongoClient;
 	private Redis redis;
+
+	@Getter private MongoBagManager bagManager;
+	@Getter private MongoBankManager bankManager;
+	@Getter private MongoPlayerManager playerManager;
+	@Getter private MongoPortalManager portalManager;
+	@Getter private MongoWeaponManager weaponManager;
 
 	public DataModule(Configuration dataConfiguration) {
 		instance = this;
@@ -118,9 +124,12 @@ public class DataModule implements MinetopiaModule {
 				this.sqlHelper.execute(value);
 			}
 		} else if (type.equals(StorageType.MONGODB)) {
-			this.mongoHelper = Services.load(MongoProvider.class).getMongo(MongoDatabaseCredentials.of(host, port,
-					database, username, password));
-			this.mongoHelper.bindWith(composite);
+			this.mongoClient = new MongoClient(new ServerAddress("localhost", 27017));
+			this.bagManager = new MongoBagManager();
+			this.bankManager = new MongoBankManager();
+			this.playerManager = new MongoPlayerManager();
+			this.portalManager = new MongoPortalManager();
+			this.weaponManager = new MongoWeaponManager();
 		}
 
 		RedisProvider redisProvider = Services.load(RedisProvider.class);
@@ -129,11 +138,11 @@ public class DataModule implements MinetopiaModule {
 	}
 
 	/**
-	 * Get the instance of the mongo helper
+	 * Get the instance of the mongo client
 	 * @return the mongo helper
 	 */
-	public Mongo getMongoHelper() {
-		return mongoHelper;
+	public MongoClient getMongoClient() {
+		return mongoClient;
 	}
 
 	/**

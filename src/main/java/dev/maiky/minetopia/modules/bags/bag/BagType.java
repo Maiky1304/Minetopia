@@ -23,7 +23,7 @@ public enum BagType {
     SUITCASE(Material.CARROT_STICK, (short)25, "Koffer"),
     CREEPER_BAG(Material.CARROT_STICK, (short)19, "Nektasje"),
     POTGROND_BACKPACK(Material.CARROT_STICK, (short)0, "Rugzak", "potgrond_backpack"),
-    HANDBAG(Material.DIAMOND_HOE, (short)0, "Handtas", "handbag");
+    DUFFLEBAG(Material.CARROT_STICK, (short)0, "Dufflebag", "dufflebag");
 
     public Material material;
     public short durability;

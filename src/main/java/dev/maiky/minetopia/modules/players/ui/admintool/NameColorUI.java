@@ -2,7 +2,7 @@ package dev.maiky.minetopia.modules.players.ui.admintool;
 
 import dev.maiky.minetopia.modules.colors.packs.ChatColor;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.modules.players.ui.AdminToolUI;
 import me.lucko.helper.item.ItemStackBuilder;
@@ -37,13 +37,15 @@ public class NameColorUI extends Gui {
 					.lore("", "&7Verander de naamkleur van &b" + offlinePlayer.getName() + "&7 hiernaar.").build(), color.toString().toLowerCase())).build(() -> {
 				MinetopiaUser user;
 				if (offlinePlayer.isOnline()) {
-					user = PlayerManager.getCache().get(offlinePlayer.getUniqueId());
+					user = MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId());
 				} else {
-					user = PlayerManager.with(DataModule.getInstance().getSqlHelper()).retrieve(offlinePlayer.getUniqueId());
+					user = DataModule.getInstance().getPlayerManager().find(u -> u.getUuid().equals(offlinePlayer.getUniqueId()))
+							.findFirst().orElse(null);
 				}
+				assert user != null;
 				user.setCityColor(color.getColor().replace("&", "§"));
 				if (!offlinePlayer.isOnline())
-					PlayerManager.with(DataModule.getInstance().getSqlHelper()).update(user);
+					DataModule.getInstance().getPlayerManager().save(user);
 			}));
 		}
 

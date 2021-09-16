@@ -6,7 +6,7 @@ import co.aikar.commands.RegisteredCommand;
 import co.aikar.commands.annotation.*;
 import dev.maiky.minetopia.Minetopia;
 import dev.maiky.minetopia.modules.data.DataModule;
-import dev.maiky.minetopia.modules.data.managers.PlayerManager;
+import dev.maiky.minetopia.modules.data.managers.mongo.MongoPlayerManager;
 import dev.maiky.minetopia.modules.players.classes.MinetopiaUser;
 import dev.maiky.minetopia.util.Message;
 import dev.maiky.minetopia.util.Text;
@@ -25,6 +25,8 @@ import java.util.UUID;
 @CommandAlias("mod|moderation")
 @CommandPermission("minetopia.moderation")
 public class ModCommand extends BaseCommand {
+
+	private final MongoPlayerManager playerManager = DataModule.getInstance().getPlayerManager();
 
 	@Default
 	@HelpCommand
@@ -53,12 +55,12 @@ public class ModCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
+		assert user != null;
 		user.setLevel(level);
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		String message = "§6Success! Level of §c%s §6was set to §c%s§6.";
 		sender.sendMessage(String.format(message, offlinePlayer.getName(), String.format("Level %s", level)));
@@ -74,12 +76,13 @@ public class ModCommand extends BaseCommand {
 			offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(target));
 		else offlinePlayer = Bukkit.getOfflinePlayer(target);
 
-		PlayerManager playerManager = PlayerManager.with(DataModule.getInstance().getSqlHelper());
-		MinetopiaUser user = offlinePlayer.isOnline() ? PlayerManager.getCache().get(offlinePlayer.getUniqueId())
-				: playerManager.retrieve(offlinePlayer.getUniqueId());
+		
+		MinetopiaUser user = offlinePlayer.isOnline() ? MongoPlayerManager.getCache().get(offlinePlayer.getUniqueId())
+				: playerManager.find(u -> u.getUuid().equals(offlinePlayer.getUniqueId())).findFirst().orElse(null);
+		assert user != null;
 		user.setCityColor(Text.colors(color));
 		if (!offlinePlayer.isOnline())
-			playerManager.update(user);
+			playerManager.save(user);
 
 		String message = "§6Success! Citycolor of §c%s §6was set to §c%s§6.";
 		sender.sendMessage(String.format(message, offlinePlayer.getName(), "&" + color));
